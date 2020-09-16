@@ -124,12 +124,12 @@ public class BuyPoison : State
         var poisonVendor = DbCreature.GetNearest(PoisonVendor, ObjectManager.Me.Position, 2500);
         Logging.Write("Running to buy Poisons");
         Logging.Write("Nearest Vendor from player:\n" + "Name: " + poisonVendor?.Name + "[" + poisonVendor?.id + "]\nPosition: " + poisonVendor?.Position.ToStringXml() + "\nDistance: " + poisonVendor?.Position.DistanceTo(ObjectManager.Me.Position) + " yrds");
-        if (ObjectManager.Me.WowClass == WoWClass.Rogue && ItemsManager.GetItemCountById(InstantPoison) <= 10)
+        if (ObjectManager.Me.WowClass == WoWClass.Rogue && ItemsManager.GetItemCountById(InstantPoison) <= 20)
         {
             int instpoison = 10 - ItemsManager.GetItemCountById(InstantPoison);
             Logging.Write("No Poison found, time to buy some InstantPoison! " + instpoison + " " + InstantPoison);
             GoToTask.ToPositionAndIntecractWithNpc(poisonVendor.Position, poisonVendor.id);
-            while (ItemsManager.GetItemCountById(InstantPoison) < 10)
+            while (ItemsManager.GetItemCountById(InstantPoison) < 20)
             {
                 Vendor.BuyItem(ItemsManager.GetNameById(InstantPoison), instpoison);
                 Thread.Sleep(10);
@@ -141,7 +141,7 @@ public class BuyPoison : State
             int deadpoison = 10 - ItemsManager.GetItemCountById(DeadlyPoison);
             Logging.Write("No Poison found, time to buy some DeadlyPoison! " + deadpoison + " " + DeadlyPoison);
             GoToTask.ToPositionAndIntecractWithNpc(poisonVendor.Position, poisonVendor.id);
-            while (ItemsManager.GetItemCountById(DeadlyPoison) < 10)
+            while (ItemsManager.GetItemCountById(DeadlyPoison) < 20)
             {
                 Vendor.BuyItem(ItemsManager.GetNameById(DeadlyPoison), deadpoison);
                 Thread.Sleep(10);
