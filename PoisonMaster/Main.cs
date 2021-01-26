@@ -66,6 +66,7 @@ public class Main : IPlugin
 			try
 			{
 				AddState(engine, new BuyPoison() { Priority = 54 });
+				AddState(engine, new BuyArrows() { Priority = 55 });
 				engine.States.Sort();
 				_stateAdded = true;
 			}
@@ -84,6 +85,7 @@ public class Main : IPlugin
 				if (Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause)
 				{
 					BuyPoison.SetBuy();
+					BuyArrows.SetBuy();
 					Thread.Sleep(5000);
 				}
 			}

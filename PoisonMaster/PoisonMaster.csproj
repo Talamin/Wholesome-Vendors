@@ -54,6 +54,7 @@
     <Compile Include="Blacklist\Blacklist.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="State\BuyArrows.cs" />
     <Compile Include="State\BuyPoison.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
