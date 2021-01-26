@@ -14,6 +14,8 @@ using wManager.Wow.Bot.States;
 using wManager.Wow.Enums;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
+using PoisonMaster;
+
 public class Main : IPlugin
 {
     private static bool IsLaunched = false;
@@ -65,6 +67,8 @@ public class Main : IPlugin
 		{
 			try
 			{
+				Helpers.AddState(engine, new BuyPoison(), "To Town");
+				Helpers.AddState(engine, new BuyArrows(), "Buying Poison");
 				AddState(engine, new BuyPoison() { Priority = 54 });
 				AddState(engine, new BuyArrows() { Priority = 55 });
 				engine.States.Sort();
