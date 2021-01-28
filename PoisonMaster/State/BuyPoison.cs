@@ -88,7 +88,7 @@ public class BuyPoison : State
                 UnitNPCFlags.VENDOR_POISON
             }),
 
-        Range = new Range(ObjectManager.Me.Position)          //is needed for auto-order function by .Get() method
+        //Range = new Range(ObjectManager.Me.Position)          //is needed for auto-order function by .Get() method
     };
 
     // If this method return true, wrobot launch method Run(), if return false wrobot go to next state in FSM
@@ -121,7 +121,7 @@ public class BuyPoison : State
     public override void Run()
     {
         SetBuy();
-        var poisonVendor = DbCreature.GetNearest(PoisonVendor, ObjectManager.Me.Position, 10000);
+        var poisonVendor = DbCreature.Get(PoisonVendor).OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position)).First();
         Logging.Write("Running to buy Poisons");
         Logging.Write("Nearest Vendor from player:\n" + "Name: " + poisonVendor?.Name + "[" + poisonVendor?.id + "]\nPosition: " + poisonVendor?.Position.ToStringXml() + "\nDistance: " + poisonVendor?.Position.DistanceTo(ObjectManager.Me.Position) + " yrds");
         if (ObjectManager.Me.WowClass == WoWClass.Rogue && ItemsManager.GetItemCountById(InstantPoison) <= 20)
