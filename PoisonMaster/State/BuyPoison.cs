@@ -131,6 +131,16 @@ public class BuyPoison : State
             GoToTask.ToPositionAndIntecractWithNpc(poisonVendor.Position, poisonVendor.id);
             while (ItemsManager.GetItemCountById(InstantPoison) < 20)
             {
+                if (ObjectManager.GetObjectWoWUnit().Count(x => x.IsAlive && x.Name == PoisonVendor.Name) <= 0)
+                {
+                    Logging.Write("Looks like " + poisonVendor + " is not here, we choose another one");
+                    if (!Blacklist.myBlacklist.Contains(poisonVendor.id))
+                    {
+                        Blacklist.myBlacklist.Add(poisonVendor.id);
+                        Thread.Sleep(50);
+                        return;
+                    }
+                }
                 Vendor.BuyItem(ItemsManager.GetNameById(InstantPoison), instpoison);
                 Thread.Sleep(10);
             }
@@ -143,6 +153,16 @@ public class BuyPoison : State
             GoToTask.ToPositionAndIntecractWithNpc(poisonVendor.Position, poisonVendor.id);
             while (ItemsManager.GetItemCountById(DeadlyPoison) < 20)
             {
+                if (ObjectManager.GetObjectWoWUnit().Count(x => x.IsAlive && x.Name == PoisonVendor.Name) <= 0)
+                {
+                    Logging.Write("Looks like " + poisonVendor + " is not here, we choose another one");
+                    if (!Blacklist.myBlacklist.Contains(poisonVendor.id))
+                    {
+                        Blacklist.myBlacklist.Add(poisonVendor.id);
+                        Thread.Sleep(50);
+                        return;
+                    }
+                }
                 Vendor.BuyItem(ItemsManager.GetNameById(DeadlyPoison), deadpoison);
                 Thread.Sleep(10);
             }

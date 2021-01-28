@@ -67,11 +67,11 @@ public class Main : IPlugin
 		{
 			try
 			{
-				Helpers.AddState(engine, new BuyPoison(), "To Town");
-				Helpers.AddState(engine, new BuyArrows(), "Buying Poison");
-				//AddState(engine, new BuyPoison() { Priority = 54 });
-				//AddState(engine, new BuyArrows() { Priority = 55 });
-				engine.States.Sort();
+                //Helpers.AddState(engine, new BuyPoison(), "To Town");
+                //Helpers.AddState(engine, new BuyArrows(), "Buying Poison");
+                AddState(engine, new BuyPoison() { Priority = 54 });
+                //AddState(engine, new BuyArrows() { Priority = 55 });
+                engine.States.Sort();
 				_stateAdded = true;
 			}
 			catch (Exception e)
