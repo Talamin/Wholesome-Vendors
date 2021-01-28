@@ -121,7 +121,7 @@ public class BuyPoison : State
     public override void Run()
     {
         SetBuy();
-        var poisonVendor = DbCreature.GetNearest(PoisonVendor, ObjectManager.Me.Position, 5000);
+        var poisonVendor = DbCreature.GetNearest(PoisonVendor, ObjectManager.Me.Position, 10000);
         Logging.Write("Running to buy Poisons");
         Logging.Write("Nearest Vendor from player:\n" + "Name: " + poisonVendor?.Name + "[" + poisonVendor?.id + "]\nPosition: " + poisonVendor?.Position.ToStringXml() + "\nDistance: " + poisonVendor?.Position.DistanceTo(ObjectManager.Me.Position) + " yrds");
         if (ObjectManager.Me.WowClass == WoWClass.Rogue && ItemsManager.GetItemCountById(InstantPoison) <= 20)
