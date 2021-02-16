@@ -25,12 +25,18 @@ public class Main : IPlugin
     {
         try
         {
+            PluginSettings.Load();
+            EventsLua.AttachEventLua("PLAYER_EQUIPMENT_CHANGED", m => Helpers.CheckEquippedItems());
             FiniteStateMachineEvents.OnStartEngine += StateAddEventHandler;
             FiniteStateMachineEvents.OnAfterRunState += AfterStateAddEventHandler;
             IsLaunched = true;
 			_stateAdded = false;
             _pulseThread.DoWork += DoBackgroundPulse;
             _pulseThread.RunWorkerAsync();
+            if(Helpers.HaveRanged())
+            {
+                Helpers.CheckEquippedItems();
+            }
         }
         catch (Exception ex)
         {
@@ -50,7 +56,9 @@ public class Main : IPlugin
 
     public void Settings()
     {
-        throw new NotImplementedException();
+        PluginSettings.Load();
+        PluginSettings.CurrentSetting.ToForm();
+        PluginSettings.CurrentSetting.Save();
     }
     private void AfterStateAddEventHandler(Engine engine, State state)
     {
@@ -67,10 +75,12 @@ public class Main : IPlugin
 		{
 			try
 			{
-                //Helpers.AddState(engine, new BuyPoison(), "To Town");
-                //Helpers.AddState(engine, new BuyArrows(), "Buying Poison");
-                AddState(engine, new BuyPoison() { Priority = 54 });
-                //AddState(engine, new BuyArrows() { Priority = 55 });
+                Helpers.AddState(engine, new BuyPoison(), "To Town");
+                Helpers.AddState(engine, new BuyArrows(), "Buying Poison");
+                Helpers.AddState(engine, new BuyFood(), "Buying Arrows and Bullets");
+                Helpers.AddState(engine, new BuyDrink(), "Buying Food");
+                Helpers.AddState(engine, new Repair(), "Buying Drink");
+                Helpers.AddState(engine, new SellItems(), "Repair Run");
                 engine.States.Sort();
 				_stateAdded = true;
 			}
@@ -91,6 +101,8 @@ public class Main : IPlugin
 					BuyPoison.SetBuy();
 					BuyArrows.SetBuy();
 					Thread.Sleep(5000);
+                    Helpers.OutOfFoodVar = Helpers.OutOfFood();
+                    Helpers.OutOfDrinkVar = Helpers.OutOfDrink();
 				}
 			}
 			catch (Exception e)
@@ -100,13 +112,6 @@ public class Main : IPlugin
 
 			Thread.Sleep(50);
 		}
-	}
-
-
-	private void AddState(Engine engine, State state)
-	{
-		Logging.Write($" [PoisonMaster] Adding {state.DisplayName} State with  Prio 54" );
-		engine.AddState(state);
 	}
 
 }

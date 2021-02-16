@@ -7,6 +7,22 @@ using wManager.Wow.Helpers;
 
 public static class Blacklist
 {
+    public static void AddBlacklist(IEnumerable<int> ids)
+    {
+        foreach (var id in ids.Where(id => !myBlacklist.Contains(id)))
+            myBlacklist.Add(id);
+    }
+
+    public static readonly HashSet<int> OnlyFoodBlacklist = new HashSet<int>
+    {
+            3312, //only Meat Vendor
+            3342, // only food Vendor
+            3329, //only Mushrooms
+            3368, //only meat
+            3547, //Mushrooms only
+            3480, // Only Bread   
+    };
+
     public static readonly HashSet<int> myBlacklist = new HashSet<int>
         {
             5134, //NPC died

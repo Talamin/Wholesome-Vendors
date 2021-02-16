@@ -13,12 +13,14 @@ using wManager.Wow.Class;
 using wManager.Wow.Enums;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
+using PoisonMaster;
+using DatabaseManager.Tables;
 
-    public class BuyArrows : State
+public class BuyArrows : State
     {
         public override string DisplayName
         {
-            get { return "Buying Arrows"; }
+            get { return "Buying Arrows and Bullets"; }
         }
 
         public override int Priority
@@ -42,7 +44,7 @@ using wManager.Wow.ObjectManager;
         public static int continentId = Usefuls.ContinentId; //0=Azeroth, 1=Kalimdor, 571=Northrend, 
         public static WoWLocalPlayer Me = ObjectManager.Me;
         public static uint Arrow = 0;
-
+        public static uint Bullet = 0;
 
 
         private static Dictionary<int, uint> ArrowDictionary = new Dictionary<int, uint>
@@ -55,35 +57,16 @@ using wManager.Wow.ObjectManager;
         { 10, 2515 },
         { 1, 2512 },
     };
-
-
-
-        private CreatureFilter AmmoVendor = new CreatureFilter
-        {
-            ContinentId = ContinentId.Kalimdor,
-
-            ExcludeIds = Blacklist.myBlacklist,
-
-            Faction = new Faction(ObjectManager.Me.Faction,
-                ReactionType.Friendly),
-
-            NpcFlags = new NpcFlag(Operator.Or,
-                new List<UnitNPCFlags>
-                {
-                UnitNPCFlags.SellsAmmo
-                }),
-
-            Range = new Range(ObjectManager.Me.Position)          //is needed for auto-order function by .Get() method
-        };
-
-        Npc npcHordeArrows = new Npc
-        {
-            //Kalimdor - Ogrimmar - Arrow Dealer
-            Entry = 3313,
-            Position = new Vector3(1523.102, -4355.529, 19.09188),
-            Type = Npc.NpcType.Vendor
-        };
-
+    private static Dictionary<int, uint> BulletsDictionary = new Dictionary<int, uint>
+    {
+        {75 ,41584},
+        {65 ,28061},
+        {55, 28060},
+        {40, 11284},
+        {25, 3033},
+        {10, 2519 },
+        {1, 2516 },
+    };
 
 
         // If this method return true, wrobot launch method Run(), if return false wrobot go to next state in FSM
@@ -91,29 +74,35 @@ using wManager.Wow.ObjectManager;
         {
             get
             {
-                if (Me.IsDead)
+                if (Me.IsDead || !Me.IsAlive || Me.InCombatFlagOnly)
                 {
                     return false;
                 }
-                if (!Me.IsAlive)
+                if(!PluginSettings.CurrentSetting.AllowAutobuyAmmunition)
                 {
                     return false;
                 }
-                if (Me.InCombatFlagOnly)
-                {
-                    return false;
-                }
-                if (ObjectManager.Me.WowClass == WoWClass.Hunter)
+                if (ObjectManager.Me.WowClass == WoWClass.Hunter && Helpers.HaveRanged())
                 {
                     SetBuy();
-
-                    if (ItemsManager.GetItemCountById(Arrow) == 0 && ObjectManager.Me.WowClass == WoWClass.Hunter && ItemsManager.GetItemCountById(Arrow) <= 200)
+                    if (ItemsManager.GetItemCountById(Arrow) == 0 && 
+                    ObjectManager.Me.WowClass == WoWClass.Hunter && 
+                    ItemsManager.GetItemCountById(Arrow) <= 50 &&
+                    Helpers.RangedWeaponType == "Bows") 
                     {
                         Logging.Write("We have to Buy Arrows");
-                        DisplayName = "Buying Arrows";
+                        DisplayName = "Buying Arrows and Bullets";
                         return true;
                     }
-                    return false;
+                    if (ItemsManager.GetItemCountById(Bullet) == 0 &&
+                    ObjectManager.Me.WowClass == WoWClass.Hunter &&
+                    ItemsManager.GetItemCountById(Bullet) <= 50 &&
+                    Helpers.RangedWeaponType == "Guns")
+                    {
+                        Logging.Write("We have to Buy Bullets");
+                        DisplayName = "Buying Arrows and Bullets";
+                        return true;
+                    }
                 }
                 return false;
             }
@@ -122,46 +111,33 @@ using wManager.Wow.ObjectManager;
         // If NeedToRun() == true
         public override void Run()
         {
-            SetBuy();
-            var ammoVendor = DbCreature.GetNearest(AmmoVendor, ObjectManager.Me.Position, 2500);
-            while (!ObjectManager.Me.InCombat && !ObjectManager.Me.InCombatFlagOnly && !ObjectManager.Me.IsDead)
+        SetBuy();
+        Database.ChooseDatabaseAmmoNPC();
+        //var ammoVendor = DbCreature.Get(AmmoVendor).OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position)).First();      
+        if (!ObjectManager.Me.InCombat && !ObjectManager.Me.InCombatFlagOnly && !ObjectManager.Me.IsDead)
             {
-                if (ammoVendor != null)
+                if (Database.AmmoVendors != null)
                 {
-                    while (ObjectManager.Me.Position.DistanceTo(ammoVendor.Position) >= 6)
+                    if (ObjectManager.Me.Position.DistanceTo(Database.AmmoVendors.Position) >= 6)
                     {
-                        if (MovementManager.InMovement)
-                        {
-                            break;
-                        }
-                        if (ObjectManager.Me.InCombatFlagOnly)
-                        {
-                            Logging.Write("Being  Attacked");
-                            break;
-                        }
                         Logging.Write("Running to Buy Arrows");
-                        Logging.Write("Nearest AmmunitionVendor from player:\n" + "Name: " + ammoVendor?.Name + "[" + ammoVendor?.id + "]\nPosition: " + ammoVendor?.Position.ToStringXml() + "\nDistance: " + ammoVendor?.Position.DistanceTo(ObjectManager.Me.Position) + " yrds");
-                        MovementManager.Go(PathFinder.FindPath(ammoVendor.Position));
-                        break;
+                        Logging.Write("Nearest AmmunitionVendor from player:\n" + "Name: " + Database.AmmoVendors?.Name + "[" + Database.AmmoVendors?.id + "]\nPosition: " + Database.AmmoVendors?.Position.ToStringXml() + "\nDistance: " + Database.AmmoVendors?.Position.DistanceTo(ObjectManager.Me.Position) + " yrds");
+                        GoToTask.ToPositionAndIntecractWithNpc(Database.AmmoVendors.Position, Database.AmmoVendors.id);                
                     }
-                    if (ObjectManager.Me.Position.DistanceTo(ammoVendor.Position) <= 5 && ItemsManager.GetItemCountById(Arrow) < 2000)
+                    if (ObjectManager.Me.Position.DistanceTo(Database.AmmoVendors.Position) <= 5 && ItemsManager.GetItemCountById(Arrow) < 2000)
                     {
-                        if (ObjectManager.GetObjectWoWUnit().Count(x => x.IsAlive && x.Name == ammoVendor.Name) <= 0)
+                        if (ObjectManager.GetObjectWoWUnit().Count(x => x.IsAlive && x.Name == Database.AmmoVendors.Name) <= 0)
                         {
-                            Logging.Write("Looks like " + ammoVendor + " is not here, we choose another one");
-                            if (!Blacklist.myBlacklist.Contains(ammoVendor.id))
+                            Logging.Write("Looks like " + Database.AmmoVendors + " is not here, we choose another one");
+                            if (!Blacklist.myBlacklist.Contains(Database.AmmoVendors.id))
                             {
-                                Blacklist.myBlacklist.Add(ammoVendor.id);
+                                Blacklist.myBlacklist.Add(Database.AmmoVendors.id);
                                 Thread.Sleep(50);
-                                //if (!Blacklist.ReadSpecificTxt(ammoVendor.id.ToString()))
-                                //{
-                                //    Blacklist.WriteTxt(ammoVendor.id.ToString());
-                                //}
                                 return;
                             }
                         }
                         Logging.Write("No Arrows found, time to buy some! " + Arrow);
-                        GoToTask.ToPositionAndIntecractWithNpc(ammoVendor.Position, ammoVendor.id);
+                        GoToTask.ToPositionAndIntecractWithNpc(Database.AmmoVendors.Position, Database.AmmoVendors.id);
                         Vendor.BuyItem(ItemsManager.GetNameById(Arrow), 2000 / 200);
                         Thread.Sleep(Usefuls.LatencyReal * Usefuls.Latency);
                     }
@@ -172,17 +148,34 @@ using wManager.Wow.ObjectManager;
 
         public static void SetBuy()
         {
-            foreach (int level in ArrowDictionary.Keys)
+            if(Helpers.RangedWeaponType == "Bows")
+            {
+                foreach (int level in ArrowDictionary.Keys)
+                {
+                    if (level <= Me.Level)
+                    {
+                        //Logging.WriteDebug($"Selected Arrow Level {level}");
+                        Arrow = ArrowDictionary[level];
+                        string AName = ItemsManager.GetNameById(ArrowDictionary[level]);
+                        wManager.wManagerSetting.CurrentSetting.DoNotSellList.Add(AName);
+                        break;
+                    }
+                }
+            }
+        if (Helpers.RangedWeaponType == "Guns")
+        {
+            foreach (int level in BulletsDictionary.Keys)
             {
                 if (level <= Me.Level)
                 {
                     //Logging.WriteDebug($"Selected Arrow Level {level}");
-                    Arrow = ArrowDictionary[level];
-                    string AName = ItemsManager.GetNameById(ArrowDictionary[level]);
-                    wManager.wManagerSetting.CurrentSetting.DoNotSellList.Add(AName);
+                    Bullet = BulletsDictionary[level];
+                    string BName = ItemsManager.GetNameById(BulletsDictionary[level]);
+                    wManager.wManagerSetting.CurrentSetting.DoNotSellList.Add(BName);
                     break;
                 }
             }
         }
 
+    }
     }
