@@ -14,6 +14,7 @@ using wManager.Wow.Bot.States;
 using wManager.Wow.Enums;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
+using MarsSettingsGUI;
 using PoisonMaster;
 
 public class Main : IPlugin
@@ -27,8 +28,9 @@ public class Main : IPlugin
         {
             PluginSettings.Load();
             EventsLua.AttachEventLua("PLAYER_EQUIPMENT_CHANGED", m => Helpers.CheckEquippedItems());
-            FiniteStateMachineEvents.OnStartEngine += StateAddEventHandler;
-            FiniteStateMachineEvents.OnAfterRunState += AfterStateAddEventHandler;
+            //FiniteStateMachineEvents.OnStartEngine += StateAddEventHandler;
+            //FiniteStateMachineEvents.OnAfterRunState += AfterStateAddEventHandler;
+            FiniteStateMachineEvents.OnRunState += StateAddEventHandler;
             IsLaunched = true;
 			_stateAdded = false;
             _pulseThread.DoWork += DoBackgroundPulse;
@@ -46,8 +48,8 @@ public class Main : IPlugin
 
     public void Dispose()
     {
-        FiniteStateMachineEvents.OnStartEngine -= StateAddEventHandler;
-        FiniteStateMachineEvents.OnAfterRunState -= AfterStateAddEventHandler;
+        //FiniteStateMachineEvents.OnStartEngine -= StateAddEventHandler;
+        //FiniteStateMachineEvents.OnAfterRunState -= AfterStateAddEventHandler;
         IsLaunched = false;
         _pulseThread.DoWork -= DoBackgroundPulse;
         _pulseThread.Dispose();
@@ -57,19 +59,23 @@ public class Main : IPlugin
     public void Settings()
     {
         PluginSettings.Load();
-        PluginSettings.CurrentSetting.ToForm();
+        PluginSettings.CurrentSetting.ShowConfiguration();
         PluginSettings.CurrentSetting.Save();
     }
-    private void AfterStateAddEventHandler(Engine engine, State state)
-    {
-        AddStates(engine);
-    }
-    private void StateAddEventHandler(Engine engine)
+    //private void AfterStateAddEventHandler(Engine engine, State state)
+    //{
+    //    AddStates(engine);
+    //}
+    //private void StateAddEventHandler(Engine engine)
+    //{
+    //    AddStates(engine);
+    //}
+    private void StateAddEventHandler(Engine engine, State state, CancelEventArgs canc)
     {
         AddStates(engine);
     }
 
-	private void AddStates(Engine engine)
+    private void AddStates(Engine engine)
 	{
 		if (!_stateAdded && engine != null)
 		{

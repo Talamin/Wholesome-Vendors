@@ -43,14 +43,14 @@ public class PluginSettings : Settings
 
     [Setting]
     [DefaultValue(true)]
-    [Category("Sell/Repair")]
+    [Category("SellRepair")]
     [DisplayName("Sell")]
     [Description("Allow Autosell")]
     public bool AllowAutoSell { get; set; }
 
     [Setting]
     [DefaultValue(true)]
-    [Category("Sell/Repair")]
+    [Category("SellRepair")]
     [DisplayName("Repair")]
     [Description("Allow Autorepair")]
     public bool AllowAutoRepair { get; set; }
@@ -108,5 +108,11 @@ public class PluginSettings : Settings
             Logging.Write("Wholesome-BuyingPlugin > Load(): " + e);
         }
         return false;
+    }
+    public void ShowConfiguration()
+    {
+        var settingWindow = new SettingsWindow(this);
+        settingWindow.ShowDialog();
+        settingWindow.Title = $"{ObjectManager.Me.Name}";
     }
 }
