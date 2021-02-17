@@ -16,8 +16,8 @@ namespace PoisonMaster
 {
     class Helpers
     {
-        public static bool OutOfFoodVar;
-        public static bool OutOfDrinkVar;
+        //public static bool OutOfFoodVar;
+        //public static bool OutOfDrinkVar;
         public static List<WoWItem> EquippedRanged;
         public static string RangedWeaponType = "";
         internal static int Money => (int)ObjectManager.Me.GetMoneyCopper;
