@@ -132,6 +132,10 @@ public class BuyPoison : State
                 }
                 Vendor.BuyItem(ItemsManager.GetNameById(InstantPoison), instpoison);
                 Thread.Sleep(10);
+                if (!wManager.wManagerSetting.CurrentSetting.DoNotSellList.Contains(ItemsManager.GetNameById(InstantPoison)))
+                {
+                    wManager.wManagerSetting.CurrentSetting.DoNotSellList.Add(ItemsManager.GetNameById(InstantPoison));
+                }
             }
             Thread.Sleep(Usefuls.LatencyReal * Usefuls.Latency);
         }
@@ -154,6 +158,10 @@ public class BuyPoison : State
                 }
                 Vendor.BuyItem(ItemsManager.GetNameById(DeadlyPoison), deadpoison);
                 Thread.Sleep(10);
+                if (!wManager.wManagerSetting.CurrentSetting.DoNotSellList.Contains(ItemsManager.GetNameById(DeadlyPoison)))
+                {
+                    wManager.wManagerSetting.CurrentSetting.DoNotSellList.Add(ItemsManager.GetNameById(DeadlyPoison));
+                }
             }
             Thread.Sleep(Usefuls.LatencyReal * Usefuls.Latency);
         }

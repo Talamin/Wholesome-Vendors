@@ -10,5 +10,6 @@ public class DatabaseNPC
     public int id { get; set; }
     public Vector3 Position { get; set; }
     public string Name { get; set; }
+
 }
 

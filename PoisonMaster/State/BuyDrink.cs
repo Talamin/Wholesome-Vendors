@@ -64,38 +64,29 @@ using Timer = robotManager.Helpful.Timer;
             Drink
         }
         public static Timer checktimer = new Timer();
-        // If this method return true, wrobot launch method Run(), if return false wrobot go to next state in FSM
+    // If this method return true, wrobot launch method Run(), if return false wrobot go to next state in FSM
         public override bool NeedToRun
         {
             get
             {
-                if (ObjectManager.Me.InCombat || ObjectManager.Me.InCombatFlagOnly || ObjectManager.Me.IsDead || Me.Level <= 4)
-                {
+                if (!checktimer.IsReady || Me.Level <= 3 || !PluginSettings.CurrentSetting.AllowAutobuyWater || Helpers.Money < 1000)
                     return false;
-                }
-                if (!PluginSettings.CurrentSetting.AllowAutobuyWater)
+
+                checktimer = new Timer(5000);
+
+                if (Helpers.OutOfDrinkVar && wManagerSetting.CurrentSetting.DrinkAmount > 0)
                 {
-                    return false;
-                }
-                if (Helpers.Money < 1000)
-                {
-                    return false;
-                }
-                if (Helpers.OutOfDrinkVar && wManagerSetting.CurrentSetting.DrinkAmount > 0 && checktimer.IsReady)
-                {
-                    DisplayName = "Buying Drink";
                     wManagerSetting.CurrentSetting.TryToUseBestBagFoodDrink = false;
                     SetDrink();
                     SetBuyables();
                     return true;
                 }
-                checktimer = new Timer(5000);
                 return false;
             }
         }
 
-        // If NeedToRun() == true
-        public override void Run()
+    // If NeedToRun() == true
+    public override void Run()
         {
             if (ObjectManager.Me.Level > 10)
             {
@@ -113,7 +104,7 @@ using Timer = robotManager.Helpful.Timer;
                     }
                     if (ObjectManager.Me.InCombatFlagOnly)
                     {
-                        Logging.Write("Being  Attacked");
+                        Logging.Write("Being Attacked");
                         break;
                     }
                     Thread.Sleep(800 + Usefuls.Latency);
@@ -145,7 +136,11 @@ using Timer = robotManager.Helpful.Timer;
                         }
                         wManagerSetting.CurrentSetting.DrinkName = drinkNameToBuy;
                         BuyItem(drinkNameToBuy, wManagerSetting.CurrentSetting.DrinkAmount);
-                    }
+                        if (!wManager.wManagerSetting.CurrentSetting.DoNotSellList.Contains(drinkNameToBuy))
+                        {
+                            wManager.wManagerSetting.CurrentSetting.DoNotSellList.Add(drinkNameToBuy);
+                        }
+                }
                     Thread.Sleep(2000);
                     GoToTask.ToPositionAndIntecractWithNpc(Database.BuyVendorsDrink.Position, Database.BuyVendorsDrink.id, 3);
                     if (wManagerSetting.CurrentSetting.RestingMana && Helpers.OutOfDrink())
@@ -157,7 +152,11 @@ using Timer = robotManager.Helpful.Timer;
                         }
                         wManagerSetting.CurrentSetting.DrinkName = drinkNameToBuy;
                         BuyItem(drinkNameToBuy, wManagerSetting.CurrentSetting.DrinkAmount);
+                    if (!wManager.wManagerSetting.CurrentSetting.DoNotSellList.Contains(drinkNameToBuy))
+                    {
+                        wManager.wManagerSetting.CurrentSetting.DoNotSellList.Add(drinkNameToBuy);
                     }
+                }
                     Thread.Sleep(2000);
                     Helpers.CloseWindow();
                 }

@@ -82,38 +82,29 @@ using PoisonMaster;
             Drink
         }
         public static Timer checktimer = new Timer();
-        // If this method return true, wrobot launch method Run(), if return false wrobot go to next state in FSM
+    // If this method return true, wrobot launch method Run(), if return false wrobot go to next state in FSM
         public override bool NeedToRun
         {
             get
             {
-                if (ObjectManager.Me.InCombat || ObjectManager.Me.InCombatFlagOnly || ObjectManager.Me.IsDead || Me.Level <= 3)
-                {
+                if (!checktimer.IsReady || Me.Level <= 3 || !PluginSettings.CurrentSetting.AllowAutobuyFood || Helpers.Money < 1000)
                     return false;
-                }
-                if (!PluginSettings.CurrentSetting.AllowAutobuyFood)
+
+                checktimer = new Timer(5000);
+
+                if (Helpers.OutOfFoodVar && wManagerSetting.CurrentSetting.FoodAmount > 0)
                 {
-                    return false;
-                }
-                if (Helpers.Money < 1000)
-                {
-                    return false;
-                }
-                if (Helpers.OutOfFoodVar && wManagerSetting.CurrentSetting.FoodAmount > 0 && checktimer.IsReady)
-                {
-                    DisplayName = "Buying Food";
                     wManagerSetting.CurrentSetting.TryToUseBestBagFoodDrink = false;
                     SetFood();
                     SetBuyables();
                     return true;
                 }
-                checktimer = new Timer(5000);
                 return false;
             }
         }
 
-        // If NeedToRun() == true
-        public override void Run()
+    // If NeedToRun() == true
+    public override void Run()
         {
             Database.ChooseDatabaseBuyVendorFoodNPC();
             if (ObjectManager.Me.Level > 10)
@@ -159,6 +150,10 @@ using PoisonMaster;
                         string foodNameToBuy = vendorItemList.FirstOrDefault(i => CurrentFoodList.Select(ItemsManager.GetNameById).Contains(i));
                         wManagerSetting.CurrentSetting.FoodName = foodNameToBuy;
                         BuyItem(foodNameToBuy, wManagerSetting.CurrentSetting.FoodAmount);
+                        if (!wManager.wManagerSetting.CurrentSetting.DoNotSellList.Contains(foodNameToBuy))
+                        {
+                            wManager.wManagerSetting.CurrentSetting.DoNotSellList.Add(foodNameToBuy);
+                        }
                     Logging.Write("We have bought " + wManagerSetting.CurrentSetting.FoodAmount + " of " + foodNameToBuy);
                     }
                     Thread.Sleep(2000);
@@ -169,12 +164,16 @@ using PoisonMaster;
                         string foodNameToBuy = vendorItemList.FirstOrDefault(i => CurrentFoodList.Select(ItemsManager.GetNameById).Contains(i));
                         wManagerSetting.CurrentSetting.FoodName = foodNameToBuy;
                         BuyItem(foodNameToBuy, wManagerSetting.CurrentSetting.FoodAmount);
-                    }
+                        if (!wManager.wManagerSetting.CurrentSetting.DoNotSellList.Contains(foodNameToBuy))
+                        {
+                            wManager.wManagerSetting.CurrentSetting.DoNotSellList.Add(foodNameToBuy);
+                        }
+                }
                     Thread.Sleep(2000);
                     Helpers.CloseWindow();
                 }
             }
-
+        checktimer = new Timer(5000);
         }
 
         private void SetBuyables()
