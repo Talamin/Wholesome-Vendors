@@ -90,7 +90,7 @@ public class BuyArrows : State
                     ItemsManager.GetItemCountById(Arrow) <= 50 &&
                     Helpers.RangedWeaponType == "Bows") 
                     {
-                        Logging.Write("We have to Buy Arrows");
+                        Main.Logger("We have to Buy Arrows");
                         DisplayName = "Buying Arrows and Bullets";
                         return true;
                     }
@@ -99,7 +99,7 @@ public class BuyArrows : State
                     ItemsManager.GetItemCountById(Bullet) <= 50 &&
                     Helpers.RangedWeaponType == "Guns")
                     {
-                        Logging.Write("We have to Buy Bullets");
+                        Main.Logger("We have to Buy Bullets");
                         DisplayName = "Buying Arrows and Bullets";
                         return true;
                     }
@@ -120,15 +120,15 @@ public class BuyArrows : State
                 {
                     if (ObjectManager.Me.Position.DistanceTo(Database.AmmoVendors.Position) >= 6)
                     {
-                        Logging.Write("Running to Buy Arrows");
-                        Logging.Write("Nearest AmmunitionVendor from player:\n" + "Name: " + Database.AmmoVendors?.Name + "[" + Database.AmmoVendors?.id + "]\nPosition: " + Database.AmmoVendors?.Position.ToStringXml() + "\nDistance: " + Database.AmmoVendors?.Position.DistanceTo(ObjectManager.Me.Position) + " yrds");
+                        Main.Logger("Running to Buy Arrows");
+                        Main.Logger("Nearest AmmunitionVendor from player:\n" + "Name: " + Database.AmmoVendors?.Name + "[" + Database.AmmoVendors?.id + "]\nPosition: " + Database.AmmoVendors?.Position.ToStringXml() + "\nDistance: " + Database.AmmoVendors?.Position.DistanceTo(ObjectManager.Me.Position) + " yrds");
                         GoToTask.ToPositionAndIntecractWithNpc(Database.AmmoVendors.Position, Database.AmmoVendors.id);                
                     }
                     if (ObjectManager.Me.Position.DistanceTo(Database.AmmoVendors.Position) <= 5 && ItemsManager.GetItemCountById(Arrow) < 2000)
                     {
                         if (ObjectManager.GetObjectWoWUnit().Count(x => x.IsAlive && x.Name == Database.AmmoVendors.Name) <= 0)
                         {
-                            Logging.Write("Looks like " + Database.AmmoVendors + " is not here, we choose another one");
+                            Main.Logger("Looks like " + Database.AmmoVendors + " is not here, we choose another one");
                             if (!Blacklist.myBlacklist.Contains(Database.AmmoVendors.id))
                             {
                                 Blacklist.myBlacklist.Add(Database.AmmoVendors.id);
@@ -136,10 +136,10 @@ public class BuyArrows : State
                                 return;
                             }
                         }
-                        Logging.Write("No Arrows found, time to buy some! " + Arrow);
+                        Main.Logger("No Arrows found, time to buy some! " + Arrow);
                         GoToTask.ToPositionAndIntecractWithNpc(Database.AmmoVendors.Position, Database.AmmoVendors.id);
                         Vendor.BuyItem(ItemsManager.GetNameById(Arrow), 2000 / 200);
-                        Logging.Write("We bought " + 2000 + " of  Arrows with id " + Arrow);
+                        Main.Logger("We bought " + 2000 + " of  Arrows with id " + Arrow);
                         Thread.Sleep(Usefuls.LatencyReal * Usefuls.Latency);
                     }
                 }
@@ -155,7 +155,7 @@ public class BuyArrows : State
                 {
                     if (level <= Me.Level)
                     {
-                        //Logging.WriteDebug($"Selected Arrow Level {level}");
+                        //Main.Logger($"Selected Arrow Level {level}");
                         Arrow = ArrowDictionary[level];
                         string AName = ItemsManager.GetNameById(ArrowDictionary[level]);
                         if(!wManager.wManagerSetting.CurrentSetting.DoNotSellList.Contains(AName))
@@ -172,7 +172,7 @@ public class BuyArrows : State
             {
                 if (level <= Me.Level)
                 {
-                    //Logging.WriteDebug($"Selected Arrow Level {level}");
+                    //Main.Logger($"Selected Arrow Level {level}");
                     Bullet = BulletsDictionary[level];
                     string BName = ItemsManager.GetNameById(BulletsDictionary[level]);
                     if (!wManager.wManagerSetting.CurrentSetting.DoNotSellList.Contains(BName))

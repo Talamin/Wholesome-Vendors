@@ -20,7 +20,7 @@ using System.Drawing;
 
 public class Main : IPlugin
 {
-    private static bool IsLaunched = false;
+    //private static bool IsLaunched = false;
 	private bool _stateAdded;
     private readonly BackgroundWorker _pulseThread = new BackgroundWorker();
     private static string Name = "Wholesome  Manager";
@@ -33,7 +33,7 @@ public class Main : IPlugin
             //FiniteStateMachineEvents.OnStartEngine += StateAddEventHandler;
             //FiniteStateMachineEvents.OnAfterRunState += AfterStateAddEventHandler;
             FiniteStateMachineEvents.OnRunState += StateAddEventHandler;
-            IsLaunched = true;
+            //IsLaunched = true;
 			_stateAdded = false;
             //_pulseThread.DoWork += DoBackgroundPulse;
             _pulseThread.RunWorkerAsync();
@@ -44,7 +44,7 @@ public class Main : IPlugin
         }
         catch (Exception ex)
         {
-            Logging.WriteError("Something gone wrong!" + ex);
+            Main.LoggerError("Something gone wrong!" + ex);
         }
     }
 
@@ -52,10 +52,10 @@ public class Main : IPlugin
     {
         //FiniteStateMachineEvents.OnStartEngine -= StateAddEventHandler;
         //FiniteStateMachineEvents.OnAfterRunState -= AfterStateAddEventHandler;
-        IsLaunched = false;
+        //IsLaunched = false;
         //_pulseThread.DoWork -= DoBackgroundPulse;
         _pulseThread.Dispose();
-        Logging.Write("Plugin was terminated!");
+        Main.Logger("Plugin was terminated!");
     }
 
     public void Settings()
@@ -94,7 +94,7 @@ public class Main : IPlugin
 			}
 			catch (Exception e)
 			{
-				Logging.WriteError("" + e);
+				Main.LoggerError("" + e);
 			}
 		}
 	}
@@ -115,7 +115,7 @@ public class Main : IPlugin
 	//		}
 	//		catch (Exception e)
 	//		{
-	//			Logging.WriteError("" + e);
+	//			Main.LoggerError("" + e);
 	//		}
 
 	//		Thread.Sleep(50);
@@ -123,7 +123,10 @@ public class Main : IPlugin
 	//}
     public static void Logger(string message)
     {
-        Logging.Write($"[{Name}]: { message}", Logging.LogType.Fight, Color.ForestGreen);
+        Logging.Write($"[{Name}]: { message}", Logging.LogType.Normal, Color.ForestGreen);
     }
-
+    public static void LoggerError(string message)
+    {
+        Logging.Write($"[{Name}]: { message}", Logging.LogType.Normal, Color.Red);
+    }
 }

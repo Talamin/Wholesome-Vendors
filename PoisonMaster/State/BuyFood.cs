@@ -91,7 +91,6 @@ using PoisonMaster;
                     return false;
 
                 checktimer = new Timer(5000);
-            Logging.Write("reached Checktimer");
                 if (Helpers.OutOfFood() && wManagerSetting.CurrentSetting.FoodAmount > 0)
                 {
                     wManagerSetting.CurrentSetting.TryToUseBestBagFoodDrink = false;
@@ -121,7 +120,7 @@ using PoisonMaster;
                     }
                     if (ObjectManager.Me.InCombatFlagOnly)
                     {
-                        Logging.Write("Being  Attacked");
+                        Main.Logger("Being  Attacked");
                         break;
                     }
                     Thread.Sleep(800 + Usefuls.Latency);
@@ -132,7 +131,7 @@ using PoisonMaster;
                 {
                     if (ObjectManager.GetObjectWoWUnit().Count(x => x.IsAlive && x.Name == Database.BuyVendorsFood.Name) <= 0)
                     {
-                        Logging.Write("Looks like " + Database.BuyVendorsFood + " is not here, we choose another one");
+                        Main.Logger("Looks like " + Database.BuyVendorsFood + " is not here, we choose another one");
                         if (!Blacklist.myBlacklist.Contains(Database.BuyVendorsFood.id))
                         {
                             Blacklist.myBlacklist.Add(Database.BuyVendorsFood.id);
@@ -142,19 +141,20 @@ using PoisonMaster;
                     }
                     Helpers.CloseWindow();
                     GoToTask.ToPositionAndIntecractWithNpc(Database.BuyVendorsFood.Position, Database.BuyVendorsFood.id, 2);
-                    Logging.Write("Running to Food Vendor");
-                    Logging.Write("Nearest Vendor from player:\n" + "Name: " + Database.BuyVendorsFood?.Name + "[" + Database.BuyVendorsFood?.id + "]\nPosition: " + Database.BuyVendorsFood?.Position.ToStringXml() + "\nDistance: " + Database.BuyVendorsFood?.Position.DistanceTo(ObjectManager.Me.Position) + " yrds");
+                    Main.Logger("Running to Food Vendor");
+                    Main.Logger("Nearest Vendor from player:\n" + "Name: " + Database.BuyVendorsFood?.Name + "[" + Database.BuyVendorsFood?.id + "]\nPosition: " + Database.BuyVendorsFood?.Position.ToStringXml() + "\nDistance: " + Database.BuyVendorsFood?.Position.DistanceTo(ObjectManager.Me.Position) + " yrds");
                     if (Helpers.OutOfFood())
                     {
                         List<string> vendorItemList = GetVendorItemList();
                         string foodNameToBuy = vendorItemList.FirstOrDefault(i => CurrentFoodList.Select(ItemsManager.GetNameById).Contains(i));
                         wManagerSetting.CurrentSetting.FoodName = foodNameToBuy;
+                        //Vendor.BuyItem(foodNameToBuy, wManagerSetting.CurrentSetting.FoodAmount / 5);
                         BuyItem(foodNameToBuy, wManagerSetting.CurrentSetting.FoodAmount);
                         if (!wManager.wManagerSetting.CurrentSetting.DoNotSellList.Contains(foodNameToBuy))
                         {
                             wManager.wManagerSetting.CurrentSetting.DoNotSellList.Add(foodNameToBuy);
                         }
-                    Logging.Write("We have bought " + wManagerSetting.CurrentSetting.FoodAmount + " of " + foodNameToBuy);
+                    Main.Logger("We have bought " + wManagerSetting.CurrentSetting.FoodAmount + " of " + foodNameToBuy);
                     }
                     Thread.Sleep(2000);
                     GoToTask.ToPositionAndIntecractWithNpc(Database.BuyVendorsFood.Position, Database.BuyVendorsFood.id, 3);
@@ -163,8 +163,9 @@ using PoisonMaster;
                         List<string> vendorItemList = GetVendorItemList();
                         string foodNameToBuy = vendorItemList.FirstOrDefault(i => CurrentFoodList.Select(ItemsManager.GetNameById).Contains(i));
                         wManagerSetting.CurrentSetting.FoodName = foodNameToBuy;
+                        //Vendor.BuyItem(foodNameToBuy, wManagerSetting.CurrentSetting.FoodAmount / 5);
                         BuyItem(foodNameToBuy, wManagerSetting.CurrentSetting.FoodAmount);
-                        if (!wManager.wManagerSetting.CurrentSetting.DoNotSellList.Contains(foodNameToBuy))
+                    if (!wManager.wManagerSetting.CurrentSetting.DoNotSellList.Contains(foodNameToBuy))
                         {
                             wManager.wManagerSetting.CurrentSetting.DoNotSellList.Add(foodNameToBuy);
                         }
@@ -190,7 +191,7 @@ using PoisonMaster;
                 {
                     wManagerSetting.CurrentSetting.DoNotSellList.Add(food);
                 }
-                Logging.WriteDebug("Select food: " + food);
+                Main.Logger("Select food: " + food);
             }
         }
 
@@ -244,7 +245,7 @@ using PoisonMaster;
 
         private void BuyItem(string name, int amount)
         {
-            Logging.WriteDebug("[AutoSelectFoodAndDrink] Buying " + amount + " " + name);
+            Main.Logger("[Select Food] Buying " + amount + " " + name);
             Lua.LuaDoString(string.Format(@"
         local itemName = ""{0}""
         local quantity = {1}

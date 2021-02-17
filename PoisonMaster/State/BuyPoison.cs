@@ -87,16 +87,16 @@ public class BuyPoison : State
             }
             if (ObjectManager.Me.WowClass == WoWClass.Rogue)
             {
-                //Logging.Write("Poison set: " + InstantPoison);
+                //Main.Logger("Poison set: " + InstantPoison);
                 if (ObjectManager.Me.WowClass == WoWClass.Rogue && ObjectManager.Me.Level >= 20 && ItemsManager.GetItemCountById(InstantPoison) == 0)
                 {
-                    Logging.Write("We have to Buy InstantPoison");
+                    Main.Logger("We have to Buy InstantPoison");
                     DisplayName = "Buying Poison";
                     return true;
                 }
                 if (ObjectManager.Me.WowClass == WoWClass.Rogue && ObjectManager.Me.Level >= 30 && ItemsManager.GetItemCountById(DeadlyPoison) == 0)
                 {
-                    Logging.Write("We have to Buy DeadlyPoison");
+                    Main.Logger("We have to Buy DeadlyPoison");
                     DisplayName = "Buying Poison";
                     return true;
                 }
@@ -111,18 +111,18 @@ public class BuyPoison : State
     {
         SetBuy();
         Database.ChooseDatabaseBuyVendorPoisonNPC();
-        Logging.Write("Running to buy Poisons");
-        Logging.Write("Nearest Vendor from player:\n" + "Name: " + Database.BuyVendorsPoison?.Name + "[" + Database.BuyVendorsPoison?.id + "]\nPosition: " + Database.BuyVendorsPoison?.Position.ToStringXml() + "\nDistance: " + Database.BuyVendorsPoison?.Position.DistanceTo(ObjectManager.Me.Position) + " yrds");
+        Main.Logger("Running to buy Poisons");
+        Main.Logger("Nearest Vendor from player:\n" + "Name: " + Database.BuyVendorsPoison?.Name + "[" + Database.BuyVendorsPoison?.id + "]\nPosition: " + Database.BuyVendorsPoison?.Position.ToStringXml() + "\nDistance: " + Database.BuyVendorsPoison?.Position.DistanceTo(ObjectManager.Me.Position) + " yrds");
         if (ObjectManager.Me.WowClass == WoWClass.Rogue && ItemsManager.GetItemCountById(InstantPoison) <= 20)
         {
             int instpoison = 10 - ItemsManager.GetItemCountById(InstantPoison);
-            Logging.Write("No Poison found, time to buy some InstantPoison! " + instpoison + " " + InstantPoison);
+            Main.Logger("No Poison found, time to buy some InstantPoison! " + instpoison + " " + InstantPoison);
             GoToTask.ToPositionAndIntecractWithNpc(Database.BuyVendorsPoison.Position, Database.BuyVendorsPoison.id);
             while (ItemsManager.GetItemCountById(InstantPoison) < 20)
             {
                 if (ObjectManager.GetObjectWoWUnit().Count(x => x.IsAlive && x.Name == Database.BuyVendorsPoison.Name) <= 0)
                 {
-                    Logging.Write("Looks like " + Database.BuyVendorsPoison + " is not here, we choose another one");
+                    Main.Logger("Looks like " + Database.BuyVendorsPoison + " is not here, we choose another one");
                     if (!Blacklist.myBlacklist.Contains(Database.BuyVendorsPoison.id))
                     {
                         Blacklist.myBlacklist.Add(Database.BuyVendorsPoison.id);
@@ -142,13 +142,13 @@ public class BuyPoison : State
         if (ObjectManager.Me.WowClass == WoWClass.Rogue && ItemsManager.GetItemCountById(DeadlyPoison) <= 10 && ObjectManager.Me.Level >= 30)
         {
             int deadpoison = 10 - ItemsManager.GetItemCountById(DeadlyPoison);
-            Logging.Write("No Poison found, time to buy some DeadlyPoison! " + deadpoison + " " + DeadlyPoison);
+            Main.Logger("No Poison found, time to buy some DeadlyPoison! " + deadpoison + " " + DeadlyPoison);
             GoToTask.ToPositionAndIntecractWithNpc(Database.BuyVendorsPoison.Position, Database.BuyVendorsPoison.id);
             while (ItemsManager.GetItemCountById(DeadlyPoison) < 20)
             {
                 if (ObjectManager.GetObjectWoWUnit().Count(x => x.IsAlive && x.Name == Database.BuyVendorsPoison.Name) <= 0)
                 {
-                    Logging.Write("Looks like " + Database.BuyVendorsPoison + " is not here, we choose another one");
+                    Main.Logger("Looks like " + Database.BuyVendorsPoison + " is not here, we choose another one");
                     if (!Blacklist.myBlacklist.Contains(Database.BuyVendorsPoison.id))
                     {
                         Blacklist.myBlacklist.Add(Database.BuyVendorsPoison.id);
@@ -187,7 +187,7 @@ public class BuyPoison : State
         {
             if (level <= Me.Level)
             {
-                //Logging.WriteDebug($"Selected Deadly Poison Level {level}");
+                //Main.Logger($"Selected Deadly Poison Level {level}");
                 DeadlyPoison = DeadlyPoisonDictionary[level];
                 string DPName = ItemsManager.GetNameById(DeadlyPoisonDictionary[level]);
                 if (!wManagerSetting.CurrentSetting.DoNotSellList.Contains(DPName))
