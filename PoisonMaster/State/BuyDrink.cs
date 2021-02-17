@@ -74,7 +74,7 @@ using Timer = robotManager.Helpful.Timer;
 
                 checktimer = new Timer(5000);
 
-                if (Helpers.OutOfDrinkVar && wManagerSetting.CurrentSetting.DrinkAmount > 0)
+                if (Helpers.OutOfDrink() && wManagerSetting.CurrentSetting.DrinkAmount > 0)
                 {
                     wManagerSetting.CurrentSetting.TryToUseBestBagFoodDrink = false;
                     SetDrink();

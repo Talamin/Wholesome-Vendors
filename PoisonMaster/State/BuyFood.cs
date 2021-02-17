@@ -92,7 +92,7 @@ using PoisonMaster;
 
                 checktimer = new Timer(5000);
 
-                if (Helpers.OutOfFoodVar && wManagerSetting.CurrentSetting.FoodAmount > 0)
+                if (Helpers.OutOfFood() && wManagerSetting.CurrentSetting.FoodAmount > 0)
                 {
                     wManagerSetting.CurrentSetting.TryToUseBestBagFoodDrink = false;
                     SetFood();

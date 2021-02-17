@@ -35,7 +35,7 @@ public class Main : IPlugin
             FiniteStateMachineEvents.OnRunState += StateAddEventHandler;
             IsLaunched = true;
 			_stateAdded = false;
-            _pulseThread.DoWork += DoBackgroundPulse;
+            //_pulseThread.DoWork += DoBackgroundPulse;
             _pulseThread.RunWorkerAsync();
             if(Helpers.HaveRanged())
             {
@@ -53,7 +53,7 @@ public class Main : IPlugin
         //FiniteStateMachineEvents.OnStartEngine -= StateAddEventHandler;
         //FiniteStateMachineEvents.OnAfterRunState -= AfterStateAddEventHandler;
         IsLaunched = false;
-        _pulseThread.DoWork -= DoBackgroundPulse;
+        //_pulseThread.DoWork -= DoBackgroundPulse;
         _pulseThread.Dispose();
         Logging.Write("Plugin was terminated!");
     }
@@ -98,29 +98,29 @@ public class Main : IPlugin
 			}
 		}
 	}
-	private void DoBackgroundPulse(object sender, DoWorkEventArgs args)
-	{
-		while (IsLaunched)
-		{
-			try
-			{
-				if (Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause)
-				{
-					BuyPoison.SetBuy();
-					BuyArrows.SetBuy();
-                    Helpers.OutOfFoodVar = Helpers.OutOfFood();
-                    Helpers.OutOfDrinkVar = Helpers.OutOfDrink();
-                    Thread.Sleep(500);
-                }
-			}
-			catch (Exception e)
-			{
-				Logging.WriteError("" + e);
-			}
+	//private void DoBackgroundPulse(object sender, DoWorkEventArgs args)
+	//{
+	//	while (IsLaunched)
+	//	{
+	//		try
+	//		{
+	//			if (Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause)
+	//			{
+	//				//BuyPoison.SetBuy();
+	//				//BuyArrows.SetBuy();
+ //                   //Helpers.OutOfFoodVar = Helpers.OutOfFood();
+ //                   //Helpers.OutOfDrinkVar = Helpers.OutOfDrink();
+ //                   //Thread.Sleep(500);
+ //               }
+	//		}
+	//		catch (Exception e)
+	//		{
+	//			Logging.WriteError("" + e);
+	//		}
 
-			Thread.Sleep(50);
-		}
-	}
+	//		Thread.Sleep(50);
+	//	}
+	//}
     public static void Logger(string message)
     {
         Logging.Write($"[{Name}]: { message}", Logging.LogType.Fight, Color.ForestGreen);

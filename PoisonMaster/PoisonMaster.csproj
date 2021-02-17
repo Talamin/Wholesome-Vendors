@@ -66,6 +66,7 @@
     <Compile Include="Blacklist\Blacklist.cs" />
     <Compile Include="Database\Database.cs" />
     <Compile Include="Database\DatabaseNPC.cs" />
+    <Compile Include="Database\PoisonNPC.cs" />
     <Compile Include="Database\PoisonVendors.cs" />
     <Compile Include="Settings\Settings.cs" />
     <Compile Include="State\BuyDrink.cs" />
