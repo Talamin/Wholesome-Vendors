@@ -20,7 +20,7 @@ using System.Drawing;
 
 public class Main : IPlugin
 {
-    private static bool IsLaunched = false;
+    //private static bool IsLaunched = false;
 	private bool _stateAdded;
     private readonly BackgroundWorker _pulseThread = new BackgroundWorker();
     private static string Name = "Wholesome  Manager";
@@ -33,7 +33,7 @@ public class Main : IPlugin
             //FiniteStateMachineEvents.OnStartEngine += StateAddEventHandler;
             //FiniteStateMachineEvents.OnAfterRunState += AfterStateAddEventHandler;
             FiniteStateMachineEvents.OnRunState += StateAddEventHandler;
-            IsLaunched = true;
+            //IsLaunched = true;
 			_stateAdded = false;
             //_pulseThread.DoWork += DoBackgroundPulse;
             _pulseThread.RunWorkerAsync();
@@ -52,7 +52,7 @@ public class Main : IPlugin
     {
         //FiniteStateMachineEvents.OnStartEngine -= StateAddEventHandler;
         //FiniteStateMachineEvents.OnAfterRunState -= AfterStateAddEventHandler;
-        IsLaunched = false;
+        //IsLaunched = false;
         //_pulseThread.DoWork -= DoBackgroundPulse;
         _pulseThread.Dispose();
         Logging.Write("Plugin was terminated!");
