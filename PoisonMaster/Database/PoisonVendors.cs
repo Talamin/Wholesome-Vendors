@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PoisonMaster;
+using wManager.Wow.Enums;
 
 public class PoisonVendors
 {
@@ -12,7 +13,7 @@ public class PoisonVendors
 
     private static readonly List<PoisonNPC> PoisonVendor = new List<PoisonNPC>()
     {
-        new PoisonNPC(1, new Vector3(111,222,333), "Jonny")
+        new PoisonNPC(1, new Vector3(111,222,333), "Jonny", (ContinentId)1)
     };
 
     public static void ChoosePoisonVendorList()
