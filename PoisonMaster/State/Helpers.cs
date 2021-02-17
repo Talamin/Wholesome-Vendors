@@ -100,8 +100,8 @@ namespace PoisonMaster
                          i.GetItemInfo.ItemMinLevel <= ObjectManager.Me.Level)
                 .Select(i => ItemsManager.GetItemCountById((uint)i.Entry))
                 .Aggregate(0, (i, i2) => i + i2);
-
-            if (allFoodAmount < 10 && wManagerSetting.CurrentSetting.FoodAmount > 0)
+            Logging.WriteDebug("Food in total: " + allFoodAmount);
+            if (allFoodAmount < 1&& wManagerSetting.CurrentSetting.FoodAmount > 0)
             {
                 Logging.WriteDebug("Food: " + allFoodAmount);
                 return true;
@@ -119,8 +119,8 @@ namespace PoisonMaster
                 .Select(i => ItemsManager.GetItemCountById((uint)i.Entry))
                 .Aggregate(0, (i, i2) => i + i2);
 
-
-            if (allDrinkAmount < 10 && wManagerSetting.CurrentSetting.DrinkAmount > 0)
+            Logging.WriteDebug("Drinks in total: " + allDrinkAmount);
+            if (allDrinkAmount < 1 && wManagerSetting.CurrentSetting.DrinkAmount > 0)
             {
                 Logging.WriteDebug("Drinks: " + allDrinkAmount);
                 return true;

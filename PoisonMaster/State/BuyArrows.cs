@@ -139,6 +139,7 @@ public class BuyArrows : State
                         Logging.Write("No Arrows found, time to buy some! " + Arrow);
                         GoToTask.ToPositionAndIntecractWithNpc(Database.AmmoVendors.Position, Database.AmmoVendors.id);
                         Vendor.BuyItem(ItemsManager.GetNameById(Arrow), 2000 / 200);
+                        Logging.Write("We bought " + 2000 + " of  Arrows with id " + Arrow);
                         Thread.Sleep(Usefuls.LatencyReal * Usefuls.Latency);
                     }
                 }
@@ -157,7 +158,10 @@ public class BuyArrows : State
                         //Logging.WriteDebug($"Selected Arrow Level {level}");
                         Arrow = ArrowDictionary[level];
                         string AName = ItemsManager.GetNameById(ArrowDictionary[level]);
-                        wManager.wManagerSetting.CurrentSetting.DoNotSellList.Add(AName);
+                        if(!wManager.wManagerSetting.CurrentSetting.DoNotSellList.Contains(AName))
+                            {
+                                wManager.wManagerSetting.CurrentSetting.DoNotSellList.Add(AName);
+                            }
                         break;
                     }
                 }
@@ -171,7 +175,10 @@ public class BuyArrows : State
                     //Logging.WriteDebug($"Selected Arrow Level {level}");
                     Bullet = BulletsDictionary[level];
                     string BName = ItemsManager.GetNameById(BulletsDictionary[level]);
-                    wManager.wManagerSetting.CurrentSetting.DoNotSellList.Add(BName);
+                    if (!wManager.wManagerSetting.CurrentSetting.DoNotSellList.Contains(BName))
+                    {
+                        wManager.wManagerSetting.CurrentSetting.DoNotSellList.Add(BName);
+                    }
                     break;
                 }
             }

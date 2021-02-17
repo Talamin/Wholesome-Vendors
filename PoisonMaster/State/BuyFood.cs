@@ -87,15 +87,15 @@ using PoisonMaster;
         {
             get
             {
-                if (ObjectManager.Me.InCombat || ObjectManager.Me.InCombatFlagOnly || ObjectManager.Me.IsDead || Me.Level <= 4)
+                if (ObjectManager.Me.InCombat || ObjectManager.Me.InCombatFlagOnly || ObjectManager.Me.IsDead || Me.Level <= 3)
                 {
                     return false;
                 }
-            if (!PluginSettings.CurrentSetting.AllowAutobuyFood)
-            {
-                return false;
-            }
-            if (Helpers.Money < 1000)
+                if (!PluginSettings.CurrentSetting.AllowAutobuyFood)
+                {
+                    return false;
+                }
+                if (Helpers.Money < 1000)
                 {
                     return false;
                 }
@@ -151,7 +151,7 @@ using PoisonMaster;
                     }
                     Helpers.CloseWindow();
                     GoToTask.ToPositionAndIntecractWithNpc(Database.BuyVendorsFood.Position, Database.BuyVendorsFood.id, 2);
-                    Logging.Write("Running to Vendor");
+                    Logging.Write("Running to Food Vendor");
                     Logging.Write("Nearest Vendor from player:\n" + "Name: " + Database.BuyVendorsFood?.Name + "[" + Database.BuyVendorsFood?.id + "]\nPosition: " + Database.BuyVendorsFood?.Position.ToStringXml() + "\nDistance: " + Database.BuyVendorsFood?.Position.DistanceTo(ObjectManager.Me.Position) + " yrds");
                     if (Helpers.OutOfFood())
                     {
@@ -159,6 +159,7 @@ using PoisonMaster;
                         string foodNameToBuy = vendorItemList.FirstOrDefault(i => CurrentFoodList.Select(ItemsManager.GetNameById).Contains(i));
                         wManagerSetting.CurrentSetting.FoodName = foodNameToBuy;
                         BuyItem(foodNameToBuy, wManagerSetting.CurrentSetting.FoodAmount);
+                    Logging.Write("We have bought " + wManagerSetting.CurrentSetting.FoodAmount + " of " + foodNameToBuy);
                     }
                     Thread.Sleep(2000);
                     GoToTask.ToPositionAndIntecractWithNpc(Database.BuyVendorsFood.Position, Database.BuyVendorsFood.id, 3);

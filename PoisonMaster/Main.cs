@@ -16,12 +16,14 @@ using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
 using MarsSettingsGUI;
 using PoisonMaster;
+using System.Drawing;
 
 public class Main : IPlugin
 {
     private static bool IsLaunched = false;
 	private bool _stateAdded;
     private readonly BackgroundWorker _pulseThread = new BackgroundWorker();
+    private static string Name = "Wholesome  Manager";
     public void Initialize()
     {
         try
@@ -106,10 +108,10 @@ public class Main : IPlugin
 				{
 					BuyPoison.SetBuy();
 					BuyArrows.SetBuy();
-					Thread.Sleep(5000);
                     Helpers.OutOfFoodVar = Helpers.OutOfFood();
                     Helpers.OutOfDrinkVar = Helpers.OutOfDrink();
-				}
+                    Thread.Sleep(500);
+                }
 			}
 			catch (Exception e)
 			{
@@ -119,5 +121,9 @@ public class Main : IPlugin
 			Thread.Sleep(50);
 		}
 	}
+    public static void Logger(string message)
+    {
+        Logging.Write($"[{Name}]: { message}", Logging.LogType.Fight, Color.ForestGreen);
+    }
 
 }
