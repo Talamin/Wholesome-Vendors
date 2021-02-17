@@ -79,15 +79,15 @@ public class SellItems : State
             {
                 if (ObjectManager.Me.Position.DistanceTo(Database.VendorsSell.Position) >= 6)
                 {
-                    Logging.Write("Running to Sell");
-                    Logging.Write("Nearest Repair from player:\n" + "Name: " + Database.VendorsSell?.Name + "[" + Database.VendorsSell?.id + "]\nPosition: " + Database.VendorsSell?.Position.ToStringXml() + "\nDistance: " + Database.VendorsSell?.Position.DistanceTo(ObjectManager.Me.Position) + " yrds");
+                    Main.Logger("Running to Sell");
+                    Main.Logger("Nearest Repair from player:\n" + "Name: " + Database.VendorsSell?.Name + "[" + Database.VendorsSell?.id + "]\nPosition: " + Database.VendorsSell?.Position.ToStringXml() + "\nDistance: " + Database.VendorsSell?.Position.DistanceTo(ObjectManager.Me.Position) + " yrds");
                     GoToTask.ToPosition(Database.VendorsSell.Position);
                 }
                 if (ObjectManager.Me.Position.DistanceTo(Database.VendorsSell.Position) <= 5)
                 {
                     if (ObjectManager.GetObjectWoWUnit().Count(x => x.IsAlive && x.Name == Database.VendorsSell.Name) <= 0)
                     {
-                        Logging.Write("Looks like " + Database.VendorsSell + " is not here, we choose another one");
+                        Main.Logger("Looks like " + Database.VendorsSell + " is not here, we choose another one");
                         if (!Blacklist.myBlacklist.Contains(Database.VendorsSell.id))
                         {
                             Blacklist.myBlacklist.Add(Database.VendorsSell.id);

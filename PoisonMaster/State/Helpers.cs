@@ -33,7 +33,7 @@ namespace PoisonMaster
 
                     if (stateToReplace == null)
                     {
-                        Logging.WriteDebug($"Couldn't find state {replace}");
+                        Main.Logger($"Couldn't find state {replace}");
                         return;
                     }
 
@@ -47,13 +47,13 @@ namespace PoisonMaster
                     }
 
                     state.Priority = priorityToSet;
-                    Logging.Write($"Adding state {state.DisplayName} with prio {priorityToSet}");
+                    Main.Logger($"Adding state {state.DisplayName} with prio {priorityToSet}");
                     engine.AddState(state);
                     engine.States.Sort();
                 }
                 catch (Exception ex)
                 {
-                    Logging.WriteDebug("Erreur : {0}" + ex.ToString());
+                    Main.Logger("Erreur : {0}" + ex.ToString());
                 }
             }
         }
@@ -79,7 +79,7 @@ namespace PoisonMaster
             }
             catch (Exception e)
             {
-                Logging.WriteError("public static void CloseWindow(): " + e);
+                Main.LoggerError("public static void CloseWindow(): " + e);
             }
             finally
             {
@@ -100,10 +100,10 @@ namespace PoisonMaster
                          i.GetItemInfo.ItemMinLevel <= ObjectManager.Me.Level)
                 .Select(i => ItemsManager.GetItemCountById((uint)i.Entry))
                 .Aggregate(0, (i, i2) => i + i2);
-            Logging.WriteDebug("Food in total: " + allFoodAmount);
+            Main.Logger("Food in total: " + allFoodAmount);
             if (allFoodAmount < 1&& wManagerSetting.CurrentSetting.FoodAmount > 0)
             {
-                Logging.WriteDebug("Food: " + allFoodAmount);
+                Main.Logger("Food: " + allFoodAmount);
                 return true;
             }
 
@@ -119,10 +119,10 @@ namespace PoisonMaster
                 .Select(i => ItemsManager.GetItemCountById((uint)i.Entry))
                 .Aggregate(0, (i, i2) => i + i2);
 
-            Logging.WriteDebug("Drinks in total: " + allDrinkAmount);
+            Main.Logger("Drinks in total: " + allDrinkAmount);
             if (allDrinkAmount < 1 && wManagerSetting.CurrentSetting.DrinkAmount > 0)
             {
-                Logging.WriteDebug("Drinks: " + allDrinkAmount);
+                Main.Logger("Drinks: " + allDrinkAmount);
                 return true;
             }
 

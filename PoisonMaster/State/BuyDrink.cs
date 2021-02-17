@@ -104,7 +104,7 @@ using Timer = robotManager.Helpful.Timer;
                     }
                     if (ObjectManager.Me.InCombatFlagOnly)
                     {
-                        Logging.Write("Being Attacked");
+                        Main.Logger("Being Attacked");
                         break;
                     }
                     Thread.Sleep(800 + Usefuls.Latency);
@@ -115,7 +115,7 @@ using Timer = robotManager.Helpful.Timer;
                 {
                     if (ObjectManager.GetObjectWoWUnit().Count(x => x.IsAlive && x.Name == Database.BuyVendorsDrink.Name) <= 0)
                     {
-                        Logging.Write("Looks like " + Database.BuyVendorsDrink + " is not here, we choose another one");
+                        Main.Logger("Looks like " + Database.BuyVendorsDrink + " is not here, we choose another one");
                         if (!Blacklist.myBlacklist.Contains(Database.BuyVendorsDrink.id))
                         {
                             Blacklist.myBlacklist.Add(Database.BuyVendorsDrink.id);
@@ -125,8 +125,8 @@ using Timer = robotManager.Helpful.Timer;
                     }
                     Helpers.CloseWindow();
                     GoToTask.ToPositionAndIntecractWithNpc(Database.BuyVendorsDrink.Position, Database.BuyVendorsDrink.id, 2);
-                    Logging.Write("Running to Vendor");
-                    Logging.Write("Nearest Vendor from player:\n" + "Name: " + Database.BuyVendorsDrink?.Name + "[" + Database.BuyVendorsDrink?.id + "]\nPosition: " + Database.BuyVendorsDrink?.Position.ToStringXml() + "\nDistance: " + Database.BuyVendorsDrink?.Position.DistanceTo(ObjectManager.Me.Position) + " yrds");
+                    Main.Logger("Running to Vendor");
+                    Main.Logger("Nearest Vendor from player:\n" + "Name: " + Database.BuyVendorsDrink?.Name + "[" + Database.BuyVendorsDrink?.id + "]\nPosition: " + Database.BuyVendorsDrink?.Position.ToStringXml() + "\nDistance: " + Database.BuyVendorsDrink?.Position.DistanceTo(ObjectManager.Me.Position) + " yrds");
                     if (wManagerSetting.CurrentSetting.RestingMana && Helpers.OutOfDrink())
                     {
                         string drinkNameToBuy = ItemsManager.GetNameById(CurrentDrink);
@@ -178,7 +178,7 @@ using Timer = robotManager.Helpful.Timer;
                 {
                     wManagerSetting.CurrentSetting.DoNotSellList.Add(drink);
                 }
-                Logging.WriteDebug("Select drink: " + drink);
+                Main.Logger("Select drink: " + drink);
             }
         }
 
@@ -232,7 +232,7 @@ using Timer = robotManager.Helpful.Timer;
 
         private void BuyItem(string name, int amount)
         {
-            Logging.WriteDebug("[AutoSelectFoodAndDrink] Buying " + amount + " " + name);
+            Main.Logger("[AutoSelectFoodAndDrink] Buying " + amount + " " + name);
             Lua.LuaDoString(string.Format(@"
         local itemName = ""{0}""
         local quantity = {1}

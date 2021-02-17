@@ -99,15 +99,15 @@ using wManager.Wow.ObjectManager;
                 {
                     if (ObjectManager.Me.Position.DistanceTo(Database.VendorsRepair.Position) >= 6)
                     {
-                        Logging.Write("Running to Repair");
-                        Logging.Write("Nearest Repair from player:\n" + "Name: " + Database.VendorsRepair?.Name + "[" + Database.VendorsRepair?.id + "]\nPosition: " + Database.VendorsRepair?.Position.ToStringXml() + "\nDistance: " + Database.VendorsRepair?.Position.DistanceTo(ObjectManager.Me.Position) + " yrds");
+                        Main.Logger("Running to Repair");
+                        Main.Logger("Nearest Repair from player:\n" + "Name: " + Database.VendorsRepair?.Name + "[" + Database.VendorsRepair?.id + "]\nPosition: " + Database.VendorsRepair?.Position.ToStringXml() + "\nDistance: " + Database.VendorsRepair?.Position.DistanceTo(ObjectManager.Me.Position) + " yrds");
                         GoToTask.ToPosition(Database.VendorsRepair.Position);
                     }
                     if (ObjectManager.Me.Position.DistanceTo(Database.VendorsRepair.Position) <= 5)
                     {
                         if (ObjectManager.GetObjectWoWUnit().Count(x => x.IsAlive && x.Name == Database.VendorsRepair.Name) <= 0)
                         {
-                            Logging.Write("Looks like " + Database.VendorsRepair + " is not here, we choose another one");
+                            Main.Logger("Looks like " + Database.VendorsRepair + " is not here, we choose another one");
                             if (!Blacklist.myBlacklist.Contains(Database.VendorsRepair.id))
                             {
                                 Blacklist.myBlacklist.Add(Database.VendorsRepair.id);

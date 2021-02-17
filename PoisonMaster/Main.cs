@@ -44,7 +44,7 @@ public class Main : IPlugin
         }
         catch (Exception ex)
         {
-            Logging.WriteError("Something gone wrong!" + ex);
+            Main.LoggerError("Something gone wrong!" + ex);
         }
     }
 
@@ -55,7 +55,7 @@ public class Main : IPlugin
         //IsLaunched = false;
         //_pulseThread.DoWork -= DoBackgroundPulse;
         _pulseThread.Dispose();
-        Logging.Write("Plugin was terminated!");
+        Main.Logger("Plugin was terminated!");
     }
 
     public void Settings()
@@ -94,7 +94,7 @@ public class Main : IPlugin
 			}
 			catch (Exception e)
 			{
-				Logging.WriteError("" + e);
+				Main.LoggerError("" + e);
 			}
 		}
 	}
@@ -115,7 +115,7 @@ public class Main : IPlugin
 	//		}
 	//		catch (Exception e)
 	//		{
-	//			Logging.WriteError("" + e);
+	//			Main.LoggerError("" + e);
 	//		}
 
 	//		Thread.Sleep(50);
@@ -125,5 +125,8 @@ public class Main : IPlugin
     {
         Logging.Write($"[{Name}]: { message}", Logging.LogType.Normal, Color.ForestGreen);
     }
-
+    public static void LoggerError(string message)
+    {
+        Logging.Write($"[{Name}]: { message}", Logging.LogType.Normal, Color.Red);
+    }
 }

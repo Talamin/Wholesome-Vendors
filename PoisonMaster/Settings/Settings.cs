@@ -86,7 +86,7 @@ public class PluginSettings : Settings
         }
         catch (Exception e)
         {
-            Logging.Write("Wholesome-BuyingPlugin > Save(): " + e);
+            Main.Logger("Wholesome-BuyingPlugin > Save(): " + e);
             return false;
         }
     }
@@ -105,7 +105,7 @@ public class PluginSettings : Settings
         }
         catch (Exception e)
         {
-            Logging.Write("Wholesome-BuyingPlugin > Load(): " + e);
+            Main.Logger("Wholesome-BuyingPlugin > Load(): " + e);
         }
         return false;
     }
