@@ -232,7 +232,7 @@ using Timer = robotManager.Helpful.Timer;
 
         private void BuyItem(string name, int amount)
         {
-            Main.Logger("[AutoSelectFoodAndDrink] Buying " + amount + " " + name);
+            Main.Logger("[Select Drink] Buying " + amount + " " + name);
             Lua.LuaDoString(string.Format(@"
         local itemName = ""{0}""
         local quantity = {1}

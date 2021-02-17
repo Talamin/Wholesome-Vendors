@@ -148,6 +148,7 @@ using PoisonMaster;
                         List<string> vendorItemList = GetVendorItemList();
                         string foodNameToBuy = vendorItemList.FirstOrDefault(i => CurrentFoodList.Select(ItemsManager.GetNameById).Contains(i));
                         wManagerSetting.CurrentSetting.FoodName = foodNameToBuy;
+                        //Vendor.BuyItem(foodNameToBuy, wManagerSetting.CurrentSetting.FoodAmount / 5);
                         BuyItem(foodNameToBuy, wManagerSetting.CurrentSetting.FoodAmount);
                         if (!wManager.wManagerSetting.CurrentSetting.DoNotSellList.Contains(foodNameToBuy))
                         {
@@ -162,8 +163,9 @@ using PoisonMaster;
                         List<string> vendorItemList = GetVendorItemList();
                         string foodNameToBuy = vendorItemList.FirstOrDefault(i => CurrentFoodList.Select(ItemsManager.GetNameById).Contains(i));
                         wManagerSetting.CurrentSetting.FoodName = foodNameToBuy;
+                        //Vendor.BuyItem(foodNameToBuy, wManagerSetting.CurrentSetting.FoodAmount / 5);
                         BuyItem(foodNameToBuy, wManagerSetting.CurrentSetting.FoodAmount);
-                        if (!wManager.wManagerSetting.CurrentSetting.DoNotSellList.Contains(foodNameToBuy))
+                    if (!wManager.wManagerSetting.CurrentSetting.DoNotSellList.Contains(foodNameToBuy))
                         {
                             wManager.wManagerSetting.CurrentSetting.DoNotSellList.Add(foodNameToBuy);
                         }
@@ -243,7 +245,7 @@ using PoisonMaster;
 
         private void BuyItem(string name, int amount)
         {
-            Main.Logger("[AutoSelectFoodAndDrink] Buying " + amount + " " + name);
+            Main.Logger("[Select Food] Buying " + amount + " " + name);
             Lua.LuaDoString(string.Format(@"
         local itemName = ""{0}""
         local quantity = {1}
