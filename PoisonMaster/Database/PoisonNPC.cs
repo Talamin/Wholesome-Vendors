@@ -11,5 +11,10 @@ public class PoisonNPC
     public Vector3 Position { get; set; }
     public string Name { get; set; }
 
-
+    public PoisonNPC(int ID, Vector3 POSITION, string NAME)
+    {
+        id = ID;
+        Position = POSITION;
+        Name = NAME;
+    }
 }
