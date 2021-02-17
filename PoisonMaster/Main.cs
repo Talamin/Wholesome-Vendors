@@ -123,7 +123,7 @@ public class Main : IPlugin
 	//}
     public static void Logger(string message)
     {
-        Logging.Write($"[{Name}]: { message}", Logging.LogType.Fight, Color.ForestGreen);
+        Logging.Write($"[{Name}]: { message}", Logging.LogType.Normal, Color.ForestGreen);
     }
 
 }
