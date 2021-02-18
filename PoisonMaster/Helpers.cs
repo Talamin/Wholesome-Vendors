@@ -36,14 +36,16 @@ namespace PoisonMaster
 
                     int priorityToSet = stateToReplace.Priority;
 
+
                     // Move all superior states one slot up
                     foreach (State s in engine.States)
                     {
-                        if (s.Priority >= priorityToSet)
+                        if (s.Priority > priorityToSet)
                             s.Priority++;
                     }
 
-                    state.Priority = priorityToSet;
+                    engine.AddState(state);
+                    state.Priority = priorityToSet + 1;
                     //Main.Logger($"Adding state {state.DisplayName} with prio {priorityToSet}");
                     engine.AddState(state);
                     engine.States.Sort();
