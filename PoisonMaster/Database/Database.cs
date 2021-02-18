@@ -232,5 +232,10 @@ public class Database
             return sellVendor == null ? null : new DatabaseNPC(sellVendor);
         }
     }
+
+    public readonly Dictionary<int, string> ArrowDictionary = new Dictionary<int, string>
+    {
+        { 80,"Zone"},
+    };
 }
 
