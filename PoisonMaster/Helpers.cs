@@ -200,7 +200,7 @@ namespace PoisonMaster
                                             return unpack(r);");
         }
 
-        public static void BuyItem(string name, int amount)
+        public static void BuyItem(string name, int amount, int stackValue)
         {
             Main.Logger("Buying " + amount + " " + name);
             Lua.LuaDoString(string.Format(@"
@@ -209,10 +209,9 @@ namespace PoisonMaster
                     for i=1, GetMerchantNumItems() do
                         local name = GetMerchantItemInfo(i)
                         if name and name == itemName then 
-                            --DEFAULT_CHAT_FRAME:AddMessage(""Buying "" .. quantity .. "" stacks of "" .. itemName)
                             BuyMerchantItem(i, quantity)
                         end
-                    end", name, amount / 5));
+                    end", name, amount / stackValue));
         }
 
         public static bool NpcIsAbsentOrDead(DatabaseNPC npc)

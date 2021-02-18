@@ -24,7 +24,6 @@ public class Main : IPlugin
     public static State buyFoodState = new BuyFoodState();
     public static State buyDrinkState = new BuyDrinkState();
     public static State repairState = new RepairState();
-    //public static State sellItemsState = new SellItemsState();
 
     public void Initialize()
     {
@@ -91,7 +90,6 @@ public class Main : IPlugin
             Helpers.AddState(engine, buyFoodState, "To Town");
             Helpers.AddState(engine, buyDrinkState, "To Town");
             Helpers.AddState(engine, repairState, "To Town");
-            //Helpers.AddState(engine, sellItemsState, "To Town");
             //engine.States.ForEach(s => Logger($"{s.Priority} -> {s.DisplayName}"));
         }
 	}

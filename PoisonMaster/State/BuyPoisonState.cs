@@ -1,7 +1,6 @@
 ﻿using PoisonMaster;
 using robotManager.FiniteStateMachine;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using wManager.Wow.Bot.Tasks;
 using wManager.Wow.Enums;
@@ -18,8 +17,9 @@ public class BuyPoisonState : State
     private int DeadlyPoison;
     private Timer stateTimer = new Timer();
     private DatabaseNPC poisonVendor;
-    private int PoisonToBuy = 0;
 
+    private bool NeedInstantPoison => ItemsManager.GetItemCountById((uint)InstantPoison) <= 0;
+    private bool NeedDeadlyPoison => ObjectManager.Me.Level >= 30 && ItemsManager.GetItemCountById((uint)DeadlyPoison) <= 0;
 
     private readonly Dictionary<int, int> InstantPoisonDictionary = new Dictionary<int, int>
     {
@@ -58,15 +58,12 @@ public class BuyPoisonState : State
                 || ObjectManager.Me.Level < 20)
                 return false;
 
-                stateTimer = new Timer(5000);
+            stateTimer = new Timer(5000);
 
-                poisonVendor = SelectBestPoisonVendor();
+            poisonVendor = SelectBestPoisonVendor();
 
-            if (ItemsManager.GetItemCountById((uint)InstantPoison) <= 0
-                || ObjectManager.Me.Level >= 30 && ItemsManager.GetItemCountById((uint)DeadlyPoison) <= 0)
-                {
-
-
+            if (InstantPoison != 0 && NeedInstantPoison || DeadlyPoison != 0 && NeedDeadlyPoison)
+            {
                 if (poisonVendor == null)
                 {
                     Main.Logger("Couldn't find poison vendor");
@@ -96,15 +93,19 @@ public class BuyPoisonState : State
             for (int i = 0; i <= 5; i++)
             {
                 GoToTask.ToPositionAndIntecractWithNpc(poisonVendor.Position, poisonVendor.Id, i);
-                Helpers.BuyItem(ItemsManager.GetNameById(InstantPoison), nbInstantPoisonToBuy);
+                Helpers.BuyItem(ItemsManager.GetNameById(InstantPoison), nbInstantPoisonToBuy, 1);
                 Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(InstantPoison));
                 Helpers.CloseWindow();
                 Thread.Sleep(1000);
-                if (ItemsManager.GetItemCountById((uint)InstantPoison) >= 20)
+                if (!NeedInstantPoison)
                     break;
             }
-            Main.Logger($"Failed to buy {InstantPoison}, blacklisting vendor");
-            NPCBlackList.AddNPCToBlacklist(poisonVendor.Id);
+
+            if (NeedInstantPoison)
+            {
+                Main.Logger($"Failed to buy {InstantPoison}, blacklisting vendor");
+                NPCBlackList.AddNPCToBlacklist(poisonVendor.Id);
+            }
         }
 
         // DEADLY POISON
@@ -113,70 +114,80 @@ public class BuyPoisonState : State
             for (int i = 0; i <= 5; i++)
             {
                 GoToTask.ToPositionAndIntecractWithNpc(poisonVendor.Position, poisonVendor.Id, i);
-                Helpers.BuyItem(ItemsManager.GetNameById(DeadlyPoison), 20);
+                Helpers.BuyItem(ItemsManager.GetNameById(DeadlyPoison), nbDeadlyPoisonToBuy, 1);
                 Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(DeadlyPoison));
                 Helpers.CloseWindow();
                 Thread.Sleep(1000);
-                if (ItemsManager.GetItemCountById((uint)DeadlyPoison) >= 20)
+                if (!NeedDeadlyPoison)
                     break;
             }
-            Main.Logger($"Failed to buy {DeadlyPoison}, blacklisting vendor");
-            NPCBlackList.AddNPCToBlacklist(poisonVendor.Id);
+
+            if (NeedDeadlyPoison)
+            {
+                Main.Logger($"Failed to buy {DeadlyPoison}, blacklisting vendor");
+                NPCBlackList.AddNPCToBlacklist(poisonVendor.Id);
+            }
         }
     }
 
     private DatabaseNPC SelectBestPoisonVendor()
     {
         poisonVendor = null;
-        PoisonToBuy = 0;
-        foreach(int poison in GetListUsablePoison())
+        InstantPoison = 0;
+        DeadlyPoison = 0;
+        DatabaseNPC vendor = null;
+
+        if (NeedDeadlyPoison)
         {
-            DatabaseNPC vendorWithThisPoison = Database.GetPoisonVendor(new HashSet<int> { poison });
-            if(vendorWithThisPoison != null)
+            foreach (int deadly in GetListUsableDeadlyPoison())
             {
-                //Main.Logger($"Found vendor {vendorWithThisPoison.Name} for item {ammo}");
-                PoisonToBuy = poison;
-                return vendorWithThisPoison;
+                DatabaseNPC vendorWithThisPoison = Database.GetPoisonVendor(new HashSet<int> { deadly });
+                if (vendorWithThisPoison != null)
+                {
+                    //Main.Logger($"Found vendor {vendorWithThisPoison.Name} for item {deadly}");
+                    DeadlyPoison = deadly;
+                    vendor = vendorWithThisPoison;
+                    break;
+                }
             }
         }
+
+        if (NeedInstantPoison)
+        {
+            foreach (int instant in GetListUsableInstantPoison())
+            {
+                DatabaseNPC vendorWithThisPoison = Database.GetPoisonVendor(new HashSet<int> { instant });
+                if (vendorWithThisPoison != null)
+                {
+                    //Main.Logger($"Found vendor {vendorWithThisPoison.Name} for item {instant}");
+                    InstantPoison = instant;
+                    vendor = vendorWithThisPoison;
+                    break;
+                }
+            }
+        }
+        return vendor;
     }
-    private HashSet<int> GetListUsablePoison()
+
+    private HashSet<int> GetListUsableInstantPoison()
     {
-        HashSet<int> listPoison = new HashSet<int>();
-        foreach (KeyValuePair<int, int> instantPoison in InstantPoisonDictionary)
+        HashSet<int> listInstants = new HashSet<int>();
+        foreach (KeyValuePair<int, int> instant in InstantPoisonDictionary)
         {
-            if (instantPoison.Key <= Me.Level)
-                listPoison.Add(instantPoison.Value);  
+            if (instant.Key <= Me.Level)
+                listInstants.Add(instant.Value);
         }
-        foreach (KeyValuePair<int, int> deadlyPoison in DeadlyPoisonDictionary)
-        {
-            if (deadlyPoison.Key <= Me.Level)
-                listPoison.Add(deadlyPoison.Value);
-        }
-        return listPoison;
+        return listInstants;
     }
 
-
-    private void SetPoisonToBuy()
+    private HashSet<int> GetListUsableDeadlyPoison()
     {
-        foreach (KeyValuePair<int, int> instantPoison in InstantPoisonDictionary)
+        HashSet<int> listDeadlys = new HashSet<int>();
+        foreach (KeyValuePair<int, int> deadly in DeadlyPoisonDictionary)
         {
-            if (instantPoison.Key <= Me.Level)
-            {
-                InstantPoison = instantPoison.Value;
-                Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(instantPoison.Value));
-                break;
-            }
+            if (deadly.Key <= Me.Level)
+                listDeadlys.Add(deadly.Value);
         }
-
-        foreach (KeyValuePair<int, int> deadlyPoison in DeadlyPoisonDictionary)
-        {
-            if (deadlyPoison.Key <= Me.Level)
-            {
-                DeadlyPoison = deadlyPoison.Value;
-                Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(deadlyPoison.Value));
-                break;
-            }
-        }
+        return listDeadlys;
     }
 }

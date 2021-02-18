@@ -80,7 +80,7 @@ public class BuyFoodState : State
         for (int i = 0; i <= 5; i++)
         {
             GoToTask.ToPositionAndIntecractWithNpc(foodVendor.Position, foodVendor.Id, i);
-            Helpers.BuyItem(foodNameToBuy, wManagerSetting.CurrentSetting.FoodAmount);
+            Helpers.BuyItem(foodNameToBuy, wManagerSetting.CurrentSetting.FoodAmount, 5);
             Helpers.AddItemToDoNotSellList(foodNameToBuy);
             Helpers.CloseWindow();
             Thread.Sleep(1000);

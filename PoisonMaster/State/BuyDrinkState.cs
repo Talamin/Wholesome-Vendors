@@ -80,7 +80,7 @@ public class BuyDrinkState : State
         for (int i = 0; i <= 5; i++)
         {
             GoToTask.ToPositionAndIntecractWithNpc(drinkVendor.Position, drinkVendor.Id, i);
-            Helpers.BuyItem(drinkNameToBuy, wManagerSetting.CurrentSetting.DrinkAmount);
+            Helpers.BuyItem(drinkNameToBuy, wManagerSetting.CurrentSetting.DrinkAmount, 5);
             Helpers.AddItemToDoNotSellList(drinkNameToBuy);
             wManagerSetting.CurrentSetting.DrinkName = drinkNameToBuy;
             Helpers.CloseWindow();
