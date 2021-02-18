@@ -14,13 +14,14 @@ public class BuyPoisonState : State
     public override string DisplayName => "Buying Poison";
 
     private WoWLocalPlayer Me = ObjectManager.Me;
-    private uint InstantPoison;
-    private uint DeadlyPoison;
+    private int InstantPoison;
+    private int DeadlyPoison;
     private Timer stateTimer = new Timer();
     private DatabaseNPC poisonVendor;
+    private int PoisonToBuy = 0;
 
 
-    private readonly Dictionary<int, uint> InstantPoisonDictionary = new Dictionary<int, uint>
+    private readonly Dictionary<int, int> InstantPoisonDictionary = new Dictionary<int, int>
     {
         { 79, 43231 },
         { 73, 43230 },
@@ -33,7 +34,7 @@ public class BuyPoisonState : State
         { 20, 6947 }
     };
 
-    private readonly Dictionary<int, uint> DeadlyPoisonDictionary = new Dictionary<int, uint>
+    private readonly Dictionary<int, int> DeadlyPoisonDictionary = new Dictionary<int, int>
     {
         { 80, 43233 },
         { 76, 43232 },
@@ -57,13 +58,15 @@ public class BuyPoisonState : State
                 || ObjectManager.Me.Level < 20)
                 return false;
 
-            stateTimer = new Timer(5000);
-            SetPoisonToBuy();
+                stateTimer = new Timer(5000);
 
-            if (ItemsManager.GetItemCountById(InstantPoison) <= 0
-                || ObjectManager.Me.Level >= 30 && ItemsManager.GetItemCountById(DeadlyPoison) <= 0)
-            {
-                poisonVendor = Database.GetPoisonVendor();
+                poisonVendor = SelectBestPoisonVendor();
+
+            if (ItemsManager.GetItemCountById((uint)InstantPoison) <= 0
+                || ObjectManager.Me.Level >= 30 && ItemsManager.GetItemCountById((uint)DeadlyPoison) <= 0)
+                {
+
+
                 if (poisonVendor == null)
                 {
                     Main.Logger("Couldn't find poison vendor");
@@ -78,8 +81,8 @@ public class BuyPoisonState : State
     public override void Run()
     {
         Main.Logger("Nearest Vendor from player:\n" + "Name: " + poisonVendor.Name + "[" + poisonVendor.Id + "]\nPosition: " + poisonVendor.Position.ToStringXml() + "\nDistance: " + poisonVendor.Position.DistanceTo(Me.Position) + " yrds");
-        int nbInstantPoisonToBuy = 20 - ItemsManager.GetItemCountById(InstantPoison);
-        int nbDeadlyPoisonToBuy = 20 - ItemsManager.GetItemCountById(DeadlyPoison);
+        int nbInstantPoisonToBuy = 20 - ItemsManager.GetItemCountById((uint)InstantPoison);
+        int nbDeadlyPoisonToBuy = 20 - ItemsManager.GetItemCountById((uint)DeadlyPoison);
 
         if (Me.Position.DistanceTo(poisonVendor.Position) >= 6)
             GoToTask.ToPosition(poisonVendor.Position);
@@ -97,7 +100,7 @@ public class BuyPoisonState : State
                 Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(InstantPoison));
                 Helpers.CloseWindow();
                 Thread.Sleep(1000);
-                if (ItemsManager.GetItemCountById(InstantPoison) >= 20)
+                if (ItemsManager.GetItemCountById((uint)InstantPoison) >= 20)
                     break;
             }
             Main.Logger($"Failed to buy {InstantPoison}, blacklisting vendor");
@@ -114,7 +117,7 @@ public class BuyPoisonState : State
                 Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(DeadlyPoison));
                 Helpers.CloseWindow();
                 Thread.Sleep(1000);
-                if (ItemsManager.GetItemCountById(DeadlyPoison) >= 20)
+                if (ItemsManager.GetItemCountById((uint)DeadlyPoison) >= 20)
                     break;
             }
             Main.Logger($"Failed to buy {DeadlyPoison}, blacklisting vendor");
@@ -122,9 +125,41 @@ public class BuyPoisonState : State
         }
     }
 
+    private DatabaseNPC SelectBestPoisonVendor()
+    {
+        poisonVendor = null;
+        PoisonToBuy = 0;
+        foreach(int poison in GetListUsablePoison())
+        {
+            DatabaseNPC vendorWithThisPoison = Database.GetPoisonVendor(new HashSet<int> { poison });
+            if(vendorWithThisPoison != null)
+            {
+                //Main.Logger($"Found vendor {vendorWithThisPoison.Name} for item {ammo}");
+                PoisonToBuy = poison;
+                return vendorWithThisPoison;
+            }
+        }
+    }
+    private HashSet<int> GetListUsablePoison()
+    {
+        HashSet<int> listPoison = new HashSet<int>();
+        foreach (KeyValuePair<int, int> instantPoison in InstantPoisonDictionary)
+        {
+            if (instantPoison.Key <= Me.Level)
+                listPoison.Add(instantPoison.Value);  
+        }
+        foreach (KeyValuePair<int, int> deadlyPoison in DeadlyPoisonDictionary)
+        {
+            if (deadlyPoison.Key <= Me.Level)
+                listPoison.Add(deadlyPoison.Value);
+        }
+        return listPoison;
+    }
+
+
     private void SetPoisonToBuy()
     {
-        foreach (KeyValuePair<int, uint> instantPoison in InstantPoisonDictionary)
+        foreach (KeyValuePair<int, int> instantPoison in InstantPoisonDictionary)
         {
             if (instantPoison.Key <= Me.Level)
             {
@@ -134,7 +169,7 @@ public class BuyPoisonState : State
             }
         }
 
-        foreach (KeyValuePair<int, uint> deadlyPoison in DeadlyPoisonDictionary)
+        foreach (KeyValuePair<int, int> deadlyPoison in DeadlyPoisonDictionary)
         {
             if (deadlyPoison.Key <= Me.Level)
             {

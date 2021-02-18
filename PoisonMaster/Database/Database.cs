@@ -156,10 +156,11 @@ public class Database
             return foodVendor == null ? null : new DatabaseNPC(foodVendor);
         }
     }
-    public static DatabaseNPC GetPoisonVendor()
+    public static DatabaseNPC GetPoisonVendor(HashSet<int> usablePoison)
     {
         if (PluginSettings.CurrentSetting.Databasetype == "external")
         {
+            PoisonVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usablePoison);
             creature poisonVendor = DbCreature
                 .Get(PoisonVendorFilter)
                 .Where(q => !NPCBlackList.myBlacklist.Contains(q.id))
