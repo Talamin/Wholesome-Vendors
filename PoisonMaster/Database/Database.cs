@@ -233,9 +233,78 @@ public class Database
         }
     }
 
-    public readonly Dictionary<int, string> ArrowDictionary = new Dictionary<int, string>
+    public readonly Dictionary<int, int> ArrowDictionary = new Dictionary<int, int>
     {
-        { 80,"Zone"},
+        {3524,1}, //AzuremystIsle
+        {1,1}, //DunMorogh
+        {14,1}, //Durotar
+        {12,1}, //Elwynn
+        {3430,1}, //EversongWoods
+        {141,1}, //Teldrassil
+        {85,1}, //Tirisfal
+        {17,10}, //Barrens
+        {3525,10}, //BloodmystIsle
+        {148,10}, //Darkshore
+        {3433,10}, //Ghostlands
+        {1537,10}, //Ironforge
+        {38,10}, //LochModan
+        {215,10}, //Mulgore
+        {1637,10}, //Ogrimmar
+        {130,10}, //Silverpine
+        {1519,10}, //Stormwind
+        {3557,10}, //TheExodar
+        {1638,10}, //ThunderBluff
+        {1497,10}, //Undercity
+        {40,10}, //Westfall
+        {44,15}, //Redridge
+        {406,15}, //StonetalonMountains
+        {331,18}, //Ashenvale
+        {10,18}, //Duskwood
+        {267,20}, //Hilsbrad
+        {11,20}, //Wetlands
+        {400,25}, //ThousandNeedles
+        {36,30}, //Alterac
+        {45,30}, //Arathi
+        {405,30}, //Desolace
+        {15,30}, //Dustwallow
+        {33,30}, //Stranglethorn
+        {3,35}, //Badlands
+        {8,35}, //SwampOfSorrows
+        {47,40}, //Hinterlands
+        {440,40}, //Tanaris
+        {357,42}, //Feralas
+        {16,45}, //Aszhara
+        {4,45}, //BlastedLands
+        {51,45}, //SearingGorge
+        {361,48}, //Felwood
+        {490,48}, //UngoroCrater
+        {46,50}, //BurningSteppes
+        {28,51}, //WesternPlaguelands
+        {139,53}, //EasternPlaguelands
+        {618,53}, //Winterspring
+        {493,55}, //Moonglade
+        {4298,55}, //ScarletEnclave
+        {1377,55}, //Silithus
+        {3483,58}, //Hellfire
+        {3521,60}, //Zangarmarsh
+        {3519,62}, //TerokkarForest
+        {3522,65}, //BladesEdgeMountains
+        {3518,65}, //Nagrand
+        {3523,67}, //Netherstorm
+        {3520,67}, //ShadowmoonValley
+        {3537,68}, //BoreanTundra
+        {41,68}, //DeadwindPass
+        {495,68}, //HowlingFjord
+        {65,71}, //Dragonblight
+        {394,73}, //GrizzlyHills
+        {66,75}, //ZulDrak
+        {3711,76}, //SholazarBasin
+        {2817,77}, //CrystalsongForest
+        {4742,77}, //HrothgarsLanding
+        {4812,77}, //IcecrownCitadel
+        {210,77}, //IcecrownGlacier
+        {4395,80}, //Dalaran
+
     };
 }
 
