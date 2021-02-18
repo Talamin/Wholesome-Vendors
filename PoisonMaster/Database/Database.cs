@@ -233,7 +233,7 @@ public class Database
         }
     }
 
-    public readonly Dictionary<int, int> ArrowDictionary = new Dictionary<int, int>
+    public readonly Dictionary<int, int> ZoneLevelDictionary = new Dictionary<int, int>
     {
         {3524,1}, //AzuremystIsle
         {1,1}, //DunMorogh

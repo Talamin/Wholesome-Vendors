@@ -7,8 +7,8 @@
     <ProjectGuid>{7A726A5B-7BB2-4204-9555-0C19984A9377}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>WholesomeManager</RootNamespace>
-    <AssemblyName>WholesomeManager</AssemblyName>
+    <RootNamespace>Wholesome_Vendors</RootNamespace>
+    <AssemblyName>Wholesome_Vendors</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>

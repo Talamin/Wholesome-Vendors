@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29905.134
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WholesomeManager", "PoisonMaster\WholesomeManager.csproj", "{7A726A5B-7BB2-4204-9555-0C19984A9377}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wholesome_Vendors", "PoisonMaster\Wholesome_Vendors.csproj", "{7A726A5B-7BB2-4204-9555-0C19984A9377}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
