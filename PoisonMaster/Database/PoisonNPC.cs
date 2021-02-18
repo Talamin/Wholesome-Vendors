@@ -4,17 +4,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using wManager.Wow.Enums;
 
 public class PoisonNPC
 {
     public int id { get; set; }
     public Vector3 Position { get; set; }
     public string Name { get; set; }
+    public string SubName { get; set; }
+    public ContinentId Continent { get; set;}
 
-    public PoisonNPC(int id, Vector3 position, string name)
+    public PoisonNPC(int ID, Vector3 POSITION,ContinentId CONTINENT, string NAME, string SUBNAME)
     {
-        this.id = id;
-        Position = position;
-        Name = name;
+        id = ID;
+        Position = POSITION;
+        Name = NAME;
+        Continent = CONTINENT;
+        SubName = SUBNAME;
     }
 }
