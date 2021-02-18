@@ -13,7 +13,7 @@ using wManager;
 public class Main : IPlugin
 {
     private readonly BackgroundWorker _pulseThread = new BackgroundWorker();
-    private static string Name = "Wholesome Manager";
+    private static string Name = "Wholesome Vendors";
     private static bool IsLaunched;
 
     private Timer stateAddTimer;
