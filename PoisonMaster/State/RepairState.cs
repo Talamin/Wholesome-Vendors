@@ -49,45 +49,48 @@ public class RepairState : State
             GoToTask.ToPosition(repairVendor.Position);
         }
 
-        if (Helpers.NpcIsAbsentOrDead(repairVendor))
-            return;
-
-        int nbItemsInBags = bagItems.Count;
-
-        // Sell first
-        for (int i = 0; i <= 5; i++)
+        if (ObjectManager.Me.Position.DistanceTo(repairVendor.Position) < 6)
         {
-            GoToTask.ToPositionAndIntecractWithNpc(repairVendor.Position, repairVendor.Id, i);
-            List<string> listItemsToSell = new List<string>();
-            foreach (WoWItem item in bagItems)
+            if (Helpers.NpcIsAbsentOrDead(repairVendor))
+                return;
+
+            int nbItemsInBags = bagItems.Count;
+
+            // Sell first
+            for (int i = 0; i <= 5; i++)
             {
-                if (item != null && !wManager.wManagerSetting.CurrentSetting.DoNotSellList.Contains(item.Name))
-                    listItemsToSell.Add(item.Name);
+                GoToTask.ToPositionAndIntecractWithNpc(repairVendor.Position, repairVendor.Id, i);
+                List<string> listItemsToSell = new List<string>();
+                foreach (WoWItem item in bagItems)
+                {
+                    if (item != null && !wManager.wManagerSetting.CurrentSetting.DoNotSellList.Contains(item.Name))
+                        listItemsToSell.Add(item.Name);
+                }
+
+                Vendor.SellItems(listItemsToSell, wManager.wManagerSetting.CurrentSetting.DoNotSellList, Helpers.GetListQualityToSell());
+                if (Bag.GetBagItem().Count < nbItemsInBags)
+                    break;
             }
 
-            Vendor.SellItems(listItemsToSell, wManager.wManagerSetting.CurrentSetting.DoNotSellList, Helpers.GetListQualityToSell());
-            if (Bag.GetBagItem().Count < nbItemsInBags)
-                break;
-        }
+            // Then repair
+            for (int i = 0; i <= 5; i++)
+            {
+                GoToTask.ToPositionAndIntecractWithNpc(repairVendor.Position, repairVendor.Id, i);
+                Vendor.RepairAllItems();
+                Lua.LuaDoString("MerchantRepairAllButton:Click();", false);
+                Lua.LuaDoString("RepairAllItems();", false);
+                Helpers.CloseWindow();
+                Thread.Sleep(1000);
 
-        // Then repair
-        for (int i = 0; i <= 5; i++)
-        {
-            GoToTask.ToPositionAndIntecractWithNpc(repairVendor.Position, repairVendor.Id, i);
-            Vendor.RepairAllItems();
-            Lua.LuaDoString("MerchantRepairAllButton:Click();", false);
-            Lua.LuaDoString("RepairAllItems();", false);
-            Helpers.CloseWindow();
-            Thread.Sleep(1000);
+                if (ObjectManager.Me.GetDurabilityPercent >= 35)
+                    break;
+            }
 
-            if (ObjectManager.Me.GetDurabilityPercent >= 35)
-                break;
-        }
-
-        if (ObjectManager.Me.GetDurabilityPercent < 35)
-        {
-            Main.Logger($"Failed to repair, blacklisting vendor");
-            NPCBlackList.AddNPCToBlacklist(repairVendor.Id);
+            if (ObjectManager.Me.GetDurabilityPercent < 35)
+            {
+                Main.Logger($"Failed to repair, blacklisting vendor");
+                NPCBlackList.AddNPCToBlacklist(repairVendor.Id);
+            }
         }
     }
 }

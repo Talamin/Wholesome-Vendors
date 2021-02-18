@@ -84,48 +84,51 @@ public class BuyPoisonState : State
         if (Me.Position.DistanceTo(poisonVendor.Position) >= 6)
             GoToTask.ToPosition(poisonVendor.Position);
 
-        if (Helpers.NpcIsAbsentOrDead(poisonVendor))
-            return;
-
-        // INSTANT POISON
-        if (nbInstantPoisonToBuy > 0)
+        if (Me.Position.DistanceTo(poisonVendor.Position) < 6)
         {
-            for (int i = 0; i <= 5; i++)
+            if (Helpers.NpcIsAbsentOrDead(poisonVendor))
+                return;
+
+            // INSTANT POISON
+            if (nbInstantPoisonToBuy > 0)
             {
-                GoToTask.ToPositionAndIntecractWithNpc(poisonVendor.Position, poisonVendor.Id, i);
-                Helpers.BuyItem(ItemsManager.GetNameById(InstantPoison), nbInstantPoisonToBuy, 1);
-                Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(InstantPoison));
-                Helpers.CloseWindow();
-                Thread.Sleep(1000);
-                if (!NeedInstantPoison)
-                    break;
+                for (int i = 0; i <= 5; i++)
+                {
+                    GoToTask.ToPositionAndIntecractWithNpc(poisonVendor.Position, poisonVendor.Id, i);
+                    Helpers.BuyItem(ItemsManager.GetNameById(InstantPoison), nbInstantPoisonToBuy, 1);
+                    Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(InstantPoison));
+                    Helpers.CloseWindow();
+                    Thread.Sleep(1000);
+                    if (!NeedInstantPoison)
+                        break;
+                }
+
+                if (NeedInstantPoison)
+                {
+                    Main.Logger($"Failed to buy {InstantPoison}, blacklisting vendor");
+                    NPCBlackList.AddNPCToBlacklist(poisonVendor.Id);
+                }
             }
 
-            if (NeedInstantPoison)
+            // DEADLY POISON
+            if (Me.Level >= 30 && nbDeadlyPoisonToBuy > 0)
             {
-                Main.Logger($"Failed to buy {InstantPoison}, blacklisting vendor");
-                NPCBlackList.AddNPCToBlacklist(poisonVendor.Id);
-            }
-        }
+                for (int i = 0; i <= 5; i++)
+                {
+                    GoToTask.ToPositionAndIntecractWithNpc(poisonVendor.Position, poisonVendor.Id, i);
+                    Helpers.BuyItem(ItemsManager.GetNameById(DeadlyPoison), nbDeadlyPoisonToBuy, 1);
+                    Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(DeadlyPoison));
+                    Helpers.CloseWindow();
+                    Thread.Sleep(1000);
+                    if (!NeedDeadlyPoison)
+                        break;
+                }
 
-        // DEADLY POISON
-        if (Me.Level >= 30 && nbDeadlyPoisonToBuy > 0)
-        {
-            for (int i = 0; i <= 5; i++)
-            {
-                GoToTask.ToPositionAndIntecractWithNpc(poisonVendor.Position, poisonVendor.Id, i);
-                Helpers.BuyItem(ItemsManager.GetNameById(DeadlyPoison), nbDeadlyPoisonToBuy, 1);
-                Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(DeadlyPoison));
-                Helpers.CloseWindow();
-                Thread.Sleep(1000);
-                if (!NeedDeadlyPoison)
-                    break;
-            }
-
-            if (NeedDeadlyPoison)
-            {
-                Main.Logger($"Failed to buy {DeadlyPoison}, blacklisting vendor");
-                NPCBlackList.AddNPCToBlacklist(poisonVendor.Id);
+                if (NeedDeadlyPoison)
+                {
+                    Main.Logger($"Failed to buy {DeadlyPoison}, blacklisting vendor");
+                    NPCBlackList.AddNPCToBlacklist(poisonVendor.Id);
+                }
             }
         }
     }

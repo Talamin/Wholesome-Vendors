@@ -70,26 +70,29 @@ public class BuyDrinkState : State
         if (Me.Position.DistanceTo(drinkVendor.Position) >= 6)
             GoToTask.ToPosition(drinkVendor.Position);
 
-        if (Helpers.NpcIsAbsentOrDead(drinkVendor))
-            return;
-
-        string drinkNameToBuy = ItemsManager.GetNameById(drinkToBuy);
-        wManagerSetting.CurrentSetting.DrinkName = drinkNameToBuy;
-        wManagerSetting.CurrentSetting.Save();
-
-        for (int i = 0; i <= 5; i++)
+        if (Me.Position.DistanceTo(drinkVendor.Position) < 6)
         {
-            GoToTask.ToPositionAndIntecractWithNpc(drinkVendor.Position, drinkVendor.Id, i);
-            Helpers.BuyItem(drinkNameToBuy, wManagerSetting.CurrentSetting.DrinkAmount, 5);
-            Helpers.AddItemToDoNotSellList(drinkNameToBuy);
-            wManagerSetting.CurrentSetting.DrinkName = drinkNameToBuy;
-            Helpers.CloseWindow();
-            Thread.Sleep(1000);
-            if (ItemsManager.GetItemCountById((uint)drinkToBuy) >= wManagerSetting.CurrentSetting.DrinkAmount)
+            if (Helpers.NpcIsAbsentOrDead(drinkVendor))
                 return;
+
+            string drinkNameToBuy = ItemsManager.GetNameById(drinkToBuy);
+            wManagerSetting.CurrentSetting.DrinkName = drinkNameToBuy;
+            wManagerSetting.CurrentSetting.Save();
+
+            for (int i = 0; i <= 5; i++)
+            {
+                GoToTask.ToPositionAndIntecractWithNpc(drinkVendor.Position, drinkVendor.Id, i);
+                Helpers.BuyItem(drinkNameToBuy, wManagerSetting.CurrentSetting.DrinkAmount, 5);
+                Helpers.AddItemToDoNotSellList(drinkNameToBuy);
+                wManagerSetting.CurrentSetting.DrinkName = drinkNameToBuy;
+                Helpers.CloseWindow();
+                Thread.Sleep(1000);
+                if (ItemsManager.GetItemCountById((uint)drinkToBuy) >= wManagerSetting.CurrentSetting.DrinkAmount)
+                    return;
+            }
+            Main.Logger($"Failed to buy {drinkNameToBuy}, blacklisting vendor");
+            NPCBlackList.AddNPCToBlacklist(drinkVendor.Id);
         }
-        Main.Logger($"Failed to buy {drinkNameToBuy}, blacklisting vendor");
-        NPCBlackList.AddNPCToBlacklist(drinkVendor.Id);
     }
 
     private DatabaseNPC SelectBestDrinkVendor()

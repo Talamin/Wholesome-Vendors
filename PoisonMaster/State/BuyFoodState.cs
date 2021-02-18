@@ -70,25 +70,28 @@ public class BuyFoodState : State
         if (Me.Position.DistanceTo(foodVendor.Position) >= 6)
             GoToTask.ToPosition(foodVendor.Position);
 
-        if (Helpers.NpcIsAbsentOrDead(foodVendor))
-            return;
-
-        string foodNameToBuy = ItemsManager.GetNameById(foodToBuy);
-        wManagerSetting.CurrentSetting.FoodName = foodNameToBuy;
-        wManagerSetting.CurrentSetting.Save();
-
-        for (int i = 0; i <= 5; i++)
+        if (Me.Position.DistanceTo(foodVendor.Position) < 6)
         {
-            GoToTask.ToPositionAndIntecractWithNpc(foodVendor.Position, foodVendor.Id, i);
-            Helpers.BuyItem(foodNameToBuy, wManagerSetting.CurrentSetting.FoodAmount, 5);
-            Helpers.AddItemToDoNotSellList(foodNameToBuy);
-            Helpers.CloseWindow();
-            Thread.Sleep(1000);
-            if (ItemsManager.GetItemCountById((uint)foodToBuy) >= wManagerSetting.CurrentSetting.FoodAmount)
+            if (Helpers.NpcIsAbsentOrDead(foodVendor))
                 return;
+
+            string foodNameToBuy = ItemsManager.GetNameById(foodToBuy);
+            wManagerSetting.CurrentSetting.FoodName = foodNameToBuy;
+            wManagerSetting.CurrentSetting.Save();
+
+            for (int i = 0; i <= 5; i++)
+            {
+                GoToTask.ToPositionAndIntecractWithNpc(foodVendor.Position, foodVendor.Id, i);
+                Helpers.BuyItem(foodNameToBuy, wManagerSetting.CurrentSetting.FoodAmount, 5);
+                Helpers.AddItemToDoNotSellList(foodNameToBuy);
+                Helpers.CloseWindow();
+                Thread.Sleep(1000);
+                if (ItemsManager.GetItemCountById((uint)foodToBuy) >= wManagerSetting.CurrentSetting.FoodAmount)
+                    return;
+            }
+            Main.Logger($"Failed to buy {foodNameToBuy}, blacklisting vendor");
+            NPCBlackList.AddNPCToBlacklist(foodVendor.Id);
         }
-        Main.Logger($"Failed to buy {foodNameToBuy}, blacklisting vendor");
-        NPCBlackList.AddNPCToBlacklist(foodVendor.Id);
     }
 
     private DatabaseNPC SelectBestFoodVendor()

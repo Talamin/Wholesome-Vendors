@@ -75,22 +75,25 @@ public class BuyAmmoState : State
             Main.Logger("Nearest AmmunitionVendor from player:\n" + "Name: " + ammoVendor.Name + "[" + ammoVendor.Id + "]\nPosition: " + ammoVendor.Position.ToStringXml() + "\nDistance: " + ammoVendor.Position.DistanceTo(ObjectManager.Me.Position) + " yrds");
             GoToTask.ToPositionAndIntecractWithNpc(ammoVendor.Position, ammoVendor.Id);
         }
-        
-        if (Helpers.NpcIsAbsentOrDead(ammoVendor))
-            return;
 
-        for (int i = 0; i <= 5; i++)
+        if (Me.Position.DistanceTo(ammoVendor.Position) < 6)
         {
-            GoToTask.ToPositionAndIntecractWithNpc(ammoVendor.Position, ammoVendor.Id, i);
-            Vendor.BuyItem(ItemsManager.GetNameById(AmmoToBuy), 2000 / 200);
-            Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(AmmoToBuy));
-            Helpers.CloseWindow();
-            Thread.Sleep(1000);
-            if (ItemsManager.GetItemCountById((uint)AmmoToBuy) >= wManagerSetting.CurrentSetting.DrinkAmount)
+            if (Helpers.NpcIsAbsentOrDead(ammoVendor))
                 return;
-        }
-        Main.Logger($"Failed to buy {AmmoToBuy}, blacklisting vendor");
-        NPCBlackList.AddNPCToBlacklist(ammoVendor.Id);
+
+            for (int i = 0; i <= 5; i++)
+            {
+                GoToTask.ToPositionAndIntecractWithNpc(ammoVendor.Position, ammoVendor.Id, i);
+                Vendor.BuyItem(ItemsManager.GetNameById(AmmoToBuy), 2000 / 200);
+                Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(AmmoToBuy));
+                Helpers.CloseWindow();
+                Thread.Sleep(1000);
+                if (ItemsManager.GetItemCountById((uint)AmmoToBuy) >= wManagerSetting.CurrentSetting.DrinkAmount)
+                    return;
+            }
+            Main.Logger($"Failed to buy {AmmoToBuy}, blacklisting vendor");
+            NPCBlackList.AddNPCToBlacklist(ammoVendor.Id);
+        }        
     }
 
     private DatabaseNPC SelectBestAmmoAndVendor()
