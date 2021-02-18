@@ -52,12 +52,12 @@ public class PluginSettings : Settings
     [Description("Allow Autorepair")]
     public bool AutoRepair { get; set; }
 
-    [Setting]
-    [DefaultValue(false)]
-    [Category("Database")]
-    [DisplayName("Database Intern/Extern")]
-    [Description("You can choose between intern and external Database")]
-    [DropdownList(new string[] {"internal","external" })]
+    //[Setting]
+    //[DefaultValue(false)]
+    //[Category("Database")]
+    //[DisplayName("Database Intern/Extern")]
+    //[Description("You can choose between intern and external Database")]
+    //[DropdownList(new string[] {"internal","external" })]
     public string Databasetype { get; set; }
 
     public PluginSettings()
