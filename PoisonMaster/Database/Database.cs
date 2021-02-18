@@ -18,6 +18,8 @@ public class Database
     //    MaxLevelRequired = (int)ObjectManager.Me.Level,
     //    Type = new ItemClass(Projectile.Arrow)
     //};
+    private static HashSet<int> ListOfZones = new HashSet<int>();
+
     private static CreatureFilter AmmoVendor = new CreatureFilter
     {
         ContinentId = (ContinentId)Usefuls.ContinentId,
@@ -82,9 +84,11 @@ public class Database
     {
         if (PluginSettings.CurrentSetting.Databasetype == "external")
         {
+            GetListUsableZones();
             AmmoVendor.HasItems = new ItemIds(ContainedIn.Merchant, usableAmmo);
             creature ammoVendor = DbCreature
                 .Get(AmmoVendor)
+                .Where(q=> ListOfZones.Contains(q.areaId))
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
                 .FirstOrDefault();
 
@@ -234,7 +238,20 @@ public class Database
         }
     }
 
-    public readonly Dictionary<int, int> ZoneLevelDictionary = new Dictionary<int, int>
+    private static void GetListUsableZones()
+    {
+        HashSet<int> listZones = new HashSet<int>();
+        foreach(KeyValuePair<int,int> zones in ZoneLevelDictionary)
+        {
+            if (zones.Value <= ObjectManager.Me.Level)
+            {
+                listZones.Add(zones.Key);
+            }
+        }
+        ListOfZones = listZones;
+    }
+
+    public static readonly Dictionary<int, int> ZoneLevelDictionary = new Dictionary<int, int>
     {
         {3524,1}, //AzuremystIsle
         {1,1}, //DunMorogh
