@@ -2,6 +2,7 @@
 using robotManager.FiniteStateMachine;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using wManager.Wow.Bot.Tasks;
 using wManager.Wow.Enums;
 using wManager.Wow.Helpers;
@@ -57,6 +58,7 @@ public class BuyPoisonState : State
                 return false;
 
             stateTimer = new Timer(5000);
+            SetPoisonToBuy();
 
             if (ItemsManager.GetItemCountById(InstantPoison) <= 0
                 || ObjectManager.Me.Level >= 30 && ItemsManager.GetItemCountById(DeadlyPoison) <= 0)
@@ -75,43 +77,48 @@ public class BuyPoisonState : State
 
     public override void Run()
     {
-        SetPoisonToBuy();
-
         Main.Logger("Nearest Vendor from player:\n" + "Name: " + poisonVendor.Name + "[" + poisonVendor.Id + "]\nPosition: " + poisonVendor.Position.ToStringXml() + "\nDistance: " + poisonVendor.Position.DistanceTo(Me.Position) + " yrds");
         int nbInstantPoisonToBuy = 20 - ItemsManager.GetItemCountById(InstantPoison);
+        int nbDeadlyPoisonToBuy = 20 - ItemsManager.GetItemCountById(DeadlyPoison);
 
+        if (Me.Position.DistanceTo(poisonVendor.Position) >= 6)
+            GoToTask.ToPosition(poisonVendor.Position);
+
+        if (Helpers.NpcIsAbsentOrDead(poisonVendor))
+            return;
+
+        // INSTANT POISON
         if (nbInstantPoisonToBuy > 0)
         {
-            Main.Logger("Time to buy some Instant Poison! " + InstantPoison);
-            GoToTask.ToPositionAndIntecractWithNpc(poisonVendor.Position, poisonVendor.Id);
-
-            if (Helpers.NpcIsAbsentOrDead(poisonVendor))
-                return;
-
-            Vendor.BuyItem(ItemsManager.GetNameById(InstantPoison), nbInstantPoisonToBuy);
-            Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(InstantPoison));
+            for (int i = 0; i <= 5; i++)
+            {
+                GoToTask.ToPositionAndIntecractWithNpc(poisonVendor.Position, poisonVendor.Id, i);
+                Helpers.BuyItem(ItemsManager.GetNameById(InstantPoison), nbInstantPoisonToBuy);
+                Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(InstantPoison));
+                Helpers.CloseWindow();
+                Thread.Sleep(1000);
+                if (ItemsManager.GetItemCountById(InstantPoison) >= 20)
+                    break;
+            }
+            Main.Logger($"Failed to buy {InstantPoison}, blacklisting vendor");
+            NPCBlackList.AddNPCToBlacklist(poisonVendor.Id);
         }
 
-        if (Me.Level >= 30)
+        // DEADLY POISON
+        if (Me.Level >= 30 && nbDeadlyPoisonToBuy > 0)
         {
-            int nbDeadlyPoisonToBuy = 20 - ItemsManager.GetItemCountById(DeadlyPoison);
-
-            if (nbDeadlyPoisonToBuy > 0)
+            for (int i = 0; i <= 5; i++)
             {
-                Main.Logger("Time to buy some Deadly Poison! " + DeadlyPoison);
-                GoToTask.ToPositionAndIntecractWithNpc(poisonVendor.Position, poisonVendor.Id);
-
-                // Vendor absent/dead
-                if (ObjectManager.GetObjectWoWUnit().Count(x => x.IsAlive && x.Name == poisonVendor.Name) <= 0)
-                {
-                    Main.Logger("Looks like " + poisonVendor.Name + " is not here, we choose another one");
-                    NPCBlackList.AddNPCToBlacklist(poisonVendor.Id);
-                    return;
-                }
-
-                Vendor.BuyItem(ItemsManager.GetNameById(DeadlyPoison), 20);
+                GoToTask.ToPositionAndIntecractWithNpc(poisonVendor.Position, poisonVendor.Id, i);
+                Helpers.BuyItem(ItemsManager.GetNameById(DeadlyPoison), 20);
                 Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(DeadlyPoison));
+                Helpers.CloseWindow();
+                Thread.Sleep(1000);
+                if (ItemsManager.GetItemCountById(DeadlyPoison) >= 20)
+                    break;
             }
+            Main.Logger($"Failed to buy {DeadlyPoison}, blacklisting vendor");
+            NPCBlackList.AddNPCToBlacklist(poisonVendor.Id);
         }
     }
 

@@ -1,14 +1,12 @@
 ﻿using robotManager.FiniteStateMachine;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using wManager;
 using wManager.Wow.Bot.Tasks;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
 using PoisonMaster;
 using Timer = robotManager.Helpful.Timer;
-using static PoisonMaster.PMEnums;
+using System.Threading;
 
 public class BuyDrinkState : State
 {
@@ -21,17 +19,17 @@ public class BuyDrinkState : State
 
     private readonly Dictionary<int, int> WaterDictionary = new Dictionary<int, int>
         {
-            { 0, 159 }, // Refreshing Spring water
-            { 5, 159 }, // Refreshing Spring water
-            { 10, 1179 }, // Ice Cold Milk
-            { 20, 1205 }, // Melon Juice
-            { 30, 1708 }, // Sweet Nectar
-            { 40, 1645 }, // Moonberry Juice
-            { 50, 8766 }, // Morning Glory Dew
-            { 61, 28399 }, // Filtered Draenic Water -- make sure this is only used in TBC
-            { 65, 27860 }, // Purified Draenic Water
+            { 75, 33444 }, // Pungent Seal Whey
             { 71, 33444 }, // Pungent Seal Whey -- make sure this is only used in WotLK
-            { 75, 33444 } // Pungent Seal Whey
+            { 65, 27860 }, // Purified Draenic Water
+            { 61, 28399 }, // Filtered Draenic Water -- make sure this is only used in TBC
+            { 50, 8766 }, // Morning Glory Dew
+            { 40, 1645 }, // Moonberry Juice
+            { 30, 1708 }, // Sweet Nectar
+            { 20, 1205 }, // Melon Juice
+            { 10, 1179 }, // Ice Cold Milk
+            { 5, 159 }, // Refreshing Spring water
+            { 0, 159 }, // Refreshing Spring water
         };
 
     public override bool NeedToRun
@@ -47,6 +45,9 @@ public class BuyDrinkState : State
                 return false;
 
             stateTimer = new Timer(5000);
+
+            if (Me.Level > 10) // to be moved
+                NPCBlackList.AddNPCListToBlacklist(new[] { 5871, 8307, 3489 });
 
             if (Helpers.OutOfDrink())
             {
@@ -64,35 +65,30 @@ public class BuyDrinkState : State
 
     public override void Run()
     {
-        if (Me.Level > 10)
-            NPCBlackList.AddNPCListToBlacklist(new[] { 5871, 8307, 3489 });
-
+        Main.Logger("Nearest Vendor from player:\n" + "Name: " + drinkVendor.Name + "[" + drinkVendor.Name + "]\nPosition: " + drinkVendor.Position.ToStringXml() + "\nDistance: " + drinkVendor.Position.DistanceTo(Me.Position) + " yrds");
+        
         if (Me.Position.DistanceTo(drinkVendor.Position) >= 6)
-        {
             GoToTask.ToPosition(drinkVendor.Position);
-        }
-        else
+
+        if (Helpers.NpcIsAbsentOrDead(drinkVendor))
+            return;
+
+        string drinkNameToBuy = ItemsManager.GetNameById(drinkToBuy);
+        wManagerSetting.CurrentSetting.DrinkName = drinkNameToBuy;
+
+        for (int i = 0; i <= 5; i++)
         {
-            if (Helpers.NpcIsAbsentOrDead(drinkVendor))
-                return;
-
+            GoToTask.ToPositionAndIntecractWithNpc(drinkVendor.Position, drinkVendor.Id, i);
+            Helpers.BuyItem(drinkNameToBuy, wManagerSetting.CurrentSetting.DrinkAmount);
+            Helpers.AddItemToDoNotSellList(drinkNameToBuy);
+            wManagerSetting.CurrentSetting.DrinkName = drinkNameToBuy;
             Helpers.CloseWindow();
-            for (int i = 0; i <= 5; i++)
-            {
-                GoToTask.ToPositionAndIntecractWithNpc(drinkVendor.Position, drinkVendor.Id, i);
-                //Main.Logger("Nearest Vendor from player:\n" + "Name: " + drinkVendor.Name + "[" + drinkVendor.Name + "]\nPosition: " + drinkVendor.Position.ToStringXml() + "\nDistance: " + drinkVendor.Position.DistanceTo(Me.Position) + " yrds");
-                
-                string drinkNameToBuy = ItemsManager.GetNameById(drinkToBuy);
-                Main.Logger($"Buying {wManagerSetting.CurrentSetting.DrinkAmount}x{drinkNameToBuy} ({i})");
-                //if (string.IsNullOrWhiteSpace(drinkNameToBuy))
-                //drinkNameToBuy = Helpers.GetBestFromVendor(PMConsumableType.Drink);
-
-                Helpers.BuyItem(drinkNameToBuy, wManagerSetting.CurrentSetting.DrinkAmount);
-                Helpers.AddItemToDoNotSellList(drinkNameToBuy);
-                SetDrinkInWRobot();
-                Helpers.CloseWindow();
-            }
+            Thread.Sleep(1000);
+            if (ItemsManager.GetItemCountById((uint)drinkToBuy) >= wManagerSetting.CurrentSetting.DrinkAmount)
+                return;
         }
+        Main.Logger($"Failed to buy {drinkNameToBuy}, blacklisting vendor");
+        NPCBlackList.AddNPCToBlacklist(drinkVendor.Id);
     }
 
     private DatabaseNPC SelectBestDrinkVendor()
@@ -119,17 +115,6 @@ public class BuyDrinkState : State
                 listDrink.Add((int)drink.Value);
         }
         return listDrink;
-    }
-
-    private void SetDrinkInWRobot()
-    {
-        string drink = Helpers.GetBestConsumableFromBags(PMConsumableType.Drink);
-        if (drink != null && wManagerSetting.CurrentSetting.RestingMana)
-        {
-            wManagerSetting.CurrentSetting.DrinkName = drink;
-            Helpers.AddItemToDoNotSellList(drink);
-            Main.Logger("Set drink: " + drink);
-        }
     }
 }
 

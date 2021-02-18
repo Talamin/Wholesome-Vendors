@@ -44,7 +44,7 @@ namespace PoisonMaster
                     }
 
                     state.Priority = priorityToSet;
-                    Main.Logger($"Adding state {state.DisplayName} with prio {priorityToSet}");
+                    //Main.Logger($"Adding state {state.DisplayName} with prio {priorityToSet}");
                     engine.AddState(state);
                     engine.States.Sort();
                 }
@@ -94,11 +94,11 @@ namespace PoisonMaster
                 .Select(i => ItemsManager.GetItemCountById((uint)i.Entry))
                 .Aggregate(0, (i, i2) => i + i2);
 
-            Main.Logger("Food in total: " + allFoodAmount);
+            //Main.Logger("Food in total: " + allFoodAmount);
 
             if (allFoodAmount < 1 && wManagerSetting.CurrentSetting.FoodAmount > 0)
             {
-                Main.Logger("Food: " + allFoodAmount);
+                //Main.Logger("Food: " + allFoodAmount);
                 return true;
             }
 
@@ -114,10 +114,10 @@ namespace PoisonMaster
                 .Select(i => ItemsManager.GetItemCountById((uint)i.Entry))
                 .Aggregate(0, (i, i2) => i + i2);
 
-            Main.Logger("Drinks in total: " + allDrinkAmount);
+            //Main.Logger("Drinks in total: " + allDrinkAmount);
             if (allDrinkAmount < 1 && wManagerSetting.CurrentSetting.DrinkAmount > 0)
             {
-                Main.Logger("Drinks: " + allDrinkAmount);
+                //Main.Logger("Drinks: " + allDrinkAmount);
                 return true;
             }
 
@@ -147,7 +147,10 @@ namespace PoisonMaster
         public static void AddItemToDoNotSellList(string itemName)
         {
             if (!wManagerSetting.CurrentSetting.DoNotSellList.Contains(itemName))
+            {
                 wManagerSetting.CurrentSetting.DoNotSellList.Add(itemName);
+                wManagerSetting.CurrentSetting.Save();
+            }
         }
 
         public static void SoftRestart()
@@ -199,7 +202,7 @@ namespace PoisonMaster
 
         public static void BuyItem(string name, int amount)
         {
-            Main.Logger("[Select Food] Buying " + amount + " " + name);
+            Main.Logger("Buying " + amount + " " + name);
             Lua.LuaDoString(string.Format(@"
                     local itemName = ""{0}""
                     local quantity = {1}

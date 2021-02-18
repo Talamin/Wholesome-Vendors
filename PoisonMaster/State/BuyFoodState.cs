@@ -8,31 +8,30 @@ using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
 using Timer = robotManager.Helpful.Timer;
 using PoisonMaster;
-using static PoisonMaster.PMEnums;
 
 public class BuyFoodState : State
 {
     public override string DisplayName => "Buying Food";
 
-    private static readonly Dictionary<int, List<uint>> FoodDictionary = new Dictionary<int, List<uint>>
+    private static readonly Dictionary<int, HashSet<int>> FoodDictionary = new Dictionary<int, HashSet<int>>
         {
-            { 0, new List<uint>{ 117, 4540, 2070, 4604, 787 , 4536} }, // Haunch of Meat
-            { 5, new List<uint>{ 117, 4540, 2070, 4604, 787 , 4537} }, // Haunch of Meat
-            { 10, new List<uint>{ 2287, 4541, 414, 4605, 4592, 4538} }, // Haunch of Meat
-            { 20, new List<uint>{ 3770, 4542, 422, 4606, 4593, 4538 } }, // Mutton Chop
-            { 25, new List<uint>{ 3771, 4544, 1707, 4607, 4594, 4539 } }, // Wild Hog Shank
-            { 35, new List<uint>{ 4599, 4601, 3927, 4608, 6887 } }, // Cured Ham Steak
-            { 45, new List<uint>{ 8952, 8950, 8932, 8948, 8957} }, // Roasted Quail
-            { 61, new List<uint>{ 27854, 27855, 27856, 27857, 27858, 27859 } }, // Smoked Talbuk Venison -- make sure this is only used in TBC
-            { 65, new List<uint>{ 29451, 29449, 29450, 29448, 29452, 29453 } }, // Clefthoof Ribs
-            { 75, new List<uint>{ 35953 } }, // Mead Basted Caribouhl au
-            { 85, new List<uint>{ 35953 } },
+            { 85, new HashSet<int>{ 35953 } },
+            { 75, new HashSet<int>{ 35953 } }, // Mead Basted Caribouhl au
+            { 65, new HashSet<int>{ 29451, 29449, 29450, 29448, 29452, 29453 } }, // Clefthoof Ribs
+            { 61, new HashSet<int>{ 27854, 27855, 27856, 27857, 27858, 27859 } }, // Smoked Talbuk Venison -- make sure this is only used in TBC
+            { 45, new HashSet<int>{ 8952, 8950, 8932, 8948, 8957} }, // Roasted Quail
+            { 35, new HashSet<int>{ 4599, 4601, 3927, 4608, 6887 } }, // Cured Ham Steak
+            { 25, new HashSet<int>{ 3771, 4544, 1707, 4607, 4594, 4539 } }, // Wild Hog Shank
+            { 20, new HashSet<int>{ 3770, 4542, 422, 4606, 4593, 4538 } }, // Mutton Chop
+            { 10, new HashSet<int>{ 2287, 4541, 414, 4605, 4592, 4538} }, // Haunch of Meat
+            { 5, new HashSet<int>{ 117, 4540, 2070, 4604, 787 , 4537} }, // Haunch of Meat
+            { 0, new HashSet<int>{ 117, 4540, 2070, 4604, 787 , 4536} }, // Haunch of Meat
         };
 
     private WoWLocalPlayer Me = ObjectManager.Me;
-    private List<uint> CurrentFoodList = new List<uint> { 0 };
     public static Timer stateTimer = new Timer();
     private DatabaseNPC foodVendor;
+    private int foodToBuy;
 
     public override bool NeedToRun
     {
@@ -47,9 +46,12 @@ public class BuyFoodState : State
 
             stateTimer = new Timer(5000);
 
+            if (Me.Level > 10) // to be moved
+                NPCBlackList.AddNPCListToBlacklist(new[] { 5871, 8307, 3489 });
+
             if (Helpers.OutOfFood())
             {
-                foodVendor = Database.GetFoodVendor();
+                foodVendor = SelectBestFoodVendor();
                 if (foodVendor == null)
                 {
                     Main.Logger("Couldn't find food vendor");
@@ -63,70 +65,59 @@ public class BuyFoodState : State
 
     public override void Run()
     {
-        SetFoodToBuy();
-
-        if (Me.Level > 10)
-            NPCBlackList.AddNPCListToBlacklist(new[] { 5871, 8307, 3489 });
+        Main.Logger("Nearest Vendor from player:\n" + "Name: " + foodVendor.Name + "[" + foodVendor.Id + "]\nPosition: " + foodVendor.Position.ToStringXml() + "\nDistance: " + foodVendor.Position.DistanceTo(Me.Position) + " yrds");
 
         if (Me.Position.DistanceTo(foodVendor.Position) >= 6)
-        {
             GoToTask.ToPosition(foodVendor.Position);
-        }
-        else
+
+        if (Helpers.NpcIsAbsentOrDead(foodVendor))
+            return;
+
+        string foodNameToBuy = ItemsManager.GetNameById(foodToBuy);
+        wManagerSetting.CurrentSetting.DrinkName = foodNameToBuy;
+
+        for (int i = 0; i <= 5; i++)
         {
-            if (Helpers.NpcIsAbsentOrDead(foodVendor))
-                return;
-
-            Helpers.CloseWindow();
-            GoToTask.ToPositionAndIntecractWithNpc(foodVendor.Position, foodVendor.Id, 2);
-            Main.Logger("Nearest Vendor from player:\n" + "Name: " + foodVendor.Name + "[" + foodVendor.Id + "]\nPosition: " + foodVendor.Position.ToStringXml() + "\nDistance: " + foodVendor.Position.DistanceTo(Me.Position) + " yrds");
-
-            List<string> vendorItemList = Helpers.GetVendorItemList();
-            string foodNameToBuy = vendorItemList.FirstOrDefault(i => CurrentFoodList.Select(ItemsManager.GetNameById).Contains(i));
-            wManagerSetting.CurrentSetting.FoodName = foodNameToBuy;
-
+            GoToTask.ToPositionAndIntecractWithNpc(foodVendor.Position, foodVendor.Id, i);
             Helpers.BuyItem(foodNameToBuy, wManagerSetting.CurrentSetting.FoodAmount);
             Helpers.AddItemToDoNotSellList(foodNameToBuy);
-            SetFoodInWRobot();
-
-            Thread.Sleep(2000);
-
-            GoToTask.ToPositionAndIntecractWithNpc(foodVendor.Position, foodVendor.Id, 3);
-
-            // 2nd try?
-            if (Helpers.OutOfFood())
-            {
-                vendorItemList = Helpers.GetVendorItemList();
-                foodNameToBuy = vendorItemList.FirstOrDefault(i => CurrentFoodList.Select(ItemsManager.GetNameById).Contains(i));
-                wManagerSetting.CurrentSetting.FoodName = foodNameToBuy;
-                Helpers.BuyItem(foodNameToBuy, wManagerSetting.CurrentSetting.FoodAmount);
-                Helpers.AddItemToDoNotSellList(foodNameToBuy);
-                SetFoodInWRobot();
-            }
-
-            Thread.Sleep(1000);
-
             Helpers.CloseWindow();
+            Thread.Sleep(1000);
+            if (ItemsManager.GetItemCountById((uint)foodToBuy) >= wManagerSetting.CurrentSetting.FoodAmount)
+                return;
         }
+        Main.Logger($"Failed to buy {foodNameToBuy}, blacklisting vendor");
+        NPCBlackList.AddNPCToBlacklist(foodVendor.Id);
     }
 
-    private void SetFoodToBuy()
+    private DatabaseNPC SelectBestFoodVendor()
     {
-        CurrentFoodList = FoodDictionary
-            .Where(i => i.Key <= Me.Level)
-            .OrderBy(i => i.Key)
-            .LastOrDefault().Value;
-    }
-
-    private void SetFoodInWRobot()
-    {
-        string food = Helpers.GetBestConsumableFromBags(PMConsumableType.Food);
-        if (!string.IsNullOrWhiteSpace(food))
+        foodToBuy = 0;
+        foreach (HashSet<int> foodList in GetListUsableFood())
         {
-            wManagerSetting.CurrentSetting.FoodName = food;
-            Helpers.AddItemToDoNotSellList(food);
-            Main.Logger("Select food: " + food);
+            foreach (int food in foodList)
+            {
+                DatabaseNPC vendorWithThisFood = Database.GetFoodVendor(new HashSet<int>(){ food });
+                if (vendorWithThisFood != null)
+                {
+                    foodToBuy = foodList.First(); // right now we're just chosing the first possible food
+                    return vendorWithThisFood;
+                }
+            }
         }
+        return null;
+
+    }
+
+    private List<HashSet<int>> GetListUsableFood()
+    {
+        List<HashSet<int>> listFood = new List<HashSet<int>>();
+        foreach (KeyValuePair<int, HashSet<int>> food in FoodDictionary)
+        {
+            if (food.Key <= Me.Level)
+                listFood.Add(food.Value);
+        }
+        return listFood;
     }
 }
 

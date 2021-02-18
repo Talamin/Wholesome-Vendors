@@ -12,7 +12,7 @@ using wManager.Wow.ObjectManager;
 
 public class Database
 {
-    private static CreatureFilter AmmoVendor = new CreatureFilter
+    private static CreatureFilter AmmoVendorFilter = new CreatureFilter
     {
         ContinentId = (ContinentId)Usefuls.ContinentId,
         ExcludeIds = NPCBlackList.myBlacklist,
@@ -24,7 +24,7 @@ public class Database
         }),
     };
 
-    private static CreatureFilter BuyVendorFilter = new CreatureFilter
+    private static CreatureFilter FoodVendorFilter = new CreatureFilter
     {
         ContinentId = (ContinentId)Usefuls.ContinentId,
         ExcludeIds = NPCBlackList.myBlacklist,
@@ -36,7 +36,7 @@ public class Database
             }),
     };
 
-    private static CreatureFilter PoisonVendor = new CreatureFilter
+    private static CreatureFilter PoisonVendorFilter = new CreatureFilter
     {
         ExcludeIds = NPCBlackList.myBlacklist,
         ContinentId = (ContinentId)Usefuls.ContinentId,
@@ -48,7 +48,7 @@ public class Database
             }),
     };
 
-    private static CreatureFilter repairVendorFilter = new CreatureFilter
+    private static CreatureFilter RepairVendorFilter = new CreatureFilter
     {
         ContinentId = (ContinentId)Usefuls.ContinentId,
         ExcludeIds = NPCBlackList.myBlacklist,
@@ -60,7 +60,7 @@ public class Database
             }),
     };
 
-    private static CreatureFilter sellVendorFilter = new CreatureFilter
+    private static CreatureFilter SellVendorFilter = new CreatureFilter
     {
         ContinentId = (ContinentId)Usefuls.ContinentId,
         ExcludeIds = NPCBlackList.myBlacklist,
@@ -76,17 +76,12 @@ public class Database
     {
         if (PluginSettings.CurrentSetting.Databasetype == "external")
         {
-            AmmoVendor.HasItems = new ItemIds(ContainedIn.Merchant, usableAmmo);
+            AmmoVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usableAmmo);
             HashSet<int> usableZones = GetListUsableZones();
 
-            List<creature> testVendors = DbCreature
-                .Get(AmmoVendor)
-                .ToList();
-            testVendors.ForEach(v => Main.Logger($"Ammo Vendor {v.Name} has areaId : {v.areaId}"));
-
             creature ammoVendor = DbCreature
-                .Get(AmmoVendor)
-                .Where(q=> usableZones.Contains(q.areaId))
+                .Get(AmmoVendorFilter)
+                //.Where(q=> usableZones.Contains(q.areaId))
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
                 .FirstOrDefault();
 
@@ -111,9 +106,9 @@ public class Database
     {
         if (PluginSettings.CurrentSetting.Databasetype == "external")
         {
-            AmmoVendor.HasItems = new ItemIds(ContainedIn.Merchant, usableDrink);
+            FoodVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usableDrink);
             creature drinkVendor = DbCreature
-                .Get(BuyVendorFilter)
+                .Get(FoodVendorFilter)
                 .Where(q => !NPCBlackList.OnlyFoodBlacklist.Contains(q.id) && !NPCBlackList.myBlacklist.Contains(q.id))
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
                 .FirstOrDefault();
@@ -134,12 +129,13 @@ public class Database
             return drinkVendor == null ? null : new DatabaseNPC(drinkVendor);
         }
     }
-    public static DatabaseNPC GetFoodVendor()
+    public static DatabaseNPC GetFoodVendor(HashSet<int> usableFood)
     {
         if (PluginSettings.CurrentSetting.Databasetype == "external")
         {
+            FoodVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usableFood);
             creature foodVendor = DbCreature
-                .Get(BuyVendorFilter)
+                .Get(FoodVendorFilter)
                 .Where(q => !NPCBlackList.myBlacklist.Contains(q.id))
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
                 .FirstOrDefault();
@@ -165,7 +161,7 @@ public class Database
         if (PluginSettings.CurrentSetting.Databasetype == "external")
         {
             creature poisonVendor = DbCreature
-                .Get(PoisonVendor)
+                .Get(PoisonVendorFilter)
                 .Where(q => !NPCBlackList.myBlacklist.Contains(q.id))
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
                 .FirstOrDefault();
@@ -191,7 +187,7 @@ public class Database
         if (PluginSettings.CurrentSetting.Databasetype == "external")
         {
             creature repairVendor = DbCreature
-                .Get(repairVendorFilter)
+                .Get(RepairVendorFilter)
                 .Where(q => !NPCBlackList.myBlacklist.Contains(q.id))
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
                 .FirstOrDefault();
@@ -215,7 +211,7 @@ public class Database
     {
         if (PluginSettings.CurrentSetting.Databasetype == "external")
         {
-            creature sellVendor = DbCreature.Get(sellVendorFilter)
+            creature sellVendor = DbCreature.Get(SellVendorFilter)
                 .Where(q => !NPCBlackList.myBlacklist.Contains(q.id))
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
                 .FirstOrDefault();

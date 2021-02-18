@@ -5,6 +5,8 @@ using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
 using Timer = robotManager.Helpful.Timer;
 using PoisonMaster;
+using System.Threading;
+using wManager;
 
 public class BuyAmmoState : State
 {
@@ -60,10 +62,7 @@ public class BuyAmmoState : State
             }
 
             if (ItemsManager.GetItemCountById((uint)AmmoToBuy) <= 50)
-            {
-                Main.Logger("We have to Buy ammo");
                 return true;
-            }
 
             return false;
         }
@@ -73,33 +72,37 @@ public class BuyAmmoState : State
     {
         if (Me.Position.DistanceTo(ammoVendor.Position) >= 6)
         {
-            Main.Logger("Running to Buy Arrows");
             Main.Logger("Nearest AmmunitionVendor from player:\n" + "Name: " + ammoVendor.Name + "[" + ammoVendor.Id + "]\nPosition: " + ammoVendor.Position.ToStringXml() + "\nDistance: " + ammoVendor.Position.DistanceTo(ObjectManager.Me.Position) + " yrds");
             GoToTask.ToPositionAndIntecractWithNpc(ammoVendor.Position, ammoVendor.Id);
         }
-        else
+        
+        if (Helpers.NpcIsAbsentOrDead(ammoVendor))
+            return;
+
+        for (int i = 0; i <= 5; i++)
         {
-            if (Helpers.NpcIsAbsentOrDead(ammoVendor))
-                return;
-          
-            Main.Logger("No Arrows found, time to buy some! " + AmmoToBuy);
-            GoToTask.ToPositionAndIntecractWithNpc(ammoVendor.Position, ammoVendor.Id);
+            GoToTask.ToPositionAndIntecractWithNpc(ammoVendor.Position, ammoVendor.Id, i);
             Vendor.BuyItem(ItemsManager.GetNameById(AmmoToBuy), 2000 / 200);
             Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(AmmoToBuy));
-            Main.Logger("We bought " + 2000 + " of  Arrows with id " + AmmoToBuy);
+            Helpers.CloseWindow();
+            Thread.Sleep(1000);
+            if (ItemsManager.GetItemCountById((uint)AmmoToBuy) >= wManagerSetting.CurrentSetting.DrinkAmount)
+                return;
         }
-        ammoVendor = null;
+        Main.Logger($"Failed to buy {AmmoToBuy}, blacklisting vendor");
+        NPCBlackList.AddNPCToBlacklist(ammoVendor.Id);
     }
 
     private DatabaseNPC SelectBestAmmoAndVendor()
     {
+        ammoVendor = null;
         AmmoToBuy = 0;
         foreach (int ammo in GetListUsableAmmo())
         {
             DatabaseNPC vendorWithThisAmmo = Database.GetAmmoVendor(new HashSet<int>() { ammo });
             if (vendorWithThisAmmo != null)
             {
-                Main.Logger($"Found vendor {vendorWithThisAmmo.Name} for item {ammo}");
+                //Main.Logger($"Found vendor {vendorWithThisAmmo.Name} for item {ammo}");
                 AmmoToBuy = ammo;
                 return vendorWithThisAmmo;
             }

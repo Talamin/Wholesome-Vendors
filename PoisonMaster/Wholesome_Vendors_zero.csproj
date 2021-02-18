@@ -83,7 +83,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="State\BuyAmmoState.cs" />
     <Compile Include="State\BuyPoisonState.cs" />
-    <Compile Include="State\SellItemsState.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
