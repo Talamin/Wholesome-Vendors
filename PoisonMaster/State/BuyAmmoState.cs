@@ -8,16 +8,14 @@ using PoisonMaster;
 
 public class BuyAmmoState : State
 {
-    public override string DisplayName => "Buying Arrows and Bullets";
+    public override string DisplayName => "Buying Ammunition";
 
     private WoWLocalPlayer Me = ObjectManager.Me;
-    private uint ArrowId = 0;
-    private uint BulletId = 0;
     private Timer stateTimer = new Timer();
     private DatabaseNPC ammoVendor;
-    public static HashSet<int> BuyingAmmuniton = new HashSet<int>();
+    private int AmmoToBuy = 0;
 
-    private readonly Dictionary<int, uint> ArrowDictionary = new Dictionary<int, uint>
+    private readonly Dictionary<int, int> ArrowDictionary = new Dictionary<int, int>
     {
         { 75, 41586 },
         { 65, 28056 },
@@ -28,7 +26,7 @@ public class BuyAmmoState : State
         { 1, 2512 },
     };
 
-    private readonly Dictionary<int, uint> BulletsDictionary = new Dictionary<int, uint>
+    private readonly Dictionary<int, int> BulletsDictionary = new Dictionary<int, int>
     {
         {75 ,41584},
         {65 ,28061},
@@ -49,27 +47,18 @@ public class BuyAmmoState : State
                 return false;
 
             stateTimer = new Timer(5000);
-            SetAmmoToBuy();
 
-            if (ArrowId == 0 && BulletId == 0)
-                return false;
+            ammoVendor = SelectBestAmmoAndVendor();
 
-            ammoVendor = Database.GetAmmoVendor();
             if (ammoVendor == null)
             {
                 Main.Logger("Couldn't find ammo vendor");
                 return false;
             }
 
-            if (ArrowId != 0 && ItemsManager.GetItemCountById(ArrowId) <= 50)
+            if (AmmoToBuy != 0 && ItemsManager.GetItemCountById((uint)AmmoToBuy) <= 50)
             {
-                Main.Logger("We have to Buy Arrows");
-                return true;
-            }
-
-            if (BulletId != 0 && ItemsManager.GetItemCountById(BulletId) <= 50)
-            {
-                Main.Logger("We have to Buy Bullets");
+                Main.Logger("We have to Buy ammo");
                 return true;
             }
 
@@ -90,48 +79,49 @@ public class BuyAmmoState : State
             if (Helpers.NpcIsAbsentOrDead(ammoVendor))
                 return;
           
-            Main.Logger("No Arrows found, time to buy some! " + ArrowId);
+            Main.Logger("No Arrows found, time to buy some! " + AmmoToBuy);
             GoToTask.ToPositionAndIntecractWithNpc(ammoVendor.Position, ammoVendor.Id);
-            Vendor.BuyItem(ItemsManager.GetNameById(ArrowId), 2000 / 200);
-            Main.Logger("We bought " + 2000 + " of  Arrows with id " + ArrowId);
+            Vendor.BuyItem(ItemsManager.GetNameById(AmmoToBuy), 2000 / 200);
+            Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(AmmoToBuy));
+            Main.Logger("We bought " + 2000 + " of  Arrows with id " + AmmoToBuy);
         }
         ammoVendor = null;
     }
 
-    private void SetAmmoToBuy()
+    private DatabaseNPC SelectBestAmmoAndVendor()
     {
+        AmmoToBuy = 0;
+        foreach (int ammo in GetListUsableAmmo())
+        {
+            DatabaseNPC vendorWithThisAmmo = Database.GetAmmoVendor(new HashSet<int>() { ammo });
+            if (vendorWithThisAmmo != null)
+            {
+                AmmoToBuy = ammo;
+                return vendorWithThisAmmo;
+            }
+        }
+        return null;
+    }
+
+    private HashSet<int> GetListUsableAmmo()
+    {
+        HashSet<int> listAmmo = new HashSet<int>();
         if (Helpers.GetRangedWeaponType() == "Bows")
         {
-            foreach (KeyValuePair<int, uint> arrow in ArrowDictionary)
+            foreach (KeyValuePair<int, int> arrow in ArrowDictionary)
             {
                 if (arrow.Key <= Me.Level)
-                {
-                    //Main.Logger($"Selected Arrow Level {level}");
-                    Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(arrow.Value));
-                    ArrowId = arrow.Value;
-                    BulletId = 0;
-                    BuyingAmmuniton.Clear();
-                    if(!BuyingAmmuniton.Contains((int)ArrowId))
-                    {
-                        BuyingAmmuniton.Add((int)ArrowId);
-                    }
-                    break;
-                }
+                    listAmmo.Add(arrow.Value);
             }
         }
         else if (Helpers.GetRangedWeaponType() == "Guns")
         {
-            foreach (KeyValuePair<int, uint> bullet in BulletsDictionary)
+            foreach (KeyValuePair<int, int> bullet in BulletsDictionary)
             {
                 if (bullet.Key <= Me.Level)
-                {
-                    //Main.Logger($"Selected Arrow Level {level}");
-                    Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(bullet.Value));
-                    BulletId = bullet.Value;
-                    ArrowId = 0;
-                    break;
-                }
+                    listAmmo.Add(bullet.Value);
             }
         }
+        return listAmmo;
     }
 }
