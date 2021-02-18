@@ -84,12 +84,12 @@ public class Main : IPlugin
             stateAddTimer = new Timer(3000);
 
             Helpers.AddState(engine, buyPoisonState, "To Town");
-            Helpers.AddState(engine, buyArrowsState, "Buying Poison");
-            Helpers.AddState(engine, buyFoodState, "Buying Arrows and Bullets");
-            Helpers.AddState(engine, buyDrinkState, "Buying Food");
-            Helpers.AddState(engine, repairState, "Buying Drink");
-            Helpers.AddState(engine, sellItemsState, "Repair Run");
-		}
+            Helpers.AddState(engine, buyArrowsState, "To Town");
+            Helpers.AddState(engine, buyFoodState, "To Town");
+            Helpers.AddState(engine, buyDrinkState, "To Town");
+            Helpers.AddState(engine, repairState, "To Town");
+            Helpers.AddState(engine, sellItemsState, "To Town");
+        }
 	}
 
     public static void Logger(string message)
