@@ -1,10 +1,7 @@
 ﻿using robotManager.Helpful;
-using robotManager.Products;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
 using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Configuration;
 using System.ComponentModel;
 using System.IO;
@@ -18,14 +15,14 @@ public class PluginSettings : Settings
     [Category("Buying")]
     [DisplayName("Buy Food")]
     [Description("Allow Autobuy Food")]
-    public bool AllowAutobuyFood { get; set; }
+    public bool AutobuyFood { get; set; }
 
     [Setting]
     [DefaultValue(true)]
     [Category("Buying")]
     [DisplayName("Buy Water")]
     [Description("Allow Autobuy Water")]
-    public bool AllowAutobuyWater { get; set; }
+    public bool AutoBuyWater { get; set; }
 
     [Setting]
     [DefaultValue(true)]
@@ -39,7 +36,7 @@ public class PluginSettings : Settings
     [Category("Buying")]
     [DisplayName("Buy Ammunition")]
     [Description("Allow Autobuy Ammunition")]
-    public bool AllowAutobuyAmmunition { get; set; }
+    public bool AutobuyAmmunition { get; set; }
 
     [Setting]
     [DefaultValue(true)]
@@ -53,7 +50,7 @@ public class PluginSettings : Settings
     [Category("SellRepair")]
     [DisplayName("Repair")]
     [Description("Allow Autorepair")]
-    public bool AllowAutoRepair { get; set; }
+    public bool AutoRepair { get; set; }
 
     [Setting]
     [DefaultValue(false)]
@@ -66,14 +63,12 @@ public class PluginSettings : Settings
     public PluginSettings()
     {
         Databasetype = "external";
-        AllowAutobuyFood = true;
-        AllowAutobuyWater = true;
+        AutobuyFood = true;
+        AutoBuyWater = true;
         AllowAutobuyPoison = true;
-        AllowAutobuyAmmunition = true;
-        AllowAutoRepair = true;
+        AutobuyAmmunition = true;
+        AutoRepair = true;
         AllowAutoSell = true;
-
-        ConfigWinForm(new System.Drawing.Point(800, 600));
     }
 
     public static PluginSettings CurrentSetting { get; set; }
@@ -109,10 +104,12 @@ public class PluginSettings : Settings
         }
         return false;
     }
+
     public void ShowConfiguration()
     {
         var settingWindow = new SettingsWindow(this);
         settingWindow.ShowDialog();
+        settingWindow.SaveWindowPosition = true;
         settingWindow.Title = $"{ObjectManager.Me.Name}";
     }
 }

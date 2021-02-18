@@ -11,10 +11,10 @@ public class PoisonNPC
     public Vector3 Position { get; set; }
     public string Name { get; set; }
 
-    public PoisonNPC(int ID, Vector3 POSITION, string NAME)
+    public PoisonNPC(int id, Vector3 position, string name)
     {
-        id = ID;
-        Position = POSITION;
-        Name = NAME;
+        this.id = id;
+        Position = position;
+        Name = name;
     }
 }
