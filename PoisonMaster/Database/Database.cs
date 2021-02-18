@@ -105,10 +105,11 @@ public class Database
         }
     }
 
-    public static DatabaseNPC GetDrinkVendor()
+    public static DatabaseNPC GetDrinkVendor(HashSet<int> usableDrink)
     {
         if (PluginSettings.CurrentSetting.Databasetype == "external")
         {
+            AmmoVendor.HasItems = new ItemIds(ContainedIn.Merchant, usableDrink);
             creature drinkVendor = DbCreature
                 .Get(BuyVendorFilter)
                 .Where(q => !NPCBlackList.OnlyFoodBlacklist.Contains(q.id) && !NPCBlackList.myBlacklist.Contains(q.id))
