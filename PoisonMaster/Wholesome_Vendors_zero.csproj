@@ -25,10 +25,11 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>F:\WoW\WoW Wotlk\WRobot WOTLK\Plugins\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DatabaseManager">
@@ -68,6 +69,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AutoUpdater.cs" />
     <Compile Include="Blacklist\NPCBlackList.cs" />
     <Compile Include="Database\Database.cs" />
     <Compile Include="Database\DatabaseNPC.cs" />
@@ -84,9 +86,15 @@
     <Compile Include="State\BuyAmmoState.cs" />
     <Compile Include="State\BuyPoisonState.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Compiled\Version.txt" />
+    <Content Include="Compiled\Wholesome_Vendors.dll" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="AfterCompile">
     <Exec Command="if &quot;$(ConfigurationName)&quot; == &quot;Release&quot; (&quot;$(ProjectDir)_ConfuserEx\Confuser.CLI.exe&quot; &quot;$(ProjectDir)_ConfuserEx\c.crproj&quot;)&#xD;&#xA;" />
   </Target>
+  <PropertyGroup>
+    <PostBuildEvent>copy /Y "$(TargetDir)\Wholesome_Vendors.dll" "$(SolutionDir)\Compiled\Wholesome_Vendors.dll"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

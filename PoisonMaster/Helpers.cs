@@ -160,6 +160,21 @@ namespace PoisonMaster
             Products.InPause = false;
         }
 
+        public static void Restart()
+        {
+            new Thread(() =>
+            {
+                Products.ProductStop();
+                Thread.Sleep(2000);
+                Products.ProductStart();
+            }).Start();
+        }
+
+        public static string GetWoWVersion()
+        {
+            return Lua.LuaDoString<string>("v, b, d, t = GetBuildInfo(); return v");
+        }
+
         public static string GetBestConsumableFromBags(PMConsumableType consumableType)
         {
             WoWItem bestConsumable = Bag.GetBagItem()

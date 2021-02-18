@@ -14,7 +14,7 @@ public class Main : IPlugin
 {
     private readonly BackgroundWorker _pulseThread = new BackgroundWorker();
     private static string Name = "Wholesome Vendors";
-    private static bool IsLaunched;
+    //private static bool IsLaunched;
 
     private Timer stateAddTimer;
 
@@ -25,14 +25,26 @@ public class Main : IPlugin
     public static State buyDrinkState = new BuyDrinkState();
     public static State repairState = new RepairState();
 
+    public static string version = "0.0.1"; // Must match version in Version.txt
+
     public void Initialize()
     {
         try
         {
             PluginSettings.Load();
+
+            if (AutoUpdater.CheckUpdate(version))
+            {
+                Logger("New version downloaded, restarting, please wait");
+                Helpers.Restart();
+                return;
+            }
+
+            Logger($"Launching version {version} on client {Helpers.GetWoWVersion()}");
+
             EventsLua.AttachEventLua("PLAYER_EQUIPMENT_CHANGED", m => Helpers.GetRangedWeaponType());
             FiniteStateMachineEvents.OnRunState += StateAddEventHandler;
-            IsLaunched = true;
+            //IsLaunched = true;
             _pulseThread.RunWorkerAsync();
 
             if (PluginSettings.CurrentSetting.AutoBuyWater || PluginSettings.CurrentSetting.AutobuyFood)
@@ -40,8 +52,6 @@ public class Main : IPlugin
                 wManagerSetting.CurrentSetting.TryToUseBestBagFoodDrink = false;
                 wManagerSetting.CurrentSetting.Save();
             }
-
-            Helpers.GetRangedWeaponType();
         }
         catch (Exception ex)
         {
@@ -51,7 +61,7 @@ public class Main : IPlugin
 
     public void Dispose()
     {
-        IsLaunched = false;
+        //IsLaunched = false;
         FiniteStateMachineEvents.OnRunState -= StateAddEventHandler;
         _pulseThread.Dispose();
         Logger("Plugin was terminated!");

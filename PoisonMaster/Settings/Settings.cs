@@ -60,6 +60,8 @@ public class PluginSettings : Settings
     //[DropdownList(new string[] {"internal","external" })]
     public string Databasetype { get; set; }
 
+    public double LastUpdateDate { get; set; }
+
     public PluginSettings()
     {
         Databasetype = "external";
@@ -69,6 +71,7 @@ public class PluginSettings : Settings
         AutobuyAmmunition = true;
         AutoRepair = true;
         AllowAutoSell = true;
+        LastUpdateDate = 0;
     }
 
     public static PluginSettings CurrentSetting { get; set; }
