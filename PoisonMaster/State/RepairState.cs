@@ -3,6 +3,7 @@ using robotManager.FiniteStateMachine;
 using System.Collections.Generic;
 using System.Threading;
 using wManager.Wow.Bot.Tasks;
+using wManager.Wow.Enums;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
 using Timer = robotManager.Helpful.Timer;
@@ -18,22 +19,23 @@ public class RepairState : State
     {
         get
         {
-            if (!stateTimer.IsReady
-                || (PluginSettings.CurrentSetting.AutoRepair && ObjectManager.Me.GetDurabilityPercent > 35)
-                || (PluginSettings.CurrentSetting.AllowAutoSell && Bag.GetContainerNumFreeSlots < 3))
+            if (!stateTimer.IsReady)
                 return false;
 
             stateTimer = new Timer(5000);
 
-            // TODO case when the user doesn't have enough money to repair
-
-            repairVendor = Database.GetRepairVendor();
-            if (repairVendor == null)
+            if (PluginSettings.CurrentSetting.AutoRepair && ObjectManager.Me.GetDurabilityPercent < 35
+                || PluginSettings.CurrentSetting.AllowAutoSell && Bag.GetContainerNumFreeSlotsByType(BagType.Unspecified) <= 3)
             {
-                Main.Logger("Couldn't find repair vendor");
-                return false;
+                repairVendor = Database.GetRepairVendor();
+                if (repairVendor == null)
+                {
+                    Main.Logger("Couldn't find repair vendor");
+                    return false;
+                }
+                return true;
             }
-            return true;
+            return false;
         }
     }
 
@@ -78,15 +80,14 @@ public class RepairState : State
             Helpers.CloseWindow();
             Thread.Sleep(1000);
 
-            if (ObjectManager.Me.GetDurabilityPercent <= 35)
+            if (ObjectManager.Me.GetDurabilityPercent >= 35)
                 break;
         }
 
-        if (ObjectManager.Me.GetDurabilityPercent > 35)
+        if (ObjectManager.Me.GetDurabilityPercent < 35)
         {
             Main.Logger($"Failed to repair, blacklisting vendor");
             NPCBlackList.AddNPCToBlacklist(repairVendor.Id);
         }
-        
     }
 }
