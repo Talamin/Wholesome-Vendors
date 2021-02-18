@@ -17,7 +17,7 @@ public class BuyDrinkState : State
     private WoWLocalPlayer Me = ObjectManager.Me;
     private Timer stateTimer = new Timer();
     private DatabaseNPC drinkVendor;
-    private static int drinkToBuy = 159;
+    private int drinkToBuy;
 
     private readonly Dictionary<int, int> WaterDictionary = new Dictionary<int, int>
         {
@@ -64,8 +64,6 @@ public class BuyDrinkState : State
 
     public override void Run()
     {
-        //SetDrinkToBuy();
-
         if (Me.Level > 10)
             NPCBlackList.AddNPCListToBlacklist(new[] { 5871, 8307, 3489 });
 
@@ -79,37 +77,21 @@ public class BuyDrinkState : State
                 return;
 
             Helpers.CloseWindow();
-            GoToTask.ToPositionAndIntecractWithNpc(drinkVendor.Position, drinkVendor.Id, 2);
-            Main.Logger("Nearest Vendor from player:\n" + "Name: " + drinkVendor.Name + "[" + drinkVendor.Id + "]\nPosition: " + drinkVendor.Position.ToStringXml() + "\nDistance: " + drinkVendor.Position.DistanceTo(Me.Position) + " yrds");
-
-            string drinkNameToBuy = ItemsManager.GetNameById(drinkToBuy);
-            if (string.IsNullOrWhiteSpace(drinkNameToBuy))
-                drinkNameToBuy = Helpers.GetBestFromVendor(PMConsumableType.Drink);
-
-            Helpers.BuyItem(drinkNameToBuy, wManagerSetting.CurrentSetting.DrinkAmount);
-            Helpers.AddItemToDoNotSellList(drinkNameToBuy);
-            SetDrinkInWRobot();
-
-            Thread.Sleep(2000);
-
-            GoToTask.ToPositionAndIntecractWithNpc(drinkVendor.Position, drinkVendor.Id, 3);
-
-            // 2nd try?
-            if (Helpers.OutOfDrink())
+            for (int i = 0; i <= 5; i++)
             {
-                drinkNameToBuy = ItemsManager.GetNameById(drinkToBuy);
-                if (string.IsNullOrWhiteSpace(drinkNameToBuy))
-                    drinkNameToBuy = Helpers.GetBestFromVendor(PMConsumableType.Drink);
+                GoToTask.ToPositionAndIntecractWithNpc(drinkVendor.Position, drinkVendor.Id, i);
+                //Main.Logger("Nearest Vendor from player:\n" + "Name: " + drinkVendor.Name + "[" + drinkVendor.Name + "]\nPosition: " + drinkVendor.Position.ToStringXml() + "\nDistance: " + drinkVendor.Position.DistanceTo(Me.Position) + " yrds");
+                
+                string drinkNameToBuy = ItemsManager.GetNameById(drinkToBuy);
+                Main.Logger($"Buying {wManagerSetting.CurrentSetting.DrinkAmount}x{drinkNameToBuy} ({i})");
+                //if (string.IsNullOrWhiteSpace(drinkNameToBuy))
+                //drinkNameToBuy = Helpers.GetBestFromVendor(PMConsumableType.Drink);
 
-                wManagerSetting.CurrentSetting.DrinkName = drinkNameToBuy;
                 Helpers.BuyItem(drinkNameToBuy, wManagerSetting.CurrentSetting.DrinkAmount);
                 Helpers.AddItemToDoNotSellList(drinkNameToBuy);
                 SetDrinkInWRobot();
+                Helpers.CloseWindow();
             }
-
-            Thread.Sleep(1000);
-
-            Helpers.CloseWindow();
         }
     }
 
@@ -127,6 +109,7 @@ public class BuyDrinkState : State
         }
         return null;
     }
+
     private HashSet<int> GetListUsableDrink()
     {
         HashSet<int> listDrink = new HashSet<int>();
@@ -137,14 +120,6 @@ public class BuyDrinkState : State
         }
         return listDrink;
     }
-
-    //private void SetDrinkToBuy()
-    //{
-    //    drinkToBuy = WaterDictionary
-    //        .Where(i => i.Key <= Me.Level)
-    //        .OrderBy(i => i.Key)
-    //        .LastOrDefault().Value;
-    //}
 
     private void SetDrinkInWRobot()
     {

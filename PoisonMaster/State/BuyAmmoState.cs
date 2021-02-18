@@ -50,13 +50,16 @@ public class BuyAmmoState : State
 
             ammoVendor = SelectBestAmmoAndVendor();
 
+            if (AmmoToBuy == 0)
+                return false;
+
             if (ammoVendor == null)
             {
                 Main.Logger("Couldn't find ammo vendor");
                 return false;
             }
 
-            if (AmmoToBuy != 0 && ItemsManager.GetItemCountById((uint)AmmoToBuy) <= 50)
+            if (ItemsManager.GetItemCountById((uint)AmmoToBuy) <= 50)
             {
                 Main.Logger("We have to Buy ammo");
                 return true;
@@ -96,6 +99,7 @@ public class BuyAmmoState : State
             DatabaseNPC vendorWithThisAmmo = Database.GetAmmoVendor(new HashSet<int>() { ammo });
             if (vendorWithThisAmmo != null)
             {
+                Main.Logger($"Found vendor {vendorWithThisAmmo.Name} for item {ammo}");
                 AmmoToBuy = ammo;
                 return vendorWithThisAmmo;
             }

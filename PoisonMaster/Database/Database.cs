@@ -12,12 +12,6 @@ using wManager.Wow.ObjectManager;
 
 public class Database
 {
-    //private static ItemFilter AmmunitionFilter = new ItemFilter
-    //{
-    //    MinLevelRequired = (int)ObjectManager.Me.Level - 4,
-    //    MaxLevelRequired = (int)ObjectManager.Me.Level,
-    //    Type = new ItemClass(Projectile.Arrow)
-    //};
     private static CreatureFilter AmmoVendor = new CreatureFilter
     {
         ContinentId = (ContinentId)Usefuls.ContinentId,
@@ -83,9 +77,16 @@ public class Database
         if (PluginSettings.CurrentSetting.Databasetype == "external")
         {
             AmmoVendor.HasItems = new ItemIds(ContainedIn.Merchant, usableAmmo);
+            HashSet<int> usableZones = GetListUsableZones();
+
+            List<creature> testVendors = DbCreature
+                .Get(AmmoVendor)
+                .ToList();
+            testVendors.ForEach(v => Main.Logger($"Ammo Vendor {v.Name} has areaId : {v.areaId}"));
+
             creature ammoVendor = DbCreature
                 .Get(AmmoVendor)
-                .Where(q=> GetListUsableZones().Contains(q.areaId))
+                .Where(q=> usableZones.Contains(q.areaId))
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
                 .FirstOrDefault();
 
@@ -319,7 +320,6 @@ public class Database
         {4812,77}, //IcecrownCitadel
         {210,77}, //IcecrownGlacier
         {4395,80}, //Dalaran
-
     };
 }
 
