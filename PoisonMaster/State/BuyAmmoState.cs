@@ -15,6 +15,7 @@ public class BuyAmmoState : State
     private uint BulletId = 0;
     private Timer stateTimer = new Timer();
     private DatabaseNPC ammoVendor;
+    public static HashSet<int> BuyingAmmuniton = new HashSet<int>();
 
     private readonly Dictionary<int, uint> ArrowDictionary = new Dictionary<int, uint>
     {
@@ -109,6 +110,11 @@ public class BuyAmmoState : State
                     Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(arrow.Value));
                     ArrowId = arrow.Value;
                     BulletId = 0;
+                    BuyingAmmuniton.Clear();
+                    if(!BuyingAmmuniton.Contains((int)ArrowId))
+                    {
+                        BuyingAmmuniton.Add((int)ArrowId);
+                    }
                     break;
                 }
             }

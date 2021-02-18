@@ -12,6 +12,12 @@ using wManager.Wow.ObjectManager;
 
 public class Database
 {
+    //private static ItemFilter AmmunitionFilter = new ItemFilter
+    //{
+    //    MinLevelRequired = (int)ObjectManager.Me.Level - 4,
+    //    MaxLevelRequired = (int)ObjectManager.Me.Level,
+    //    Type = new ItemClass(Projectile.Arrow)
+    //};
     private static CreatureFilter AmmoVendor = new CreatureFilter
     {
         ContinentId = (ContinentId)Usefuls.ContinentId,
@@ -21,7 +27,7 @@ public class Database
         new List<UnitNPCFlags>
         {
                 UnitNPCFlags.SellsAmmo
-        })
+        }),
     };
 
     private static CreatureFilter BuyVendorFilter = new CreatureFilter
@@ -76,6 +82,7 @@ public class Database
     {
         if (PluginSettings.CurrentSetting.Databasetype == "external")
         {
+            AmmoVendor.HasItems = new ItemIds(ContainedIn.Merchant, BuyAmmoState.BuyingAmmuniton);
             creature ammoVendor = DbCreature
                 .Get(AmmoVendor)
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
