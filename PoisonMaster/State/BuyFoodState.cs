@@ -74,7 +74,8 @@ public class BuyFoodState : State
             return;
 
         string foodNameToBuy = ItemsManager.GetNameById(foodToBuy);
-        wManagerSetting.CurrentSetting.DrinkName = foodNameToBuy;
+        wManagerSetting.CurrentSetting.FoodName = foodNameToBuy;
+        wManagerSetting.CurrentSetting.Save();
 
         for (int i = 0; i <= 5; i++)
         {

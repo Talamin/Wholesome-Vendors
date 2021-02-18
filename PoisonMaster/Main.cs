@@ -37,7 +37,10 @@ public class Main : IPlugin
             _pulseThread.RunWorkerAsync();
 
             if (PluginSettings.CurrentSetting.AutoBuyWater || PluginSettings.CurrentSetting.AutobuyFood)
+            {
                 wManagerSetting.CurrentSetting.TryToUseBestBagFoodDrink = false;
+                wManagerSetting.CurrentSetting.Save();
+            }
 
             Helpers.GetRangedWeaponType();
         }

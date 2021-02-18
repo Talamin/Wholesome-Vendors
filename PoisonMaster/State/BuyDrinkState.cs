@@ -75,6 +75,7 @@ public class BuyDrinkState : State
 
         string drinkNameToBuy = ItemsManager.GetNameById(drinkToBuy);
         wManagerSetting.CurrentSetting.DrinkName = drinkNameToBuy;
+        wManagerSetting.CurrentSetting.Save();
 
         for (int i = 0; i <= 5; i++)
         {
