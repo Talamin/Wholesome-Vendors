@@ -78,11 +78,11 @@ public class Database
             }),
     };
 
-    public static DatabaseNPC GetAmmoVendor()
+    public static DatabaseNPC GetAmmoVendor(HashSet<int> usableAmmo)
     {
         if (PluginSettings.CurrentSetting.Databasetype == "external")
         {
-            AmmoVendor.HasItems = new ItemIds(ContainedIn.Merchant, BuyAmmoState.BuyingAmmuniton);
+            AmmoVendor.HasItems = new ItemIds(ContainedIn.Merchant, usableAmmo);
             creature ammoVendor = DbCreature
                 .Get(AmmoVendor)
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
