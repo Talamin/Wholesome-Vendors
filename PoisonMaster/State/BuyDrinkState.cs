@@ -17,9 +17,9 @@ public class BuyDrinkState : State
     private WoWLocalPlayer Me = ObjectManager.Me;
     private Timer stateTimer = new Timer();
     private DatabaseNPC drinkVendor;
-    private static uint drinkToBuy = 159;
+    private static int drinkToBuy = 159;
 
-    private readonly Dictionary<int, uint> WaterDictionary = new Dictionary<int, uint>
+    private readonly Dictionary<int, int> WaterDictionary = new Dictionary<int, int>
         {
             { 0, 159 }, // Refreshing Spring water
             { 5, 159 }, // Refreshing Spring water
@@ -50,7 +50,7 @@ public class BuyDrinkState : State
 
             if (Helpers.OutOfDrink())
             {
-                drinkVendor = Database.GetDrinkVendor();
+                drinkVendor = SelectBestDrinkVendor();
                 if (drinkVendor == null)
                 {
                     Main.Logger("Couldn't find drink vendor");
@@ -64,7 +64,7 @@ public class BuyDrinkState : State
 
     public override void Run()
     {
-        SetDrinkToBuy();
+        //SetDrinkToBuy();
 
         if (Me.Level > 10)
             NPCBlackList.AddNPCListToBlacklist(new[] { 5871, 8307, 3489 });
@@ -113,13 +113,38 @@ public class BuyDrinkState : State
         }
     }
 
-    private void SetDrinkToBuy()
+    private DatabaseNPC SelectBestDrinkVendor()
     {
-        drinkToBuy = WaterDictionary
-            .Where(i => i.Key <= Me.Level)
-            .OrderBy(i => i.Key)
-            .LastOrDefault().Value;
+        drinkToBuy = 0;
+        foreach(int drink in GetListUsableDrink())
+        {
+            DatabaseNPC vendorWithThisDrink = Database.GetDrinkVendor(new HashSet<int>() { drink });
+            if(vendorWithThisDrink !=null)
+            {
+                drinkToBuy = drink;
+                return vendorWithThisDrink;
+            }
+        }
+        return null;
     }
+    private HashSet<int> GetListUsableDrink()
+    {
+        HashSet<int> listDrink = new HashSet<int>();
+        foreach (KeyValuePair<int,int> drink in WaterDictionary)
+        {
+            if (drink.Key <= Me.Level)
+                listDrink.Add((int)drink.Value);
+        }
+        return listDrink;
+    }
+
+    //private void SetDrinkToBuy()
+    //{
+    //    drinkToBuy = WaterDictionary
+    //        .Where(i => i.Key <= Me.Level)
+    //        .OrderBy(i => i.Key)
+    //        .LastOrDefault().Value;
+    //}
 
     private void SetDrinkInWRobot()
     {
