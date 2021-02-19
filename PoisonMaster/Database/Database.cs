@@ -107,19 +107,11 @@ public class Database
     {
         if (PluginSettings.CurrentSetting.Databasetype == "external")
         {
-            // TO BE REMOVED
-            //int myZoneId = Lua.LuaDoString<int>($"return GetCurrentMapAreaID()");
-            //List<creature> testZone = DbCreature
-            //    .Get(FoodVendorFilter)
-            //    .Where(c => c.zoneId == myZoneId - 1)
-            //    .ToList();
-            //testZone.ForEach(c => Main.Logger($"{c.Name} is in my zone ({c.zoneId})"));
-            //
-
+            HashSet<int> usableZones = GetListUsableZones();
             FoodVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usableDrink);
             creature drinkVendor = DbCreature
                 .Get(FoodVendorFilter)
-                .Where(q => !NPCBlackList.OnlyFoodBlacklist.Contains(q.id) && !NPCBlackList.myBlacklist.Contains(q.id))
+                .Where(q => !NPCBlackList.OnlyFoodBlacklist.Contains(q.id) && !NPCBlackList.myBlacklist.Contains(q.id) && usableZones.Contains(q.zoneId + 1))
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
                 .FirstOrDefault();
 
@@ -143,10 +135,11 @@ public class Database
     {
         if (PluginSettings.CurrentSetting.Databasetype == "external")
         {
+            HashSet<int> usableZones = GetListUsableZones();
             FoodVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usableFood);
             creature foodVendor = DbCreature
                 .Get(FoodVendorFilter)
-                .Where(q => !NPCBlackList.myBlacklist.Contains(q.id))
+                .Where(q => !NPCBlackList.myBlacklist.Contains(q.id) && usableZones.Contains(q.zoneId + 1))
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
                 .FirstOrDefault();
 
@@ -170,10 +163,11 @@ public class Database
     {
         if (PluginSettings.CurrentSetting.Databasetype == "external")
         {
+            HashSet<int> usableZones = GetListUsableZones();
             PoisonVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usablePoison);
             creature poisonVendor = DbCreature
                 .Get(PoisonVendorFilter)
-                .Where(q => !NPCBlackList.myBlacklist.Contains(q.id))
+                .Where(q => !NPCBlackList.myBlacklist.Contains(q.id) && usableZones.Contains(q.zoneId + 1))
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
                 .FirstOrDefault();
 
@@ -197,9 +191,10 @@ public class Database
     {
         if (PluginSettings.CurrentSetting.Databasetype == "external")
         {
+            HashSet<int> usableZones = GetListUsableZones();
             creature repairVendor = DbCreature
                 .Get(RepairVendorFilter)
-                .Where(q => !NPCBlackList.myBlacklist.Contains(q.id))
+                .Where(q => !NPCBlackList.myBlacklist.Contains(q.id) && usableZones.Contains(q.zoneId + 1))
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
                 .FirstOrDefault();
 
@@ -222,8 +217,9 @@ public class Database
     {
         if (PluginSettings.CurrentSetting.Databasetype == "external")
         {
+            HashSet<int> usableZones = GetListUsableZones();
             creature sellVendor = DbCreature.Get(SellVendorFilter)
-                .Where(q => !NPCBlackList.myBlacklist.Contains(q.id))
+                .Where(q => !NPCBlackList.myBlacklist.Contains(q.id) && usableZones.Contains(q.zoneId + 1))
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
                 .FirstOrDefault();
 
