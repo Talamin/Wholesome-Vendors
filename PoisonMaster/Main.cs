@@ -26,7 +26,7 @@ public class Main : IPlugin
     public static State repairState = new RepairState();
     public static State trainingState = new TrainingState();
 
-    public static string version = "0.0.3"; // Must match version in Version.txt
+    public static string version = "0.0.4"; // Must match version in Version.txt
 
     public void Initialize()
     {
@@ -102,7 +102,7 @@ public class Main : IPlugin
             Helpers.AddState(engine, buyDrinkState, "To Town");
             Helpers.AddState(engine, repairState, "To Town");
             Helpers.AddState(engine, trainingState, "Trainers");
-            engine.States.ForEach(s => Logger($"{s.Priority} -> {s.DisplayName}"));
+            //engine.States.ForEach(s => Logger($"{s.Priority} -> {s.DisplayName}"));
         }
 	}
 
