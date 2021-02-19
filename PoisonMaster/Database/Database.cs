@@ -81,7 +81,7 @@ public class Database
 
             creature ammoVendor = DbCreature
                 .Get(AmmoVendorFilter)
-                .Where(q=> usableZones.Contains(q.zoneId))
+                .Where(q=> usableZones.Contains(q.zoneId +1))
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
                 .FirstOrDefault();
 
