@@ -28,7 +28,7 @@ public class Database
     {
         ContinentId = (ContinentId)Usefuls.ContinentId,
         ExcludeIds = NPCBlackList.myBlacklist,
-        Faction = new Faction(ObjectManager.Me.Faction,ReactionType.Friendly),
+        Faction = new Faction(ObjectManager.Me.Faction, ReactionType.Friendly),
         NpcFlags = new NpcFlag(Operator.Or,
             new List<UnitNPCFlags>
             {
@@ -72,6 +72,19 @@ public class Database
             }),
     };
 
+    private static CreatureFilter TrainerFilter = new CreatureFilter
+    {
+        ContinentId = (ContinentId)Usefuls.ContinentId,
+        ExcludeIds = NPCBlackList.myBlacklist,
+        Faction = new Faction(ObjectManager.Me.Faction, ReactionType.Friendly),
+        NpcFlags = new NpcFlag(Operator.Or,
+            new List<UnitNPCFlags>
+            {
+                UnitNPCFlags.CanTrain
+            }),
+    };
+
+
     public static DatabaseNPC GetAmmoVendor(HashSet<int> usableAmmo)
     {
         if (PluginSettings.CurrentSetting.Databasetype == "external")
@@ -81,7 +94,7 @@ public class Database
 
             creature ammoVendor = DbCreature
                 .Get(AmmoVendorFilter)
-                .Where(q=> usableZones.Contains(q.zoneId +1))
+                .Where(q => usableZones.Contains(q.zoneId + 1))
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
                 .FirstOrDefault();
 
@@ -91,9 +104,9 @@ public class Database
         else
         {
             Npc ammoVendor = NpcDB.ListNpc
-                .Where(q => (int)q.Faction == ObjectManager.Me.Faction 
-                    && (q.VendorItemClass == Npc.NpcVendorItemClass.Arrow || q.VendorItemClass == Npc.NpcVendorItemClass.Bullet) 
-                    && q.ContinentId == (ContinentId)Usefuls.ContinentId 
+                .Where(q => (int)q.Faction == ObjectManager.Me.Faction
+                    && (q.VendorItemClass == Npc.NpcVendorItemClass.Arrow || q.VendorItemClass == Npc.NpcVendorItemClass.Bullet)
+                    && q.ContinentId == (ContinentId)Usefuls.ContinentId
                     && !wManager.wManagerSetting.IsBlackListedNpcEntry(q.Entry)
                     && q.Active)
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
@@ -238,6 +251,18 @@ public class Database
             return sellVendor == null ? null : new DatabaseNPC(sellVendor);
         }
     }
+
+    public static DatabaseNPC GetTrainer()
+    {
+        HashSet<int> usableZones = GetListUsableZones();
+        TrainerFilter.Trainer = (Train)ObjectManager.Me.WowClass;
+        creature trainer = DbCreature.Get(TrainerFilter)
+            .Where(q => !NPCBlackList.myBlacklist.Contains(q.id) && usableZones.Contains(q.zoneId + 1))
+            .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
+            .FirstOrDefault();
+        return trainer == null ? null : new DatabaseNPC(trainer);
+    }
+
 
     private static HashSet<int> GetListUsableZones()
     {
