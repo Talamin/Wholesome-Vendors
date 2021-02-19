@@ -61,6 +61,7 @@ public class PluginSettings : Settings
     public string Databasetype { get; set; }
 
     public double LastUpdateDate { get; set; }
+    public int LastLevelTrained { get; set; }
 
     public PluginSettings()
     {
@@ -72,6 +73,7 @@ public class PluginSettings : Settings
         AutoRepair = true;
         AllowAutoSell = true;
         LastUpdateDate = 0;
+        LastLevelTrained = 0;
     }
 
     public static PluginSettings CurrentSetting { get; set; }
