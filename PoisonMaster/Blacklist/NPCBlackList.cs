@@ -6,7 +6,11 @@ public static class NPCBlackList
     public static void AddNPCListToBlacklist(IEnumerable<int> ids)
     {
         foreach (var id in ids.Where(id => !myBlacklist.Contains(id)))
+        {
             myBlacklist.Add(id);
+            Main.Logger("Added BlacklistIds: " + id);
+        }
+
     }
 
     public static void AddNPCToBlacklist(int npcId)

@@ -26,13 +26,17 @@ public class TrainingState : State
         {
             if(needToTrain)
             {
+                if (ObjectManager.Me.Level > 10) // to be moved
+                {
+                    //Blacklisting Starter Area Trainers, Orcs added
+                    NPCBlackList.AddNPCListToBlacklist(new[] { 5871, 8307, 3489, 3153, 3154, 5884, 3157, 3707, 3155, 3156 });
+                }
                 trainerNPC = Database.GetTrainer();
                 if(trainerNPC == null)
                 {
                     Main.Logger("Couldn´t find Trainer NPC");
                     return false;
                 }
-
                 return true;
             }
             return false;
