@@ -10,7 +10,7 @@ using Timer = robotManager.Helpful.Timer;
 
 public class BuyPoisonState : State
 {
-    public override string DisplayName => "Buying Poison";
+    public override string DisplayName => "WV Buying Poison";
 
     private WoWLocalPlayer Me = ObjectManager.Me;
     private int InstantPoison;

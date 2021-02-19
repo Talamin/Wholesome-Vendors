@@ -10,7 +10,7 @@ using System.Threading;
 
 public class BuyDrinkState : State
 {
-    public override string DisplayName => "Buying Drink";
+    public override string DisplayName => "WV Buying Drink";
 
     private WoWLocalPlayer Me = ObjectManager.Me;
     private Timer stateTimer = new Timer();

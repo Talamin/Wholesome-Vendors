@@ -101,7 +101,7 @@ public class Main : IPlugin
             Helpers.AddState(engine, buyFoodState, "To Town");
             Helpers.AddState(engine, buyDrinkState, "To Town");
             Helpers.AddState(engine, repairState, "To Town");
-            Helpers.AddState(engine, trainingState, "To Town");
+            Helpers.AddState(engine, trainingState, "Trainers");
             engine.States.ForEach(s => Logger($"{s.Priority} -> {s.DisplayName}"));
         }
 	}

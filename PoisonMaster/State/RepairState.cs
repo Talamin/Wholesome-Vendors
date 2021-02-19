@@ -10,7 +10,7 @@ using Timer = robotManager.Helpful.Timer;
 
 public class RepairState : State
 {
-    public override string DisplayName => "Repair and Sell";
+    public override string DisplayName => "WV Repair and Sell";
 
     private DatabaseNPC repairVendor;
     private Timer stateTimer = new Timer();

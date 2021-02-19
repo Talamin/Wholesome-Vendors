@@ -10,7 +10,7 @@ using wManager;
 
 public class BuyAmmoState : State
 {
-    public override string DisplayName => "Buying Ammunition";
+    public override string DisplayName => "WV Buying Ammunition";
 
     private WoWLocalPlayer Me = ObjectManager.Me;
     private Timer stateTimer = new Timer();

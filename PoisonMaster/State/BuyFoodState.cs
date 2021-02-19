@@ -11,7 +11,7 @@ using PoisonMaster;
 
 public class BuyFoodState : State
 {
-    public override string DisplayName => "Buying Food";
+    public override string DisplayName => "WV Buying Food";
 
     private static readonly Dictionary<int, HashSet<int>> FoodDictionary = new Dictionary<int, HashSet<int>>
         {
