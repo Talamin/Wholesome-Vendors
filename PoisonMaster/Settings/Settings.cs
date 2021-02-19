@@ -81,7 +81,7 @@ public class PluginSettings : Settings
         AllowAutoSell = true;
         AutoTrain = true;
         LastUpdateDate = 0;
-        LastLevelTrained = 0;
+        LastLevelTrained = 1;
     }
 
     public static PluginSettings CurrentSetting { get; set; }
