@@ -63,6 +63,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AutoUpdater.cs" />
     <Compile Include="Blacklist\NPCBlackList.cs" />
     <Compile Include="Database\Database.cs" />
     <Compile Include="Database\DatabaseNPC.cs" />
@@ -83,6 +84,8 @@
     <None Include="_ConfuserEx\c.crproj" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Compiled\Version.txt" />
+    <Content Include="Compiled\Wholesome_Vendors.dll" />
     <Content Include="_ConfuserEx\CommonServiceLocator.dll" />
     <Content Include="_ConfuserEx\Confuser.CLI.exe" />
     <Content Include="_ConfuserEx\Confuser.Core.dll" />

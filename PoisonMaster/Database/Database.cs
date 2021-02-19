@@ -78,14 +78,21 @@ public class Database
         {
             AmmoVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usableAmmo);
             HashSet<int> usableZones = GetListUsableZones();
-
+            //to be removed
+            List<creature> testZone = DbCreature
+                .Get(FoodVendorFilter)
+                .Where(c => usableZones.Contains(c.zoneId))
+                .ToList();
+            testZone.ForEach(c => Main.Logger($"{c.Name} is available)"));
+            //
             creature ammoVendor = DbCreature
                 .Get(AmmoVendorFilter)
-                //.Where(q=> usableZones.Contains(q.areaId))
+                .Where(q=> usableZones.Contains(q.zoneId))
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
                 .FirstOrDefault();
 
             return ammoVendor == null ? null : new DatabaseNPC(ammoVendor);
+
         }
         else
         {
@@ -107,12 +114,12 @@ public class Database
         if (PluginSettings.CurrentSetting.Databasetype == "external")
         {
             // TO BE REMOVED
-            int myZoneId = Lua.LuaDoString<int>($"return GetCurrentMapAreaID()");
-            List<creature> testZone = DbCreature
-                .Get(FoodVendorFilter)
-                .Where(c => c.zoneId == myZoneId - 1)
-                .ToList();
-            testZone.ForEach(c => Main.Logger($"{c.Name} is in my zone ({c.zoneId})"));
+            //int myZoneId = Lua.LuaDoString<int>($"return GetCurrentMapAreaID()");
+            //List<creature> testZone = DbCreature
+            //    .Get(FoodVendorFilter)
+            //    .Where(c => c.zoneId == myZoneId - 1)
+            //    .ToList();
+            //testZone.ForEach(c => Main.Logger($"{c.Name} is in my zone ({c.zoneId})"));
             //
 
             FoodVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usableDrink);
@@ -257,75 +264,77 @@ public class Database
 
     private static readonly Dictionary<int, int> ZoneLevelDictionary = new Dictionary<int, int>
     {
-        {3524,1}, //AzuremystIsle
-        {1,1}, //DunMorogh
-        {14,1}, //Durotar
-        {12,1}, //Elwynn
-        {3430,1}, //EversongWoods
-        {141,1}, //Teldrassil
-        {85,1}, //Tirisfal
-        {17,10}, //Barrens
-        {3525,10}, //BloodmystIsle
-        {148,10}, //Darkshore
-        {3433,10}, //Ghostlands
-        {1537,10}, //Ironforge
-        {38,10}, //LochModan
-        {215,10}, //Mulgore
-        {1637,10}, //Ogrimmar
-        {130,10}, //Silverpine
-        {1519,10}, //Stormwind
-        {3557,10}, //TheExodar
-        {1638,10}, //ThunderBluff
-        {1497,10}, //Undercity
+        {14,10 }, //Kalimdor
+        {15,10}, //Azeroth
+        {465,1}, //AzuremystIsle
+        {28,1}, //DunMorogh
+        {5,1}, //Durotar
+        {31,1}, //Elwynn
+        {463,1}, //EversongWoods
+        {42,1}, //Teldrassil
+        {21,1}, //Tirisfal
+        {481,10 }, //SilvermoonCity
+        {11,10}, //Barrens
+        {477,10}, //BloodmystIsle
+        {43,10}, //Darkshore
+        {464,10}, //Ghostlands
+        {342,10}, //Ironforge
+        {36,10}, //LochModan
+        {10,10}, //Mulgore
+        {322,10}, //Ogrimmar
+        {22,10}, //Silverpine
+        {302,10}, //Stormwind
+        {472,10}, //TheExodar
+        {363,10}, //ThunderBluff
+        {383,10}, //Undercity
         {40,10}, //Westfall
-        {44,15}, //Redridge
-        {406,15}, //StonetalonMountains
-        {331,18}, //Ashenvale
-        {10,18}, //Duskwood
-        {267,20}, //Hilsbrad
-        {11,20}, //Wetlands
-        {400,25}, //ThousandNeedles
-        {36,30}, //Alterac
-        {45,30}, //Arathi
-        {405,30}, //Desolace
-        {15,30}, //Dustwallow
-        {33,30}, //Stranglethorn
-        {3,35}, //Badlands
-        {8,35}, //SwampOfSorrows
-        {47,40}, //Hinterlands
-        {440,40}, //Tanaris
-        {357,42}, //Feralas
-        {16,45}, //Aszhara
-        {4,45}, //BlastedLands
-        {51,45}, //SearingGorge
-        {361,48}, //Felwood
-        {490,48}, //UngoroCrater
-        {46,50}, //BurningSteppes
-        {28,51}, //WesternPlaguelands
-        {139,53}, //EasternPlaguelands
-        {618,53}, //Winterspring
-        {493,55}, //Moonglade
-        {4298,55}, //ScarletEnclave
-        {1377,55}, //Silithus
-        {3483,58}, //Hellfire
-        {3521,60}, //Zangarmarsh
-        {3519,62}, //TerokkarForest
-        {3522,65}, //BladesEdgeMountains
-        {3518,65}, //Nagrand
-        {3523,67}, //Netherstorm
-        {3520,67}, //ShadowmoonValley
-        {3537,68}, //BoreanTundra
-        {41,68}, //DeadwindPass
-        {495,68}, //HowlingFjord
-        {65,71}, //Dragonblight
-        {394,73}, //GrizzlyHills
-        {66,75}, //ZulDrak
-        {3711,76}, //SholazarBasin
-        {2817,77}, //CrystalsongForest
-        {4742,77}, //HrothgarsLanding
-        {4812,77}, //IcecrownCitadel
-        {210,77}, //IcecrownGlacier
-        {4395,80}, //Dalaran
+        {37,15}, //Redridge
+        {82,15}, //StonetalonMountains
+        {44,18}, //Ashenvale
+        {35,18}, //Duskwood
+        {25,20}, //Hilsbrad
+        {41,20}, //Wetlands
+        {62,25}, //ThousandNeedles
+        {16,30}, //Alterac
+        {17,30}, //Arathi
+        {102,30}, //Desolace
+        {142,30}, //Dustwallow
+        {38,30}, //Stranglethorn
+        {18,35}, //Badlands
+        {39,35}, //SwampOfSorrows
+        {27,40}, //Hinterlands
+        {162,40}, //Tanaris
+        {122,42}, //Feralas
+        {182,45}, //Aszhara
+        {20,45}, //BlastedLands
+        {29,45}, //SearingGorge
+        {183,48}, //Felwood
+        {202,48}, //UngoroCrater
+        {30,50}, //BurningSteppes
+        {23,51}, //WesternPlaguelands
+        {24,53}, //EasternPlaguelands
+        {282,53}, //Winterspring
+        {242,55}, //Moonglade
+        {262,55}, //Silithus
+        {466,58}, //Hellfire
+        {467,60}, //Zangarmarsh
+        {479,62}, //TerokkarForest
+        {476,65}, //BladesEdgeMountains
+        {478,65}, //Nagrand
+        {480,67}, //Netherstorm
+        {474,67}, //ShadowmoonValley
+        {482,65}, //ShattrathCity
+        {487,68}, //BoreanTundra
+        {32,68}, //DeadwindPass
+        {492,68}, //HowlingFjord
+        {489,71}, //Dragonblight
+        {491,73}, //GrizzlyHills
+        {497,75}, //ZulDrak
+        {494,76}, //SholazarBasin
+        {511,77}, //CrystalsongForest
+        {542,77}, //HrothgarsLanding
+        {605,77}, //IcecrownCitadel
+        {505,80}, //Dalaran
     };
 }
 
