@@ -81,6 +81,9 @@ public class BuyAmmoState : State
             if (Helpers.NpcIsAbsentOrDead(ammoVendor))
                 return;
 
+            // Sell first
+            Helpers.SellItems(ammoVendor);
+
             for (int i = 0; i <= 5; i++)
             {
                 GoToTask.ToPositionAndIntecractWithNpc(ammoVendor.Position, ammoVendor.Id, i);

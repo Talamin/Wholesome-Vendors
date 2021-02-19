@@ -11,6 +11,7 @@ using static PoisonMaster.PMEnums;
 using robotManager.Products;
 using System.Collections.Generic;
 using wManager.Wow.Class;
+using wManager.Wow.Bot.Tasks;
 
 namespace PoisonMaster
 {
@@ -258,6 +259,28 @@ namespace PoisonMaster
                 listQualitySell.Add(WoWItemQuality.Epic);
 
             return listQualitySell;
+        }
+
+        public static void SellItems(DatabaseNPC vendor)
+        {
+            Main.Logger("Selling items");
+            List<WoWItem> bagItems = Bag.GetBagItem();
+            int nbItemsInBags = bagItems.Count;
+            for (int i = 0; i <= 5; i++)
+            {
+                GoToTask.ToPositionAndIntecractWithNpc(vendor.Position, vendor.Id, i);
+                List<string> listItemsToSell = new List<string>();
+                foreach (WoWItem item in bagItems)
+                {
+                    if (item != null && !wManagerSetting.CurrentSetting.DoNotSellList.Contains(item.Name))
+                        listItemsToSell.Add(item.Name);
+                }
+
+                Vendor.SellItems(listItemsToSell, wManagerSetting.CurrentSetting.DoNotSellList, GetListQualityToSell());
+                Thread.Sleep(200);
+                if (Bag.GetBagItem().Count < nbItemsInBags)
+                    break;
+            }
         }
     }
 }

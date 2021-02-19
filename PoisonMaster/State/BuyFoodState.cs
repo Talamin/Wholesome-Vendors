@@ -75,6 +75,9 @@ public class BuyFoodState : State
             if (Helpers.NpcIsAbsentOrDead(foodVendor))
                 return;
 
+            // Sell first
+            Helpers.SellItems(foodVendor);
+
             string foodNameToBuy = ItemsManager.GetNameById(foodToBuy);
             wManagerSetting.CurrentSetting.FoodName = foodNameToBuy;
             wManagerSetting.CurrentSetting.Save();

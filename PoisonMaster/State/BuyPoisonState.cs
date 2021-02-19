@@ -89,6 +89,9 @@ public class BuyPoisonState : State
             if (Helpers.NpcIsAbsentOrDead(poisonVendor))
                 return;
 
+            // Sell first
+            Helpers.SellItems(poisonVendor);
+
             // INSTANT POISON
             if (nbInstantPoisonToBuy > 0)
             {

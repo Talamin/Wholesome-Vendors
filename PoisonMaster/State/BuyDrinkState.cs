@@ -75,6 +75,9 @@ public class BuyDrinkState : State
             if (Helpers.NpcIsAbsentOrDead(drinkVendor))
                 return;
 
+            // Sell first
+            Helpers.SellItems(drinkVendor);
+
             string drinkNameToBuy = ItemsManager.GetNameById(drinkToBuy);
             wManagerSetting.CurrentSetting.DrinkName = drinkNameToBuy;
             wManagerSetting.CurrentSetting.Save();

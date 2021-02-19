@@ -247,13 +247,13 @@ public class Database
     {
         HashSet<int> listZones = new HashSet<int>();
         int myZoneId = Lua.LuaDoString<int>($"return GetCurrentMapAreaID()");
-        Main.Logger("I am on Zone: " + myZoneId);
+        //Main.Logger("I am on Zone: " + myZoneId);
         foreach (KeyValuePair<int,int> zones in ZoneLevelDictionary)
         {
             if (zones.Value <= ObjectManager.Me.Level)
             {
                 listZones.Add(zones.Key);
-                Main.Logger("Added: " + zones.Key + " to Savezones.");
+                //Main.Logger("Added: " + zones.Key + " to Savezones.");
             }
         }
         return listZones;

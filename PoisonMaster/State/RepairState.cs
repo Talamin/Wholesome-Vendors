@@ -54,23 +54,8 @@ public class RepairState : State
             if (Helpers.NpcIsAbsentOrDead(repairVendor))
                 return;
 
-            int nbItemsInBags = bagItems.Count;
-
             // Sell first
-            for (int i = 0; i <= 5; i++)
-            {
-                GoToTask.ToPositionAndIntecractWithNpc(repairVendor.Position, repairVendor.Id, i);
-                List<string> listItemsToSell = new List<string>();
-                foreach (WoWItem item in bagItems)
-                {
-                    if (item != null && !wManager.wManagerSetting.CurrentSetting.DoNotSellList.Contains(item.Name))
-                        listItemsToSell.Add(item.Name);
-                }
-
-                Vendor.SellItems(listItemsToSell, wManager.wManagerSetting.CurrentSetting.DoNotSellList, Helpers.GetListQualityToSell());
-                if (Bag.GetBagItem().Count < nbItemsInBags)
-                    break;
-            }
+            Helpers.SellItems(repairVendor);
 
             // Then repair
             for (int i = 0; i <= 5; i++)
