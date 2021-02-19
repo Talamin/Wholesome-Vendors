@@ -52,6 +52,13 @@ public class PluginSettings : Settings
     [Description("Allow Autorepair")]
     public bool AutoRepair { get; set; }
 
+    [Setting]
+    [DefaultValue(true)]
+    [Category("Train")]
+    [DisplayName("Training")]
+    [Description("Allow Autotraining")]
+    public bool AutoTrain { get; set; }
+
     //[Setting]
     //[DefaultValue(false)]
     //[Category("Database")]
@@ -71,6 +78,7 @@ public class PluginSettings : Settings
         AutobuyAmmunition = true;
         AutoRepair = true;
         AllowAutoSell = true;
+        AutoTrain = true;
         LastUpdateDate = 0;
     }
 
