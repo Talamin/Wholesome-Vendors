@@ -78,13 +78,7 @@ public class Database
         {
             AmmoVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usableAmmo);
             HashSet<int> usableZones = GetListUsableZones();
-            //to be removed
-            List<creature> testZone = DbCreature
-                .Get(FoodVendorFilter)
-                .Where(c => usableZones.Contains(c.zoneId))
-                .ToList();
-            testZone.ForEach(c => Main.Logger($"{c.Name} is available)"));
-            //
+
             creature ammoVendor = DbCreature
                 .Get(AmmoVendorFilter)
                 .Where(q=> usableZones.Contains(q.zoneId))
@@ -252,11 +246,14 @@ public class Database
     private static HashSet<int> GetListUsableZones()
     {
         HashSet<int> listZones = new HashSet<int>();
-        foreach(KeyValuePair<int,int> zones in ZoneLevelDictionary)
+        int myZoneId = Lua.LuaDoString<int>($"return GetCurrentMapAreaID()");
+        Main.Logger("I am on Zone: " + myZoneId);
+        foreach (KeyValuePair<int,int> zones in ZoneLevelDictionary)
         {
             if (zones.Value <= ObjectManager.Me.Level)
             {
                 listZones.Add(zones.Key);
+                Main.Logger("Added: " + zones.Key + " to Savezones.");
             }
         }
         return listZones;
