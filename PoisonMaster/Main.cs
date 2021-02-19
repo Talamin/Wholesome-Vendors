@@ -25,7 +25,7 @@ public class Main : IPlugin
     public static State buyDrinkState = new BuyDrinkState();
     public static State repairState = new RepairState();
 
-    public static string version = "0.0.1"; // Must match version in Version.txt
+    public static string version = "0.0.2"; // Must match version in Version.txt
 
     public void Initialize()
     {
