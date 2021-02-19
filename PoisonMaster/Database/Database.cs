@@ -106,6 +106,15 @@ public class Database
     {
         if (PluginSettings.CurrentSetting.Databasetype == "external")
         {
+            // TO BE REMOVED
+            int myZoneId = Lua.LuaDoString<int>($"return GetCurrentMapAreaID()");
+            List<creature> testZone = DbCreature
+                .Get(FoodVendorFilter)
+                .Where(c => c.zoneId == myZoneId - 1)
+                .ToList();
+            testZone.ForEach(c => Main.Logger($"{c.Name} is in my zone ({c.zoneId})"));
+            //
+
             FoodVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usableDrink);
             creature drinkVendor = DbCreature
                 .Get(FoodVendorFilter)
