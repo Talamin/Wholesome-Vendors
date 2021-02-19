@@ -76,7 +76,7 @@ public class BuyFoodState : State
                 return;
 
             // Sell first
-            Helpers.SellItems(foodVendor);
+            //Helpers.SellItems(foodVendor);
 
             string foodNameToBuy = ItemsManager.GetNameById(foodToBuy);
             wManagerSetting.CurrentSetting.FoodName = foodNameToBuy;
@@ -122,7 +122,11 @@ public class BuyFoodState : State
         foreach (KeyValuePair<int, HashSet<int>> food in FoodDictionary)
         {
             if (food.Key <= Me.Level)
+            {
                 listFood.Add(food.Value);
+                Main.Logger("Adding Food: " + food.Value);
+            }
+
         }
         return listFood;
     }

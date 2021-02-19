@@ -274,7 +274,7 @@ public class Database
             if (zones.Value <= ObjectManager.Me.Level)
             {
                 listZones.Add(zones.Key);
-                //Main.Logger("Added: " + zones.Key + " to Savezones.");
+                Main.Logger("Added: " + zones.Key + " to Savezones.");
             }
         }
         return listZones;
