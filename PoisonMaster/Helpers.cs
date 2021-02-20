@@ -266,16 +266,20 @@ namespace PoisonMaster
             Main.Logger("Selling items");
             List<WoWItem> bagItems = Bag.GetBagItem();
             int nbItemsInBags = bagItems.Count;
+
+            List<string> listItemsToSell = new List<string>();
+            foreach (WoWItem item in bagItems)
+            {
+                if (item != null && !wManagerSetting.CurrentSetting.DoNotSellList.Contains(item.Name))
+                    listItemsToSell.Add(item.Name);
+            }
+
+            if (listItemsToSell.Count <= 0)
+                return;
+
             for (int i = 0; i <= 5; i++)
             {
                 GoToTask.ToPositionAndIntecractWithNpc(vendor.Position, vendor.Id, i);
-                List<string> listItemsToSell = new List<string>();
-                foreach (WoWItem item in bagItems)
-                {
-                    if (item != null && !wManagerSetting.CurrentSetting.DoNotSellList.Contains(item.Name))
-                        listItemsToSell.Add(item.Name);
-                }
-
                 Vendor.SellItems(listItemsToSell, wManagerSetting.CurrentSetting.DoNotSellList, GetListQualityToSell());
                 Thread.Sleep(200);
                 if (Bag.GetBagItem().Count < nbItemsInBags)
