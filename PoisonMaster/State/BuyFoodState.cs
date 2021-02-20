@@ -76,7 +76,7 @@ public class BuyFoodState : State
                 return;
 
             // Sell first
-            //Helpers.SellItems(foodVendor);
+            Helpers.SellItems(foodVendor);
 
             string foodNameToBuy = ItemsManager.GetNameById(foodToBuy);
             wManagerSetting.CurrentSetting.FoodName = foodNameToBuy;
@@ -100,20 +100,23 @@ public class BuyFoodState : State
     private DatabaseNPC SelectBestFoodVendor()
     {
         foodToBuy = 0;
-        foreach (HashSet<int> foodList in GetListUsableFood())
+        foodVendor = null;
+
+        foreach (int food in GetListUsableFood().First())
         {
-            foreach (int food in foodList)
+            DatabaseNPC vendorWithThisFood = Database.GetFoodVendor(new HashSet<int>(){ food });
+            if (vendorWithThisFood != null)
             {
-                DatabaseNPC vendorWithThisFood = Database.GetFoodVendor(new HashSet<int>(){ food });
-                if (vendorWithThisFood != null)
+                if (foodVendor == null || foodVendor.Position.DistanceTo2D(Me.Position) > vendorWithThisFood.Position.DistanceTo2D(Me.Position))
                 {
-                    foodToBuy = foodList.First(); // right now we're just chosing the first possible food
-                    return vendorWithThisFood;
+                    Main.Logger($"{vendorWithThisFood.Name} is {vendorWithThisFood.Position.DistanceTo2D(Me.Position)} yards away and sells {ItemsManager.GetNameById(food)}");
+                    foodToBuy = food;
+                    foodVendor = vendorWithThisFood;
                 }
             }
         }
-        return null;
-
+        Main.Logger($"Food chosen: {ItemsManager.GetNameById(foodToBuy)} at vendor {foodVendor?.Name}");
+        return foodVendor;
     }
 
     private List<HashSet<int>> GetListUsableFood()
@@ -124,7 +127,7 @@ public class BuyFoodState : State
             if (food.Key <= Me.Level)
             {
                 listFood.Add(food.Value);
-                Main.Logger("Adding Food: " + food.Value);
+                //Main.Logger("Adding Food: " + food.Value);
             }
 
         }
