@@ -81,10 +81,10 @@ public class BuyPoisonState : State
         int nbInstantPoisonToBuy = 20 - ItemsManager.GetItemCountById((uint)InstantPoison);
         int nbDeadlyPoisonToBuy = 20 - ItemsManager.GetItemCountById((uint)DeadlyPoison);
 
-        if (Me.Position.DistanceTo(poisonVendor.Position) >= 6)
+        if (Me.Position.DistanceTo(poisonVendor.Position) >= 10)
             GoToTask.ToPosition(poisonVendor.Position);
 
-        if (Me.Position.DistanceTo(poisonVendor.Position) < 6)
+        if (Me.Position.DistanceTo(poisonVendor.Position) < 10)
         {
             if (Helpers.NpcIsAbsentOrDead(poisonVendor))
                 return;
@@ -99,6 +99,7 @@ public class BuyPoisonState : State
                 {
                     GoToTask.ToPositionAndIntecractWithNpc(poisonVendor.Position, poisonVendor.Id, i);
                     Helpers.BuyItem(ItemsManager.GetNameById(InstantPoison), nbInstantPoisonToBuy, 1);
+                    ClearDoNotSellListFromInstants();
                     Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(InstantPoison));
                     Helpers.CloseWindow();
                     Thread.Sleep(1000);
@@ -120,6 +121,7 @@ public class BuyPoisonState : State
                 {
                     GoToTask.ToPositionAndIntecractWithNpc(poisonVendor.Position, poisonVendor.Id, i);
                     Helpers.BuyItem(ItemsManager.GetNameById(DeadlyPoison), nbDeadlyPoisonToBuy, 1);
+                    ClearDoNotSellListFromDeadlies();
                     Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(DeadlyPoison));
                     Helpers.CloseWindow();
                     Thread.Sleep(1000);
@@ -134,6 +136,18 @@ public class BuyPoisonState : State
                 }
             }
         }
+    }
+
+    private void ClearDoNotSellListFromInstants()
+    {
+        foreach (KeyValuePair<int, int> instant in InstantPoisonDictionary)
+            Helpers.RemoveItemFromDoNotSellList(ItemsManager.GetNameById(instant.Value));
+    }
+
+    private void ClearDoNotSellListFromDeadlies()
+    {
+        foreach (KeyValuePair<int, int> deadly in DeadlyPoisonDictionary)
+            Helpers.RemoveItemFromDoNotSellList(ItemsManager.GetNameById(deadly.Value));
     }
 
     private DatabaseNPC SelectBestPoisonVendor()

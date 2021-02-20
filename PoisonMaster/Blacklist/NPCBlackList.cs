@@ -8,7 +8,7 @@ public static class NPCBlackList
         foreach (var id in ids.Where(id => !myBlacklist.Contains(id)))
         {
             myBlacklist.Add(id);
-            Main.Logger("Added BlacklistIds: " + id);
+            Main.Logger("Added to NPC blacklist: " + id);
         }
 
     }

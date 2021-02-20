@@ -43,13 +43,13 @@ public class TrainingState : State
 
     public override void Run()
     {
-        if (ObjectManager.Me.Position.DistanceTo(trainerNPC.Position) >= 6)
+        if (ObjectManager.Me.Position.DistanceTo(trainerNPC.Position) >= 10)
         {
             Main.Logger("Nearest Trainer from player:\n" + "Name: " + trainerNPC.Name + "[" + trainerNPC.Id + "]\nPosition: " + trainerNPC.Position.ToStringXml() + "\nDistance: " + trainerNPC.Position.DistanceTo(ObjectManager.Me.Position) + " yrds");
             GoToTask.ToPosition(trainerNPC.Position);
         }
 
-        if (ObjectManager.Me.Position.DistanceTo(trainerNPC.Position) < 6)
+        if (ObjectManager.Me.Position.DistanceTo(trainerNPC.Position) < 10)
         {
             if (Helpers.NpcIsAbsentOrDead(trainerNPC))
                 return;

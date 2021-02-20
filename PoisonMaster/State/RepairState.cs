@@ -43,13 +43,13 @@ public class RepairState : State
     {
         List<WoWItem> bagItems = Bag.GetBagItem();
 
-        if (ObjectManager.Me.Position.DistanceTo(repairVendor.Position) >= 6)
+        if (ObjectManager.Me.Position.DistanceTo(repairVendor.Position) >= 10)
         {
             Main.Logger("Nearest Repair from player:\n" + "Name: " + repairVendor.Name + "[" + repairVendor.Id + "]\nPosition: " + repairVendor.Position.ToStringXml() + "\nDistance: " + repairVendor.Position.DistanceTo(ObjectManager.Me.Position) + " yrds");
             GoToTask.ToPosition(repairVendor.Position);
         }
 
-        if (ObjectManager.Me.Position.DistanceTo(repairVendor.Position) < 6)
+        if (ObjectManager.Me.Position.DistanceTo(repairVendor.Position) < 10)
         {
             if (Helpers.NpcIsAbsentOrDead(repairVendor))
                 return;

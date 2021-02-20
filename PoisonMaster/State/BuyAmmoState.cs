@@ -70,13 +70,13 @@ public class BuyAmmoState : State
 
     public override void Run()
     {
-        if (Me.Position.DistanceTo(ammoVendor.Position) >= 6)
+        if (Me.Position.DistanceTo(ammoVendor.Position) >= 10)
         {
-            Main.Logger("Nearest AmmunitionVendor from player:\n" + "Name: " + ammoVendor.Name + "[" + ammoVendor.Id + "]\nPosition: " + ammoVendor.Position.ToStringXml() + "\nDistance: " + ammoVendor.Position.DistanceTo(ObjectManager.Me.Position) + " yrds");
+            Main.Logger($"Buying {ItemsManager.GetNameById(AmmoToBuy)} from {ammoVendor.Name} [{ammoVendor.Id}]\nPosition: {ammoVendor.Position.ToStringXml()}\nDistance: {ammoVendor.Position.DistanceTo(ObjectManager.Me.Position)} yrds");
             GoToTask.ToPositionAndIntecractWithNpc(ammoVendor.Position, ammoVendor.Id);
         }
 
-        if (Me.Position.DistanceTo(ammoVendor.Position) < 6)
+        if (Me.Position.DistanceTo(ammoVendor.Position) < 10)
         {
             if (Helpers.NpcIsAbsentOrDead(ammoVendor))
                 return;
@@ -88,6 +88,7 @@ public class BuyAmmoState : State
             {
                 GoToTask.ToPositionAndIntecractWithNpc(ammoVendor.Position, ammoVendor.Id, i);
                 Vendor.BuyItem(ItemsManager.GetNameById(AmmoToBuy), 2000 / 200);
+                ClearDoNotSellListFromAmmos();
                 Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(AmmoToBuy));
                 Helpers.CloseWindow();
                 Thread.Sleep(1000);
@@ -97,6 +98,15 @@ public class BuyAmmoState : State
             Main.Logger($"Failed to buy {AmmoToBuy}, blacklisting vendor");
             NPCBlackList.AddNPCToBlacklist(ammoVendor.Id);
         }        
+    }
+
+    private void ClearDoNotSellListFromAmmos()
+    {
+        foreach (KeyValuePair<int, int> arrow in ArrowDictionary)
+            Helpers.RemoveItemFromDoNotSellList(ItemsManager.GetNameById(arrow.Value));
+
+        foreach (KeyValuePair<int, int> bullet in BulletsDictionary)
+            Helpers.RemoveItemFromDoNotSellList(ItemsManager.GetNameById(bullet.Value));
     }
 
     private DatabaseNPC SelectBestAmmoAndVendor()

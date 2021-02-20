@@ -97,13 +97,8 @@ namespace PoisonMaster
                 .Select(i => ItemsManager.GetItemCountById((uint)i.Entry))
                 .Aggregate(0, (i, i2) => i + i2);
 
-            //Main.Logger("Food in total: " + allFoodAmount);
-
             if (allFoodAmount < 1 && wManagerSetting.CurrentSetting.FoodAmount > 0)
-            {
-                //Main.Logger("Food: " + allFoodAmount);
                 return true;
-            }
 
             return false;
         }
@@ -117,12 +112,8 @@ namespace PoisonMaster
                 .Select(i => ItemsManager.GetItemCountById((uint)i.Entry))
                 .Aggregate(0, (i, i2) => i + i2);
 
-            //Main.Logger("Drinks in total: " + allDrinkAmount);
             if (allDrinkAmount < 1 && wManagerSetting.CurrentSetting.DrinkAmount > 0)
-            {
-                //Main.Logger("Drinks: " + allDrinkAmount);
                 return true;
-            }
 
             return false;
         }
@@ -152,6 +143,15 @@ namespace PoisonMaster
             if (!wManagerSetting.CurrentSetting.DoNotSellList.Contains(itemName))
             {
                 wManagerSetting.CurrentSetting.DoNotSellList.Add(itemName);
+                wManagerSetting.CurrentSetting.Save();
+            }
+        }
+
+        public static void RemoveItemFromDoNotSellList(string itemName)
+        {
+            if (wManagerSetting.CurrentSetting.DoNotSellList.Contains(itemName))
+            {
+                wManagerSetting.CurrentSetting.DoNotSellList.Remove(itemName);
                 wManagerSetting.CurrentSetting.Save();
             }
         }

@@ -67,10 +67,10 @@ public class BuyFoodState : State
     {
         Main.Logger("Nearest Vendor from player:\n" + "Name: " + foodVendor.Name + "[" + foodVendor.Id + "]\nPosition: " + foodVendor.Position.ToStringXml() + "\nDistance: " + foodVendor.Position.DistanceTo(Me.Position) + " yrds");
 
-        if (Me.Position.DistanceTo(foodVendor.Position) >= 6)
+        if (Me.Position.DistanceTo(foodVendor.Position) >= 10)
             GoToTask.ToPosition(foodVendor.Position);
 
-        if (Me.Position.DistanceTo(foodVendor.Position) < 6)
+        if (Me.Position.DistanceTo(foodVendor.Position) < 10)
         {
             if (Helpers.NpcIsAbsentOrDead(foodVendor))
                 return;
@@ -86,6 +86,7 @@ public class BuyFoodState : State
             {
                 GoToTask.ToPositionAndIntecractWithNpc(foodVendor.Position, foodVendor.Id, i);
                 Helpers.BuyItem(foodNameToBuy, wManagerSetting.CurrentSetting.FoodAmount, 5);
+                ClearDoNotSellListFromFoods();
                 Helpers.AddItemToDoNotSellList(foodNameToBuy);
                 Helpers.CloseWindow();
                 Thread.Sleep(1000);
@@ -95,6 +96,13 @@ public class BuyFoodState : State
             Main.Logger($"Failed to buy {foodNameToBuy}, blacklisting vendor");
             NPCBlackList.AddNPCToBlacklist(foodVendor.Id);
         }
+    }
+
+    private void ClearDoNotSellListFromFoods()
+    {
+        foreach (KeyValuePair<int, HashSet<int>> foodList in FoodDictionary)
+            foreach(int food in foodList.Value)
+                Helpers.RemoveItemFromDoNotSellList(ItemsManager.GetNameById(food));
     }
 
     private DatabaseNPC SelectBestFoodVendor()

@@ -67,10 +67,10 @@ public class BuyDrinkState : State
     {
         Main.Logger("Nearest Vendor from player:\n" + "Name: " + drinkVendor.Name + "[" + drinkVendor.Name + "]\nPosition: " + drinkVendor.Position.ToStringXml() + "\nDistance: " + drinkVendor.Position.DistanceTo(Me.Position) + " yrds");
         
-        if (Me.Position.DistanceTo(drinkVendor.Position) >= 6)
+        if (Me.Position.DistanceTo(drinkVendor.Position) >= 10)
             GoToTask.ToPosition(drinkVendor.Position);
 
-        if (Me.Position.DistanceTo(drinkVendor.Position) < 6)
+        if (Me.Position.DistanceTo(drinkVendor.Position) < 10)
         {
             if (Helpers.NpcIsAbsentOrDead(drinkVendor))
                 return;
@@ -86,6 +86,7 @@ public class BuyDrinkState : State
             {
                 GoToTask.ToPositionAndIntecractWithNpc(drinkVendor.Position, drinkVendor.Id, i);
                 Helpers.BuyItem(drinkNameToBuy, wManagerSetting.CurrentSetting.DrinkAmount, 5);
+                ClearDoNotSellListFromDrinks();
                 Helpers.AddItemToDoNotSellList(drinkNameToBuy);
                 wManagerSetting.CurrentSetting.DrinkName = drinkNameToBuy;
                 Helpers.CloseWindow();
@@ -96,6 +97,12 @@ public class BuyDrinkState : State
             Main.Logger($"Failed to buy {drinkNameToBuy}, blacklisting vendor");
             NPCBlackList.AddNPCToBlacklist(drinkVendor.Id);
         }
+    }
+
+    private void ClearDoNotSellListFromDrinks()
+    {
+        foreach (KeyValuePair<int, int> drink in WaterDictionary)
+            Helpers.RemoveItemFromDoNotSellList(ItemsManager.GetNameById(drink.Value));
     }
 
     private DatabaseNPC SelectBestDrinkVendor()
