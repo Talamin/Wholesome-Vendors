@@ -254,6 +254,12 @@ public class Database
 
     public static DatabaseNPC GetTrainer()
     {
+        if (ObjectManager.Me.Level > 10)
+        {
+            //Blacklisting Starter Area Trainers, Orcs added
+            NPCBlackList.AddNPCListToBlacklist(new[] { 5871, 8307, 3489, 3153, 3154, 5884, 3157, 3707, 3155, 3156 });
+        }
+
         HashSet<int> usableZones = GetListUsableZones();
         TrainerFilter.Trainer = (Train)ObjectManager.Me.WowClass;
         creature trainer = DbCreature.Get(TrainerFilter)

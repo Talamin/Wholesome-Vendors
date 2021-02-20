@@ -13,6 +13,7 @@ public class TrainingState : State
     public override string DisplayName => "WV Training";
 
     private DatabaseNPC trainerNPC;
+    private Timer stateTimer = new Timer();
     private bool needToTrain => leveltoTrain.Exists(l => (int)ObjectManager.Me.Level >= l && PluginSettings.CurrentSetting.LastLevelTrained < l);
 
     private List<int> leveltoTrain = new List<int>
@@ -24,22 +25,19 @@ public class TrainingState : State
     {
         get
         {
-            if(needToTrain)
+            if (!stateTimer.IsReady || !needToTrain)
+                return false;
+
+            stateTimer = new Timer(5000);
+            trainerNPC = Database.GetTrainer();
+
+            if (trainerNPC == null)
             {
-                if (ObjectManager.Me.Level > 10) // to be moved
-                {
-                    //Blacklisting Starter Area Trainers, Orcs added
-                    NPCBlackList.AddNPCListToBlacklist(new[] { 5871, 8307, 3489, 3153, 3154, 5884, 3157, 3707, 3155, 3156 });
-                }
-                trainerNPC = Database.GetTrainer();
-                if(trainerNPC == null)
-                {
-                    Main.Logger("Couldn´t find Trainer NPC");
-                    return false;
-                }
-                return true;
+                Main.Logger("Couldn´t find Trainer NPC");
+                return false;
             }
-            return false;
+
+            return true;
         }
     }
 
@@ -50,6 +48,7 @@ public class TrainingState : State
             Main.Logger("Nearest Trainer from player:\n" + "Name: " + trainerNPC.Name + "[" + trainerNPC.Id + "]\nPosition: " + trainerNPC.Position.ToStringXml() + "\nDistance: " + trainerNPC.Position.DistanceTo(ObjectManager.Me.Position) + " yrds");
             GoToTask.ToPosition(trainerNPC.Position);
         }
+
         if (ObjectManager.Me.Position.DistanceTo(trainerNPC.Position) < 6)
         {
             if (Helpers.NpcIsAbsentOrDead(trainerNPC))
@@ -61,7 +60,6 @@ public class TrainingState : State
             SpellManager.UpdateSpellBook();
             PluginSettings.CurrentSetting.LastLevelTrained = (int)ObjectManager.Me.Level;
             PluginSettings.CurrentSetting.Save();
-
         }
     }
 }
