@@ -25,7 +25,7 @@ public class TrainingState : State
     {
         get
         {
-            if (!stateTimer.IsReady || !needToTrain)
+            if (!stateTimer.IsReady || !needToTrain || !PluginSettings.CurrentSetting.AutoTrain)
                 return false;
 
             stateTimer = new Timer(5000);

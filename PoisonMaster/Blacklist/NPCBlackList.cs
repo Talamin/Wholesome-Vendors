@@ -5,18 +5,18 @@ public static class NPCBlackList
 {
     public static void AddNPCListToBlacklist(IEnumerable<int> ids)
     {
-        foreach (var id in ids.Where(id => !myBlacklist.Contains(id)))
-        {
-            myBlacklist.Add(id);
-            Main.Logger("Added to NPC blacklist: " + id);
-        }
+        foreach (var id in myBlacklist)
+            AddNPCToBlacklist(id);
 
     }
 
     public static void AddNPCToBlacklist(int npcId)
     {
         if (!myBlacklist.Contains(npcId))
+        {
             myBlacklist.Add(npcId);
+            Main.Logger("Added to NPC blacklist: " + npcId);
+        }
     }
 
     public static readonly HashSet<int> OnlyFoodBlacklist = new HashSet<int>
