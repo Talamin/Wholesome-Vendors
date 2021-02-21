@@ -92,9 +92,6 @@ public class BuyPoisonState : State
             // INSTANT POISON
             if (nbInstantPoisonToBuy > 0)
             {
-                ClearDoNotSellListFromInstants();
-                Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(InstantPoison));
-
                 // Sell first
                 Helpers.SellItems(poisonVendor);
 
@@ -118,9 +115,6 @@ public class BuyPoisonState : State
             // DEADLY POISON
             if (Me.Level >= 30 && nbDeadlyPoisonToBuy > 0)
             {
-                ClearDoNotSellListFromDeadlies();
-                Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(DeadlyPoison));
-
                 // Sell first
                 Helpers.SellItems(poisonVendor);
 
@@ -172,6 +166,8 @@ public class BuyPoisonState : State
                     //Main.Logger($"Found vendor {vendorWithThisPoison.Name} for item {deadly}");
                     DeadlyPoison = deadly;
                     vendor = vendorWithThisPoison;
+                    ClearDoNotSellListFromDeadlies();
+                    Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(deadly));
                     break;
                 }
             }
@@ -187,6 +183,8 @@ public class BuyPoisonState : State
                     //Main.Logger($"Found vendor {vendorWithThisPoison.Name} for item {instant}");
                     InstantPoison = instant;
                     vendor = vendorWithThisPoison;
+                    ClearDoNotSellListFromInstants();
+                    Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(instant));
                     break;
                 }
             }
