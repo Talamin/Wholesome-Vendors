@@ -253,19 +253,32 @@ public class Database
     }
 
     public static DatabaseNPC GetTrainer()
-    {
+    {/*
         if (ObjectManager.Me.Level > 10)
         {
             //Blacklisting Starter Area Trainers, Orcs added
             NPCBlackList.AddNPCListToBlacklist(new[] { 5871, 8307, 3489, 3153, 3154, 5884, 3157, 3707, 3155, 3156 });
-        }
+        }*/
 
         HashSet<int> usableZones = GetListUsableZones();
         TrainerFilter.Trainer = (Train)ObjectManager.Me.WowClass;
+        /*
+        List<creature> test = DbCreature.Get(TrainerFilter)
+            .Where(q => !NPCBlackList.myBlacklist.Contains(q.id) && usableZones.Contains(q.zoneId + 1))
+            .Where(q => ObjectManager.Me.Level <= q.MinLevel || q.MinLevel > 20)
+            .Where(q => !q.Name.Contains(" Trainer"))
+            .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
+            .ToList();
+
+        test.ForEach(q => Main.Logger($"{q.Name} -> {q.MaxLevel} {q.MinLevel} "));*/
+
         creature trainer = DbCreature.Get(TrainerFilter)
             .Where(q => !NPCBlackList.myBlacklist.Contains(q.id) && usableZones.Contains(q.zoneId + 1))
+            .Where(q => ObjectManager.Me.Level <= q.MinLevel || q.MinLevel > 20)
+            .Where(q => !q.Name.Contains(" Trainer"))
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
+
         return trainer == null ? null : new DatabaseNPC(trainer);
     }
 
