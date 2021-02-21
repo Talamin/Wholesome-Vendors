@@ -75,19 +75,19 @@ public class BuyFoodState : State
             if (Helpers.NpcIsAbsentOrDead(foodVendor))
                 return;
 
-            // Sell first
-            Helpers.SellItems(foodVendor);
-
             string foodNameToBuy = ItemsManager.GetNameById(foodToBuy);
             wManagerSetting.CurrentSetting.FoodName = foodNameToBuy;
             wManagerSetting.CurrentSetting.Save();
+            ClearDoNotSellListFromFoods();
+            Helpers.AddItemToDoNotSellList(foodNameToBuy);
+
+            // Sell first
+            Helpers.SellItems(foodVendor);
 
             for (int i = 0; i <= 5; i++)
             {
                 GoToTask.ToPositionAndIntecractWithNpc(foodVendor.Position, foodVendor.Id, i);
                 Helpers.BuyItem(foodNameToBuy, wManagerSetting.CurrentSetting.FoodAmount, 5);
-                ClearDoNotSellListFromFoods();
-                Helpers.AddItemToDoNotSellList(foodNameToBuy);
                 Helpers.CloseWindow();
                 Thread.Sleep(1000);
                 if (ItemsManager.GetItemCountById((uint)foodToBuy) >= wManagerSetting.CurrentSetting.FoodAmount)

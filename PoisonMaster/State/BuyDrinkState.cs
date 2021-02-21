@@ -75,19 +75,19 @@ public class BuyDrinkState : State
             if (Helpers.NpcIsAbsentOrDead(drinkVendor))
                 return;
 
-            // Sell first
-            Helpers.SellItems(drinkVendor);
-
             string drinkNameToBuy = ItemsManager.GetNameById(drinkToBuy);
             wManagerSetting.CurrentSetting.DrinkName = drinkNameToBuy;
             wManagerSetting.CurrentSetting.Save();
+            ClearDoNotSellListFromDrinks();
+            Helpers.AddItemToDoNotSellList(drinkNameToBuy);
+
+            // Sell first
+            Helpers.SellItems(drinkVendor);
 
             for (int i = 0; i <= 5; i++)
             {
                 GoToTask.ToPositionAndIntecractWithNpc(drinkVendor.Position, drinkVendor.Id, i);
                 Helpers.BuyItem(drinkNameToBuy, wManagerSetting.CurrentSetting.DrinkAmount, 5);
-                ClearDoNotSellListFromDrinks();
-                Helpers.AddItemToDoNotSellList(drinkNameToBuy);
                 wManagerSetting.CurrentSetting.DrinkName = drinkNameToBuy;
                 Helpers.CloseWindow();
                 Thread.Sleep(1000);

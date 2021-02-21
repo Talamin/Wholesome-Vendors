@@ -81,6 +81,9 @@ public class BuyAmmoState : State
             if (Helpers.NpcIsAbsentOrDead(ammoVendor))
                 return;
 
+            ClearDoNotSellListFromAmmos();
+            Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(AmmoToBuy));
+
             // Sell first
             Helpers.SellItems(ammoVendor);
 
@@ -88,8 +91,6 @@ public class BuyAmmoState : State
             {
                 GoToTask.ToPositionAndIntecractWithNpc(ammoVendor.Position, ammoVendor.Id, i);
                 Vendor.BuyItem(ItemsManager.GetNameById(AmmoToBuy), 2000 / 200);
-                ClearDoNotSellListFromAmmos();
-                Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(AmmoToBuy));
                 Helpers.CloseWindow();
                 Thread.Sleep(1000);
                 if (ItemsManager.GetItemCountById((uint)AmmoToBuy) >= wManagerSetting.CurrentSetting.DrinkAmount)

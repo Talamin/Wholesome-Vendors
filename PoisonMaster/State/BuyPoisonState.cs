@@ -89,18 +89,19 @@ public class BuyPoisonState : State
             if (Helpers.NpcIsAbsentOrDead(poisonVendor))
                 return;
 
-            // Sell first
-            Helpers.SellItems(poisonVendor);
-
             // INSTANT POISON
             if (nbInstantPoisonToBuy > 0)
             {
+                ClearDoNotSellListFromInstants();
+                Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(InstantPoison));
+
+                // Sell first
+                Helpers.SellItems(poisonVendor);
+
                 for (int i = 0; i <= 5; i++)
                 {
                     GoToTask.ToPositionAndIntecractWithNpc(poisonVendor.Position, poisonVendor.Id, i);
                     Helpers.BuyItem(ItemsManager.GetNameById(InstantPoison), nbInstantPoisonToBuy, 1);
-                    ClearDoNotSellListFromInstants();
-                    Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(InstantPoison));
                     Helpers.CloseWindow();
                     Thread.Sleep(1000);
                     if (!NeedInstantPoison)
@@ -117,12 +118,16 @@ public class BuyPoisonState : State
             // DEADLY POISON
             if (Me.Level >= 30 && nbDeadlyPoisonToBuy > 0)
             {
+                ClearDoNotSellListFromDeadlies();
+                Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(DeadlyPoison));
+
+                // Sell first
+                Helpers.SellItems(poisonVendor);
+
                 for (int i = 0; i <= 5; i++)
                 {
                     GoToTask.ToPositionAndIntecractWithNpc(poisonVendor.Position, poisonVendor.Id, i);
                     Helpers.BuyItem(ItemsManager.GetNameById(DeadlyPoison), nbDeadlyPoisonToBuy, 1);
-                    ClearDoNotSellListFromDeadlies();
-                    Helpers.AddItemToDoNotSellList(ItemsManager.GetNameById(DeadlyPoison));
                     Helpers.CloseWindow();
                     Thread.Sleep(1000);
                     if (!NeedDeadlyPoison)
