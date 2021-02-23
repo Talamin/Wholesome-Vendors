@@ -29,7 +29,11 @@ public class RepairState : State
             if (PluginSettings.CurrentSetting.AutoRepair && ObjectManager.Me.GetDurabilityPercent < minDurability
                 || PluginSettings.CurrentSetting.AllowAutoSell && Bag.GetContainerNumFreeSlotsByType(BagType.Unspecified) <= maxFreeSlots)
             {
-                repairVendor = Database.GetRepairVendor();
+                if (PluginSettings.CurrentSetting.AllowAutoSell && Bag.GetContainerNumFreeSlotsByType(BagType.Unspecified) <= maxFreeSlots)
+                    repairVendor = Database.GetSellVendor();
+                else
+                    repairVendor = Database.GetRepairVendor();
+
                 if (repairVendor == null)
                 {
                     Main.Logger("Couldn't find repair vendor");
