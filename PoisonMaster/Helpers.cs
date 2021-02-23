@@ -270,7 +270,9 @@ namespace PoisonMaster
             List<string> listItemsToSell = new List<string>();
             foreach (WoWItem item in bagItems)
             {
-                if (item != null && !wManagerSetting.CurrentSetting.DoNotSellList.Contains(item.Name))
+                if (item != null 
+                    && !wManagerSetting.CurrentSetting.DoNotSellList.Contains(item.Name) 
+                    && item.GetItemInfo.ItemSellPrice > 0)
                     listItemsToSell.Add(item.Name);
             }
 
