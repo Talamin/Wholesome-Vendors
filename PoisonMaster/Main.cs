@@ -26,13 +26,14 @@ public class Main : IPlugin
     public static State repairState = new RepairState();
     public static State trainingState = new TrainingState();
 
-    public static string version = "0.0.12"; // Must match version in Version.txt
+    public static string version = "0.0.13"; // Must match version in Version.txt
 
     public void Initialize()
     {
         try
         {
             PluginSettings.Load();
+            Helpers.OverrideWRobotUserSettings();
 
             if (AutoUpdater.CheckUpdate(version))
             {
@@ -63,6 +64,7 @@ public class Main : IPlugin
     public void Dispose()
     {
         //IsLaunched = false;
+        Helpers.RestoreWRobotUserSettings();
         FiniteStateMachineEvents.OnRunState -= StateAddEventHandler;
         _pulseThread.Dispose();
         Logger("Plugin was terminated!");

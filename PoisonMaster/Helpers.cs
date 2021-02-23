@@ -17,6 +17,8 @@ namespace PoisonMaster
 {
     public class Helpers
     {
+        private static bool saveWRobotSettingRepair;
+
         public static int GetMoney => (int)ObjectManager.Me.GetMoneyCopper;
 
         public static void AddState(Engine engine, State state, string replace)
@@ -279,14 +281,46 @@ namespace PoisonMaster
             if (listItemsToSell.Count <= 0)
                 return;
 
-            for (int i = 0; i <= 5; i++)
+            Main.Logger($"Found {listItemsToSell.Count} items to sell");
+
+            for (int i = 1; i <= 5; i++)
             {
+                Main.Logger($"Attempt {i}");
                 GoToTask.ToPositionAndIntecractWithNpc(vendor.Position, vendor.Id, i);
                 Vendor.SellItems(listItemsToSell, wManagerSetting.CurrentSetting.DoNotSellList, GetListQualityToSell());
                 Thread.Sleep(200);
                 if (Bag.GetBagItem().Count < nbItemsInBags)
                     break;
             }
+        }
+
+        public static void OverrideWRobotUserSettings()
+        {
+            if (PluginSettings.CurrentSetting.AutoRepair)
+            {
+                saveWRobotSettingRepair = wManagerSetting.CurrentSetting.Repair; // save user setting
+                wManagerSetting.CurrentSetting.Repair = false; // disable user setting
+            }
+
+            wManagerSetting.CurrentSetting.Save();
+        }
+
+        public static void RestoreWRobotUserSettings()
+        {
+            wManagerSetting.CurrentSetting.Repair = saveWRobotSettingRepair;
+            wManagerSetting.CurrentSetting.Save();
+        }
+
+        public static bool PlayerInBloodElfStartingZone()
+        {
+            string zone = Lua.LuaDoString<string>("return GetRealZoneText();");
+            return zone == "Eversong Woods" || zone == "Ghostlands" || zone == "Silvermoon City";
+        }
+
+        public static bool PlayerInDraneiStartingZone()
+        {
+            string zone = Lua.LuaDoString<string>("return GetRealZoneText();");
+            return zone == "Azuremyst Isle" || zone == "Bloodmyst Isle" || zone == "The Exodar";
         }
     }
 }

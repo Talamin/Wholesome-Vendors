@@ -5,6 +5,7 @@ using DatabaseManager.Types;
 using DatabaseManager.WoW;
 using System.Collections.Generic;
 using System.Linq;
+using wManager;
 using wManager.Wow.Class;
 using wManager.Wow.Enums;
 using wManager.Wow.Helpers;
@@ -94,7 +95,8 @@ public class Database
 
             creature ammoVendor = DbCreature
                 .Get(AmmoVendorFilter)
-                .Where(q => usableZones.Contains(q.zoneId + 1))
+                .Where(q => usableZones.Contains(q.zoneId + 1)
+                    && !wManagerSetting.IsBlackListedNpcEntry(q.id))
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
                 .FirstOrDefault();
 
@@ -107,7 +109,7 @@ public class Database
                 .Where(q => (int)q.Faction == ObjectManager.Me.Faction
                     && (q.VendorItemClass == Npc.NpcVendorItemClass.Arrow || q.VendorItemClass == Npc.NpcVendorItemClass.Bullet)
                     && q.ContinentId == (ContinentId)Usefuls.ContinentId
-                    && !wManager.wManagerSetting.IsBlackListedNpcEntry(q.Entry)
+                    && !wManagerSetting.IsBlackListedNpcEntry(q.Entry)
                     && q.Active)
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
                 .FirstOrDefault();
@@ -124,7 +126,9 @@ public class Database
             FoodVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usableDrink);
             creature drinkVendor = DbCreature
                 .Get(FoodVendorFilter)
-                .Where(q => !NPCBlackList.OnlyFoodBlacklist.Contains(q.id) && !NPCBlackList.myBlacklist.Contains(q.id) && usableZones.Contains(q.zoneId + 1))
+                .Where(q => !NPCBlackList.OnlyFoodBlacklist.Contains(q.id)
+                    && !wManagerSetting.IsBlackListedNpcEntry(q.id)
+                    && usableZones.Contains(q.zoneId + 1))
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
                 .FirstOrDefault();
 
@@ -136,7 +140,7 @@ public class Database
                 .Where(q => (int)q.Faction == ObjectManager.Me.Faction
                     && (q.VendorItemClass == Npc.NpcVendorItemClass.Consumable || q.VendorItemClass == Npc.NpcVendorItemClass.Food)
                     && q.ContinentId == (ContinentId)Usefuls.ContinentId
-                    && !wManager.wManagerSetting.IsBlackListedNpcEntry(q.Entry)
+                    && !wManagerSetting.IsBlackListedNpcEntry(q.Entry)
                     && q.Active)
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
                 .FirstOrDefault();
@@ -152,7 +156,8 @@ public class Database
             FoodVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usableFood);
             creature foodVendor = DbCreature
                 .Get(FoodVendorFilter)
-                .Where(q => !NPCBlackList.myBlacklist.Contains(q.id) && usableZones.Contains(q.zoneId + 1))
+                .Where(q => usableZones.Contains(q.zoneId + 1)
+                    && !wManagerSetting.IsBlackListedNpcEntry(q.id))
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
                 .FirstOrDefault();
 
@@ -164,7 +169,7 @@ public class Database
                 .Where(q => (int)q.Faction == ObjectManager.Me.Faction
                     && (q.VendorItemClass == Npc.NpcVendorItemClass.Consumable || q.VendorItemClass == Npc.NpcVendorItemClass.Food)
                     && q.ContinentId == (ContinentId)Usefuls.ContinentId
-                    && !wManager.wManagerSetting.IsBlackListedNpcEntry(q.Entry)
+                    && !wManagerSetting.IsBlackListedNpcEntry(q.Entry)
                     && q.Active)
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
                 .FirstOrDefault();
@@ -180,7 +185,8 @@ public class Database
             PoisonVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usablePoison);
             creature poisonVendor = DbCreature
                 .Get(PoisonVendorFilter)
-                .Where(q => !NPCBlackList.myBlacklist.Contains(q.id) && usableZones.Contains(q.zoneId + 1))
+                .Where(q => usableZones.Contains(q.zoneId + 1) 
+                    && !wManagerSetting.IsBlackListedNpcEntry(q.id))
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
                 .FirstOrDefault();
 
@@ -192,7 +198,7 @@ public class Database
                 .Where(q => (int)q.Faction == ObjectManager.Me.Faction
                     && (q.VendorItemClass == Npc.NpcVendorItemClass.Potion)
                     && q.ContinentId == (ContinentId)Usefuls.ContinentId
-                    && !wManager.wManagerSetting.IsBlackListedNpcEntry(q.Entry)
+                    && !wManagerSetting.IsBlackListedNpcEntry(q.Entry)
                     && q.Active)
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
                 .FirstOrDefault();
@@ -207,7 +213,8 @@ public class Database
             HashSet<int> usableZones = GetListUsableZones();
             creature repairVendor = DbCreature
                 .Get(RepairVendorFilter)
-                .Where(q => !NPCBlackList.myBlacklist.Contains(q.id) && usableZones.Contains(q.zoneId + 1))
+                .Where(q => usableZones.Contains(q.zoneId + 1)
+                    && !wManagerSetting.IsBlackListedNpcEntry(q.id))
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
                 .FirstOrDefault();
 
@@ -215,10 +222,11 @@ public class Database
         }
         else
         {
-            Npc repairVendor = NpcDB.ListNpc.Where(q => (int)q.Faction == ObjectManager.Me.Faction
+            Npc repairVendor = NpcDB.ListNpc
+                .Where(q => (int)q.Faction == ObjectManager.Me.Faction
                     && (q.Type == Npc.NpcType.Repair)
-                    && q.ContinentId == (ContinentId)Usefuls.ContinentId
-                    && !wManager.wManagerSetting.IsBlackListedNpcEntry(q.Entry)
+                    && q.ContinentId == (ContinentId)Usefuls.ContinentId 
+                    && !wManagerSetting.IsBlackListedNpcEntry(q.Entry)
                     && q.Active)
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
                 .FirstOrDefault();
@@ -232,7 +240,8 @@ public class Database
         {
             HashSet<int> usableZones = GetListUsableZones();
             creature sellVendor = DbCreature.Get(SellVendorFilter)
-                .Where(q => !NPCBlackList.myBlacklist.Contains(q.id) && usableZones.Contains(q.zoneId + 1))
+                .Where(q => usableZones.Contains(q.zoneId + 1) 
+                    && !wManagerSetting.IsBlackListedNpcEntry(q.id))
                 .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
                 .FirstOrDefault();
 
@@ -243,7 +252,7 @@ public class Database
             Npc sellVendor = NpcDB.ListNpc.Where(q => (int)q.Faction == ObjectManager.Me.Faction
                     && (q.Type == Npc.NpcType.Repair || q.Type == Npc.NpcType.Vendor)
                     && q.ContinentId == (ContinentId)Usefuls.ContinentId
-                    && !wManager.wManagerSetting.IsBlackListedNpcEntry(q.Entry)
+                    && !wManagerSetting.IsBlackListedNpcEntry(q.Entry)
                     && q.Active)
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
@@ -253,27 +262,12 @@ public class Database
     }
 
     public static DatabaseNPC GetTrainer()
-    {/*
-        if (ObjectManager.Me.Level > 10)
-        {
-            //Blacklisting Starter Area Trainers, Orcs added
-            NPCBlackList.AddNPCListToBlacklist(new[] { 5871, 8307, 3489, 3153, 3154, 5884, 3157, 3707, 3155, 3156 });
-        }*/
-
+    {
         HashSet<int> usableZones = GetListUsableZones();
         TrainerFilter.Trainer = (Train)ObjectManager.Me.WowClass;
-        /*
-        List<creature> test = DbCreature.Get(TrainerFilter)
-            .Where(q => !NPCBlackList.myBlacklist.Contains(q.id) && usableZones.Contains(q.zoneId + 1))
-            .Where(q => ObjectManager.Me.Level <= q.MinLevel || q.MinLevel > 20)
-            .Where(q => !q.Name.Contains(" Trainer"))
-            .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
-            .ToList();
-
-        test.ForEach(q => Main.Logger($"{q.Name} -> {q.MaxLevel} {q.MinLevel} "));*/
 
         creature trainer = DbCreature.Get(TrainerFilter)
-            .Where(q => !NPCBlackList.myBlacklist.Contains(q.id) && usableZones.Contains(q.zoneId + 1))
+            .Where(q => usableZones.Contains(q.zoneId + 1))
             .Where(q => ObjectManager.Me.Level <= q.MinLevel || q.MinLevel > 20)
             .Where(q => !q.Name.Contains(" Trainer"))
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
@@ -286,8 +280,6 @@ public class Database
     private static HashSet<int> GetListUsableZones()
     {
         HashSet<int> listZones = new HashSet<int>();
-        //int myZoneId = Lua.LuaDoString<int>($"return GetCurrentMapAreaID()");
-        //Main.Logger("I am on Zone: " + myZoneId);
         foreach (KeyValuePair<int,int> zones in ZoneLevelDictionary)
         {
             if (zones.Value <= ObjectManager.Me.Level)

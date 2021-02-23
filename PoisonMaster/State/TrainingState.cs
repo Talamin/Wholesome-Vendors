@@ -7,6 +7,7 @@ using Timer = robotManager.Helpful.Timer;
 using PoisonMaster;
 using System.Threading;
 using wManager;
+using wManager.Wow.Enums;
 
 public class TrainingState : State
 {
@@ -29,6 +30,14 @@ public class TrainingState : State
                 return false;
 
             stateTimer = new Timer(5000);
+
+            // is the player in Outlands or Northrend?
+            if ((ContinentId) Usefuls.ContinentId == ContinentId.Northrend
+                || (ContinentId)Usefuls.ContinentId == ContinentId.Expansion01
+                && !Helpers.PlayerInBloodElfStartingZone()
+                && !Helpers.PlayerInDraneiStartingZone())
+                return false;
+
             trainerNPC = Database.GetTrainer();
 
             if (trainerNPC == null)

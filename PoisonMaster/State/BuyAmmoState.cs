@@ -16,6 +16,7 @@ public class BuyAmmoState : State
     private Timer stateTimer = new Timer();
     private DatabaseNPC ammoVendor;
     private int AmmoToBuy = 0;
+    private int nbAmmoToBuy = 2000;
 
     private readonly Dictionary<int, int> ArrowDictionary = new Dictionary<int, int>
     {
@@ -90,10 +91,10 @@ public class BuyAmmoState : State
             for (int i = 0; i <= 5; i++)
             {
                 GoToTask.ToPositionAndIntecractWithNpc(ammoVendor.Position, ammoVendor.Id, i);
-                Vendor.BuyItem(ItemsManager.GetNameById(AmmoToBuy), 2000 / 200);
+                Vendor.BuyItem(ItemsManager.GetNameById(AmmoToBuy), nbAmmoToBuy / 200);
                 Helpers.CloseWindow();
                 Thread.Sleep(1000);
-                if (ItemsManager.GetItemCountById((uint)AmmoToBuy) >= wManagerSetting.CurrentSetting.DrinkAmount)
+                if (ItemsManager.GetItemCountById((uint)AmmoToBuy) >= nbAmmoToBuy)
                     return;
             }
             Main.Logger($"Failed to buy {AmmoToBuy}, blacklisting vendor");

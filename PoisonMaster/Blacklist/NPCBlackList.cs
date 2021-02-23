@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 
 public static class NPCBlackList
 {
@@ -7,7 +6,6 @@ public static class NPCBlackList
     {
         foreach (var id in myBlacklist)
             AddNPCToBlacklist(id);
-
     }
 
     public static void AddNPCToBlacklist(int npcId)

@@ -14,6 +14,8 @@ public class RepairState : State
 
     private DatabaseNPC repairVendor;
     private Timer stateTimer = new Timer();
+    private int minDurability = 35;
+    private int maxFreeSlots = 3;
 
     public override bool NeedToRun
     {
@@ -24,8 +26,8 @@ public class RepairState : State
 
             stateTimer = new Timer(5000);
 
-            if (PluginSettings.CurrentSetting.AutoRepair && ObjectManager.Me.GetDurabilityPercent < 35
-                || PluginSettings.CurrentSetting.AllowAutoSell && Bag.GetContainerNumFreeSlotsByType(BagType.Unspecified) <= 3)
+            if (PluginSettings.CurrentSetting.AutoRepair && ObjectManager.Me.GetDurabilityPercent < minDurability
+                || PluginSettings.CurrentSetting.AllowAutoSell && Bag.GetContainerNumFreeSlotsByType(BagType.Unspecified) <= maxFreeSlots)
             {
                 repairVendor = Database.GetRepairVendor();
                 if (repairVendor == null)
@@ -67,13 +69,13 @@ public class RepairState : State
                 Helpers.CloseWindow();
                 Thread.Sleep(1000);
 
-                if (ObjectManager.Me.GetDurabilityPercent >= 35)
+                if (ObjectManager.Me.GetDurabilityPercent >= minDurability)
                     break;
             }
 
-            if (ObjectManager.Me.GetDurabilityPercent < 35)
+            if (ObjectManager.Me.GetDurabilityPercent < minDurability || Bag.GetContainerNumFreeSlotsByType(BagType.Unspecified) <= maxFreeSlots)
             {
-                Main.Logger($"Failed to repair, blacklisting vendor");
+                Main.Logger($"Failed to sell/repair, blacklisting vendor");
                 NPCBlackList.AddNPCToBlacklist(repairVendor.Id);
             }
         }
