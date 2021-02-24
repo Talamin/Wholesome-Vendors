@@ -69,7 +69,7 @@ public class BuyAmmoState : State
             if (!Helpers.HaveEnoughMoneyFor(AmmoAmountToBuy, AmmoNameToBuy))
                 return false;
 
-            if (ItemsManager.GetItemCountById((uint)AmmoIdToBuy) <= 50)
+            if (GetNbAmmosInBags() <= 50)
                 return true;
 
             return false;
@@ -179,5 +179,14 @@ public class BuyAmmoState : State
             }
         }
         return listAmmo;
+    }
+
+    private int GetNbAmmosInBags()
+    {
+        int nbAmmosInBags = 0;
+        foreach (int arrow in GetListUsableAmmo())
+            nbAmmosInBags += ItemsManager.GetItemCountById((uint)arrow);
+        //Main.Logger($"We have {nbAmmosInBags} ammo items in our bags");
+        return nbAmmosInBags;
     }
 }

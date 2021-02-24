@@ -22,16 +22,14 @@ public class BuyDrinkState : State
 
     private readonly Dictionary<int, int> WaterDictionary = new Dictionary<int, int>
         {
-            { 75, 33444 }, // Pungent Seal Whey
-            { 71, 33444 }, // Pungent Seal Whey -- make sure this is only used in WotLK
+            { 75, 33444 }, // Pungent Seal Whey -- make sure this is only used in WotLK
             { 65, 27860 }, // Purified Draenic Water
-            { 61, 28399 }, // Filtered Draenic Water -- make sure this is only used in TBC
-            { 50, 8766 }, // Morning Glory Dew
-            { 40, 1645 }, // Moonberry Juice
-            { 30, 1708 }, // Sweet Nectar
-            { 20, 1205 }, // Melon Juice
-            { 10, 1179 }, // Ice Cold Milk
-            { 5, 159 }, // Refreshing Spring water
+            { 55, 28399 }, // Filtered Draenic Water -- make sure this is only used in TBC
+            { 45, 8766 }, // Morning Glory Dew
+            { 35, 1645 }, // Moonberry Juice
+            { 25, 1708 }, // Sweet Nectar
+            { 15, 1205 }, // Melon Juice
+            { 5, 1179 }, // Ice Cold Milk
             { 0, 159 }, // Refreshing Spring water
         };
 
@@ -65,7 +63,7 @@ public class BuyDrinkState : State
             if (!Helpers.HaveEnoughMoneyFor(DrinkAmountToBuy, DrinkNameToBuy))
                 return false;
 
-            if (ItemsManager.GetItemCountById((uint)DrinkIdToBuy) <= 3)
+            if (GetNbDrinksInBags() <= 3)
                 return true;
 
             return false;
@@ -161,6 +159,15 @@ public class BuyDrinkState : State
                 listDrink.Add((int)drink.Value);
         }
         return listDrink;
+    }
+
+    private int GetNbDrinksInBags()
+    {
+        int nbDrinksInBags = 0;
+        foreach (KeyValuePair<int, int> drink in WaterDictionary)
+            nbDrinksInBags += ItemsManager.GetItemCountById((uint)drink.Value);
+        //Main.Logger($"We have {nbDrinksInBags} drink items in our bags");
+        return nbDrinksInBags;
     }
 }
 
