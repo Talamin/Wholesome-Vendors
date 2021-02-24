@@ -50,20 +50,23 @@ public class BuyDrinkState : State
             if (Me.Level > 10) // to be moved
                 NPCBlackList.AddNPCListToBlacklist(new[] { 5871, 8307, 3489 });
 
-            if (Helpers.OutOfDrink())
+            SetDrinkAndVendor();
+
+            if (DrinkIdToBuy == 0)
+                return false;
+
+            if (DrinkVendor == null)
             {
-                SetDrinkAndVendor();
-                if (DrinkVendor == null)
-                {
-                    Main.Logger("Couldn't find drink vendor");
-                    return false;
-                }
-
-                if (!Helpers.HaveEnoughMoneyFor(DrinkAmountToBuy, DrinkNameToBuy))
-                    return false;
-
-                return true;
+                Main.Logger("Couldn't find drink vendor");
+                return false;
             }
+
+            if (!Helpers.HaveEnoughMoneyFor(DrinkAmountToBuy, DrinkNameToBuy))
+                return false;
+
+            if (ItemsManager.GetItemCountById((uint)DrinkIdToBuy) <= 3)
+                return true;
+
             return false;
         }
     }

@@ -51,20 +51,23 @@ public class BuyFoodState : State
             if (Me.Level > 10) // to be moved
                 NPCBlackList.AddNPCListToBlacklist(new[] { 5871, 8307, 3489 });
 
-            if (Helpers.OutOfFood())
+            SetFoodAndVendor();
+
+            if (FoodIdToBuy == 0)
+                return false;
+
+            if (FoodVendor == null)
             {
-                SetFoodAndVendor();
-                if (FoodVendor == null)
-                {
-                    Main.Logger("Couldn't find food vendor");
-                    return false;
-                }
-
-                if (!Helpers.HaveEnoughMoneyFor(FoodAmountToBuy, FoodNameToBuy))
-                    return false;
-
-                return true;
+                Main.Logger("Couldn't find food vendor");
+                return false;
             }
+
+            if (!Helpers.HaveEnoughMoneyFor(FoodAmountToBuy, FoodNameToBuy))
+                return false;
+
+            if (ItemsManager.GetItemCountById((uint)FoodIdToBuy) <= 3)
+                return true;
+
             return false;
         }
     }

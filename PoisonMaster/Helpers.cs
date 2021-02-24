@@ -90,7 +90,7 @@ namespace PoisonMaster
                 Memory.WowMemory.UnlockFrame();
             }
         }
-
+        /*
         public static bool OutOfFood()
         {
             var allFoodAmount = Bag.GetBagItem()
@@ -120,7 +120,7 @@ namespace PoisonMaster
 
             return false;
         }
-
+        */
         public static string GetRangedWeaponType()
         {
             uint myRangedWeapon = ObjectManager.Me.GetEquipedItemBySlot(InventorySlot.INVSLOT_RANGED);
