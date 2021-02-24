@@ -139,11 +139,10 @@ public class BuyPoisonState : State
                         Thread.Sleep(1000);
                     }
 
-                    Helpers.CloseWindow();
-
                     if (!NeedDeadlyPoison && !NeedInstantPoison)
                         break;
                 }
+                Helpers.CloseWindow();
             }
         }
     }
