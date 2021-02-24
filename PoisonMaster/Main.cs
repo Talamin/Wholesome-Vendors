@@ -26,7 +26,7 @@ public class Main : IPlugin
     public static State repairState = new RepairState();
     public static State trainingState = new TrainingState();
 
-    public static string version = "0.1.04"; // Must match version in Version.txt
+    public static string version = "0.1.05"; // Must match version in Version.txt
 
     public void Initialize()
     {

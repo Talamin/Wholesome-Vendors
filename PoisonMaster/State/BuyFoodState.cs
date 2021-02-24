@@ -124,7 +124,7 @@ public class BuyFoodState : State
         List<string> allFoods = new List<string>();
         foreach (KeyValuePair<int, HashSet<int>> foods in FoodDictionary)
             foreach (int foodToAdd in foods.Value)
-                allFoods.Add(ItemsManager.GetNameById(foodToAdd));
+                allFoods.Add(Database.GetItemName(foodToAdd));
         return allFoods;
     }
 
@@ -132,7 +132,7 @@ public class BuyFoodState : State
     {
         foreach (KeyValuePair<int, HashSet<int>> foodList in FoodDictionary)
             foreach (int food in foodList.Value)
-                Helpers.RemoveItemFromDoNotSellList(ItemsManager.GetNameById(food));
+                Helpers.RemoveItemFromDoNotSellList(Database.GetItemName(food));
     }
 
     private void SetFoodAndVendor()
@@ -148,7 +148,7 @@ public class BuyFoodState : State
                 if (FoodVendor == null || FoodVendor.Position.DistanceTo2D(Me.Position) > vendorWithThisFood.Position.DistanceTo2D(Me.Position))
                 {
                     FoodIdToBuy = foodId;
-                    FoodNameToBuy = ItemsManager.GetNameById(foodId);
+                    FoodNameToBuy = Database.GetItemName(foodId);
                     FoodVendor = vendorWithThisFood;
                 }
             }

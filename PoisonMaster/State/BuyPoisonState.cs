@@ -153,9 +153,9 @@ public class BuyPoisonState : State
         List<string> allPoisons = new List<string>();
 
         foreach (KeyValuePair<int, int> instant in InstantPoisonDictionary)
-            allPoisons.Add(ItemsManager.GetNameById(instant.Value));
+            allPoisons.Add(Database.GetItemName(instant.Value));
         foreach (KeyValuePair<int, int> deadly in DeadlyPoisonDictionary)
-            allPoisons.Add(ItemsManager.GetNameById(deadly.Value));
+            allPoisons.Add(Database.GetItemName(deadly.Value));
 
         return allPoisons;
     }
@@ -163,13 +163,13 @@ public class BuyPoisonState : State
     private void ClearDoNotSellListFromInstants()
     {
         foreach (KeyValuePair<int, int> instant in InstantPoisonDictionary)
-            Helpers.RemoveItemFromDoNotSellList(ItemsManager.GetNameById(instant.Value));
+            Helpers.RemoveItemFromDoNotSellList(Database.GetItemName(instant.Value));
     }
 
     private void ClearDoNotSellListFromDeadlies()
     {
         foreach (KeyValuePair<int, int> deadly in DeadlyPoisonDictionary)
-            Helpers.RemoveItemFromDoNotSellList(ItemsManager.GetNameById(deadly.Value));
+            Helpers.RemoveItemFromDoNotSellList(Database.GetItemName(deadly.Value));
     }
 
     private void SetPoisonAndVendor()
@@ -186,7 +186,7 @@ public class BuyPoisonState : State
                 if (vendorWithThisPoison != null)
                 {
                     DeadlyPoisonIdToBuy = deadly;
-                    DeadlyPoisonNameToBuy = ItemsManager.GetNameById(deadly);
+                    DeadlyPoisonNameToBuy = Database.GetItemName(deadly);
                     PoisonVendor = vendorWithThisPoison;
                     ClearDoNotSellListFromDeadlies();
                     Helpers.AddItemToDoNotSellList(DeadlyPoisonNameToBuy);
@@ -203,7 +203,7 @@ public class BuyPoisonState : State
                 if (vendorWithThisPoison != null)
                 {
                     InstantPoisonIdToBuy = instant;
-                    InstantPoisonNameToBuy = ItemsManager.GetNameById(instant);
+                    InstantPoisonNameToBuy = Database.GetItemName(instant);
                     PoisonVendor = vendorWithThisPoison;
                     ClearDoNotSellListFromInstants();
                     Helpers.AddItemToDoNotSellList(InstantPoisonNameToBuy);

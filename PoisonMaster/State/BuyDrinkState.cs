@@ -124,7 +124,7 @@ public class BuyDrinkState : State
         List<string> allDrinks = new List<string>();
 
         foreach (KeyValuePair<int, int> drink in WaterDictionary)
-            allDrinks.Add(ItemsManager.GetNameById(drink.Value));
+            allDrinks.Add(Database.GetItemName(drink.Value));
 
         return allDrinks;
     }
@@ -132,7 +132,7 @@ public class BuyDrinkState : State
     private void ClearDoNotSellListFromDrinks()
     {
         foreach (KeyValuePair<int, int> drink in WaterDictionary)
-            Helpers.RemoveItemFromDoNotSellList(ItemsManager.GetNameById(drink.Value));
+            Helpers.RemoveItemFromDoNotSellList(Database.GetItemName(drink.Value));
     }
 
     private void SetDrinkAndVendor()
@@ -146,7 +146,7 @@ public class BuyDrinkState : State
             {
                 DrinkIdToBuy = drink;
                 DrinkVendor = vendorWithThisDrink;
-                DrinkNameToBuy = ItemsManager.GetNameById((uint)DrinkIdToBuy);
+                DrinkNameToBuy = Database.GetItemName(DrinkIdToBuy);
                 return;
             }
         }
