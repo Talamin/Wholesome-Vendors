@@ -12,6 +12,7 @@ using robotManager.Products;
 using System.Collections.Generic;
 using wManager.Wow.Class;
 using wManager.Wow.Bot.Tasks;
+using static PluginSettings;
 
 namespace PoisonMaster
 {
@@ -222,7 +223,7 @@ namespace PoisonMaster
 
         public static void BuyItem(string name, int amount, int stackValue)
         {
-            Main.Logger("Buying " + amount + " " + name);
+            Main.Logger($"Buying {amount} x {name}");
             Lua.LuaDoString(string.Format(@"
                     local itemName = ""{0}""
                     local quantity = {1}
@@ -321,6 +322,55 @@ namespace PoisonMaster
         {
             string zone = Lua.LuaDoString<string>("return GetRealZoneText();");
             return zone == "Azuremyst Isle" || zone == "Bloodmyst Isle" || zone == "The Exodar";
+        }
+
+        public static bool OpenRecordVendorItems(List<string> itemsToRecord)
+        {
+            string vendorItems = Lua.LuaDoString<string>($@"local items = """"
+                                for i=1, GetMerchantNumItems() do 
+                                    local name, texture, price, quantity, numAvailable, isPurchasable, isUsable, extendedCost = GetMerchantItemInfo(i);
+                                    if name then 
+                                        items = items .. ""|"" .. name .. ""$"" .. price .. ""£"" .. quantity;
+                                    end
+                                end
+                                return items;");
+
+            if (string.IsNullOrEmpty(vendorItems))
+                return false;
+
+            string[] allItems = vendorItems.Split('|');
+
+            foreach (string item in allItems)
+            {
+                if (string.IsNullOrEmpty(item))
+                    continue;
+                string name = item.Split('$')[0];
+                int stack = Int32.Parse(item.Split('£')[1]);
+                int price = Int32.Parse(item.Substring(0, item.IndexOf('£')).Split('$')[1]);
+
+                if (itemsToRecord.Contains(name) && !PluginSettings.CurrentSetting.VendorItems.Exists(i => i.Name == name))
+                    PluginSettings.CurrentSetting.VendorItems.Add(new PluginSettings.VendorItem(name, stack, price));
+            }
+            PluginSettings.CurrentSetting.Save();
+            return true;
+        }
+
+        public static bool HaveEnoughMoneyFor(int amount, string itemName)
+        {
+            if (CurrentSetting.VendorItems.Exists(i => i.Name == itemName))
+            {
+                VendorItem foodItem = CurrentSetting.VendorItems.Find(i => i.Name == itemName);
+                if (GetMoney < foodItem.Price / foodItem.Stack * amount)
+                    return false;
+            }
+            return true;
+        }
+
+        public static bool PlayerIsInOutland()
+        {
+            return (ContinentId)Usefuls.ContinentId == ContinentId.Expansion01
+                && !PlayerInBloodElfStartingZone()
+                && !PlayerInDraneiStartingZone();
         }
     }
 }

@@ -13,7 +13,7 @@ public class TrainingState : State
 {
     public override string DisplayName => "WV Training";
 
-    private DatabaseNPC trainerNPC;
+    private DatabaseNPC TrainerVendor;
     private Timer stateTimer = new Timer();
     private bool needToTrain => leveltoTrain.Exists(l => (int)ObjectManager.Me.Level >= l && PluginSettings.CurrentSetting.LastLevelTrained < l);
 
@@ -31,16 +31,13 @@ public class TrainingState : State
 
             stateTimer = new Timer(5000);
 
-            // is the player in Outlands or Northrend?
             if ((ContinentId) Usefuls.ContinentId == ContinentId.Northrend
-                || (ContinentId)Usefuls.ContinentId == ContinentId.Expansion01
-                && !Helpers.PlayerInBloodElfStartingZone()
-                && !Helpers.PlayerInDraneiStartingZone())
+                || Helpers.PlayerIsInOutland())
                 return false;
 
-            trainerNPC = Database.GetTrainer();
+            TrainerVendor = Database.GetTrainer();
 
-            if (trainerNPC == null)
+            if (TrainerVendor == null)
             {
                 Main.Logger("Couldn´t find Trainer NPC");
                 return false;
@@ -52,18 +49,17 @@ public class TrainingState : State
 
     public override void Run()
     {
-        if (ObjectManager.Me.Position.DistanceTo(trainerNPC.Position) >= 10)
-        {
-            Main.Logger("Nearest Trainer from player:\n" + "Name: " + trainerNPC.Name + "[" + trainerNPC.Id + "]\nPosition: " + trainerNPC.Position.ToStringXml() + "\nDistance: " + trainerNPC.Position.DistanceTo(ObjectManager.Me.Position) + " yrds");
-            GoToTask.ToPosition(trainerNPC.Position);
-        }
+        Main.Logger($"Going to trainer {TrainerVendor.Name}");
 
-        if (ObjectManager.Me.Position.DistanceTo(trainerNPC.Position) < 10)
+        if (ObjectManager.Me.Position.DistanceTo(TrainerVendor.Position) >= 10)
+            GoToTask.ToPosition(TrainerVendor.Position);
+
+        if (ObjectManager.Me.Position.DistanceTo(TrainerVendor.Position) < 10)
         {
-            if (Helpers.NpcIsAbsentOrDead(trainerNPC))
+            if (Helpers.NpcIsAbsentOrDead(TrainerVendor))
                 return;
 
-            GoToTask.ToPositionAndIntecractWithNpc(trainerNPC.Position, trainerNPC.Id);
+            GoToTask.ToPositionAndIntecractWithNpc(TrainerVendor.Position, TrainerVendor.Id);
             Trainer.TrainingSpell();
             Thread.Sleep(800 + Usefuls.Latency);
             SpellManager.UpdateSpellBook();

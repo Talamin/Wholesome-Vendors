@@ -6,6 +6,7 @@ using System.Configuration;
 using System.ComponentModel;
 using System.IO;
 using MarsSettingsGUI;
+using System.Collections.Generic;
 
 [Serializable]
 public class PluginSettings : Settings
@@ -69,6 +70,7 @@ public class PluginSettings : Settings
 
     public double LastUpdateDate { get; set; }
     public int LastLevelTrained { get; set; }
+    public List<VendorItem> VendorItems { get; set; }
 
     public PluginSettings()
     {
@@ -81,7 +83,24 @@ public class PluginSettings : Settings
         AllowAutoSell = true;
         AutoTrain = true;
         LastUpdateDate = 0;
-        LastLevelTrained = 1;
+        LastLevelTrained = (int)ObjectManager.Me.Level;
+
+        VendorItems = new List<VendorItem>();
+    }
+
+    [Serializable]
+    public struct VendorItem
+    {
+        public string Name;
+        public int Stack;
+        public int Price;
+
+        public VendorItem(string name, int stack, int price)
+        {
+            Price = price;
+            Name = name;
+            Stack = stack;
+        }
     }
 
     public static PluginSettings CurrentSetting { get; set; }
