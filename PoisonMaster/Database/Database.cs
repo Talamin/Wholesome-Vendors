@@ -276,6 +276,15 @@ public class Database
         return trainer == null ? null : new DatabaseNPC(trainer);
     }
 
+    public static string GetItemName(int id)
+    {
+        ItemFilter filter = new ItemFilter
+        {
+            Ids = new HashSet<int> { id }
+        };
+        item_template item = DbItem.Get(filter).First();
+        return item.name;
+    }
 
     private static HashSet<int> GetListUsableZones()
     {

@@ -43,7 +43,8 @@ public class BuyFoodState : State
             if (!StateTimer.IsReady
                 || Me.Level <= 3
                 || !CurrentSetting.AutobuyFood
-                || FoodAmountToBuy <= 0)
+                || FoodAmountToBuy <= 0
+                || Me.IsOnTaxi)
                 return false;
 
             StateTimer = new Timer(5000);
@@ -51,20 +52,23 @@ public class BuyFoodState : State
             if (Me.Level > 10) // to be moved
                 NPCBlackList.AddNPCListToBlacklist(new[] { 5871, 8307, 3489 });
 
-            if (Helpers.OutOfFood())
+            SetFoodAndVendor();
+
+            if (FoodIdToBuy == 0)
+                return false;
+
+            if (FoodVendor == null)
             {
-                SetFoodAndVendor();
-                if (FoodVendor == null)
-                {
-                    Main.Logger("Couldn't find food vendor");
-                    return false;
-                }
-
-                if (!Helpers.HaveEnoughMoneyFor(FoodAmountToBuy, FoodNameToBuy))
-                    return false;
-
-                return true;
+                Main.Logger("Couldn't find food vendor");
+                return false;
             }
+
+            if (!Helpers.HaveEnoughMoneyFor(FoodAmountToBuy, FoodNameToBuy))
+                return false;
+
+            if (ItemsManager.GetItemCountById((uint)FoodIdToBuy) <= 3)
+                return true;
+
             return false;
         }
     }
@@ -120,7 +124,7 @@ public class BuyFoodState : State
         List<string> allFoods = new List<string>();
         foreach (KeyValuePair<int, HashSet<int>> foods in FoodDictionary)
             foreach (int foodToAdd in foods.Value)
-                allFoods.Add(ItemsManager.GetNameById(foodToAdd));
+                allFoods.Add(Database.GetItemName(foodToAdd));
         return allFoods;
     }
 
@@ -128,7 +132,7 @@ public class BuyFoodState : State
     {
         foreach (KeyValuePair<int, HashSet<int>> foodList in FoodDictionary)
             foreach (int food in foodList.Value)
-                Helpers.RemoveItemFromDoNotSellList(ItemsManager.GetNameById(food));
+                Helpers.RemoveItemFromDoNotSellList(Database.GetItemName(food));
     }
 
     private void SetFoodAndVendor()
@@ -144,7 +148,7 @@ public class BuyFoodState : State
                 if (FoodVendor == null || FoodVendor.Position.DistanceTo2D(Me.Position) > vendorWithThisFood.Position.DistanceTo2D(Me.Position))
                 {
                     FoodIdToBuy = foodId;
-                    FoodNameToBuy = ItemsManager.GetNameById(foodId);
+                    FoodNameToBuy = Database.GetItemName(foodId);
                     FoodVendor = vendorWithThisFood;
                 }
             }

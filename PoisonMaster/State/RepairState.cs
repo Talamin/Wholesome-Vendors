@@ -21,7 +21,8 @@ public class RepairState : State
     {
         get
         {
-            if (!stateTimer.IsReady)
+            if (!stateTimer.IsReady
+                || ObjectManager.Me.IsOnTaxi)
                 return false;
 
             stateTimer = new Timer(5000);

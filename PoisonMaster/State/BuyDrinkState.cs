@@ -42,7 +42,8 @@ public class BuyDrinkState : State
             if (!stateTimer.IsReady
             || Me.Level <= 3
             || !CurrentSetting.AutoBuyWater
-            || wManagerSetting.CurrentSetting.DrinkAmount <= 0)
+            || wManagerSetting.CurrentSetting.DrinkAmount <= 0
+            || Me.IsOnTaxi)
                 return false;
 
             stateTimer = new Timer(5000);
@@ -50,20 +51,23 @@ public class BuyDrinkState : State
             if (Me.Level > 10) // to be moved
                 NPCBlackList.AddNPCListToBlacklist(new[] { 5871, 8307, 3489 });
 
-            if (Helpers.OutOfDrink())
+            SetDrinkAndVendor();
+
+            if (DrinkIdToBuy == 0)
+                return false;
+
+            if (DrinkVendor == null)
             {
-                SetDrinkAndVendor();
-                if (DrinkVendor == null)
-                {
-                    Main.Logger("Couldn't find drink vendor");
-                    return false;
-                }
-
-                if (!Helpers.HaveEnoughMoneyFor(DrinkAmountToBuy, DrinkNameToBuy))
-                    return false;
-
-                return true;
+                Main.Logger("Couldn't find drink vendor");
+                return false;
             }
+
+            if (!Helpers.HaveEnoughMoneyFor(DrinkAmountToBuy, DrinkNameToBuy))
+                return false;
+
+            if (ItemsManager.GetItemCountById((uint)DrinkIdToBuy) <= 3)
+                return true;
+
             return false;
         }
     }
@@ -120,7 +124,7 @@ public class BuyDrinkState : State
         List<string> allDrinks = new List<string>();
 
         foreach (KeyValuePair<int, int> drink in WaterDictionary)
-            allDrinks.Add(ItemsManager.GetNameById(drink.Value));
+            allDrinks.Add(Database.GetItemName(drink.Value));
 
         return allDrinks;
     }
@@ -128,7 +132,7 @@ public class BuyDrinkState : State
     private void ClearDoNotSellListFromDrinks()
     {
         foreach (KeyValuePair<int, int> drink in WaterDictionary)
-            Helpers.RemoveItemFromDoNotSellList(ItemsManager.GetNameById(drink.Value));
+            Helpers.RemoveItemFromDoNotSellList(Database.GetItemName(drink.Value));
     }
 
     private void SetDrinkAndVendor()
@@ -142,7 +146,7 @@ public class BuyDrinkState : State
             {
                 DrinkIdToBuy = drink;
                 DrinkVendor = vendorWithThisDrink;
-                DrinkNameToBuy = ItemsManager.GetNameById((uint)DrinkIdToBuy);
+                DrinkNameToBuy = Database.GetItemName(DrinkIdToBuy);
                 return;
             }
         }

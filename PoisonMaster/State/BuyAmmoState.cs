@@ -49,7 +49,8 @@ public class BuyAmmoState : State
         {
             if (!CurrentSetting.AutobuyAmmunition
                 || !stateTimer.IsReady
-                || Helpers.GetRangedWeaponType() == null)
+                || Helpers.GetRangedWeaponType() == null
+                || Me.IsOnTaxi)
                 return false;
 
             stateTimer = new Timer(5000);
@@ -125,9 +126,9 @@ public class BuyAmmoState : State
         List<string> allAmmos = new List<string>();
 
         foreach (KeyValuePair<int, int> arrow in ArrowDictionary)
-            allAmmos.Add(ItemsManager.GetNameById(arrow.Value));
+            allAmmos.Add(Database.GetItemName(arrow.Value));
         foreach (KeyValuePair<int, int> bullet in BulletsDictionary)
-            allAmmos.Add(ItemsManager.GetNameById(bullet.Value));
+            allAmmos.Add(Database.GetItemName(bullet.Value));
 
         return allAmmos;
     }
@@ -135,10 +136,10 @@ public class BuyAmmoState : State
     private void ClearDoNotSellListFromAmmos()
     {
         foreach (KeyValuePair<int, int> arrow in ArrowDictionary)
-            Helpers.RemoveItemFromDoNotSellList(ItemsManager.GetNameById(arrow.Value));
+            Helpers.RemoveItemFromDoNotSellList(Database.GetItemName(arrow.Value));
 
         foreach (KeyValuePair<int, int> bullet in BulletsDictionary)
-            Helpers.RemoveItemFromDoNotSellList(ItemsManager.GetNameById(bullet.Value));
+            Helpers.RemoveItemFromDoNotSellList(Database.GetItemName(bullet.Value));
     }
 
     private void SetAmmoAndVendor()
@@ -152,7 +153,7 @@ public class BuyAmmoState : State
             {
                 AmmoIdToBuy = ammoId;
                 AmmoVendor = vendorWithThisAmmo;
-                AmmoNameToBuy = ItemsManager.GetNameById(ammoId);
+                AmmoNameToBuy = Database.GetItemName(ammoId);
                 return;
             }
         }
