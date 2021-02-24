@@ -223,6 +223,7 @@ namespace PoisonMaster
 
         public static void BuyItem(string name, int amount, int stackValue)
         {
+            double numberOfStacksToBuy = Math.Ceiling(amount / (double)stackValue);
             Main.Logger($"Buying {amount} x {name}");
             Lua.LuaDoString(string.Format(@"
                     local itemName = ""{0}""
@@ -232,7 +233,7 @@ namespace PoisonMaster
                         if name and name == itemName then 
                             BuyMerchantItem(i, quantity)
                         end
-                    end", name, amount / stackValue));
+                    end", name, (int)numberOfStacksToBuy));
         }
 
         public static bool NpcIsAbsentOrDead(DatabaseNPC npc)
