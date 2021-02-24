@@ -33,6 +33,7 @@ public static class NPCBlackList
         543,  //unable to generate path
         198,   //starter trainer without all spells or use minLevel in filter for this
         7952,
+        7772, //bugged Vendor
         23533,
         23603,
         23604,
