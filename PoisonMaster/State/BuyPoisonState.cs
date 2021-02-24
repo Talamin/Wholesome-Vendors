@@ -62,7 +62,8 @@ public class BuyPoisonState : State
             if (!stateTimer.IsReady
                 || !CurrentSetting.AllowAutobuyPoison
                 || ObjectManager.Me.WowClass != WoWClass.Rogue
-                || ObjectManager.Me.Level < 20)
+                || ObjectManager.Me.Level < 20
+                || Me.IsOnTaxi)
                 return false;
 
             stateTimer = new Timer(5000);

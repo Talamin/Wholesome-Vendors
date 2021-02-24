@@ -43,7 +43,8 @@ public class BuyFoodState : State
             if (!StateTimer.IsReady
                 || Me.Level <= 3
                 || !CurrentSetting.AutobuyFood
-                || FoodAmountToBuy <= 0)
+                || FoodAmountToBuy <= 0
+                || Me.IsOnTaxi)
                 return false;
 
             StateTimer = new Timer(5000);

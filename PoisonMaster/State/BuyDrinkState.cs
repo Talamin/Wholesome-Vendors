@@ -42,7 +42,8 @@ public class BuyDrinkState : State
             if (!stateTimer.IsReady
             || Me.Level <= 3
             || !CurrentSetting.AutoBuyWater
-            || wManagerSetting.CurrentSetting.DrinkAmount <= 0)
+            || wManagerSetting.CurrentSetting.DrinkAmount <= 0
+            || Me.IsOnTaxi)
                 return false;
 
             stateTimer = new Timer(5000);

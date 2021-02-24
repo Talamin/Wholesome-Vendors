@@ -49,7 +49,8 @@ public class BuyAmmoState : State
         {
             if (!CurrentSetting.AutobuyAmmunition
                 || !stateTimer.IsReady
-                || Helpers.GetRangedWeaponType() == null)
+                || Helpers.GetRangedWeaponType() == null
+                || Me.IsOnTaxi)
                 return false;
 
             stateTimer = new Timer(5000);
