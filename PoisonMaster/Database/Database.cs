@@ -133,8 +133,8 @@ public class Database
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
 
-        if (foodVendor == null)
-            Main.Logger("Couldn't find any Food Vendor");
+        //if (foodVendor == null)
+            //Main.Logger($"Couldn't find any Food Vendor for {GetItemName(usableFood.First())}");
 
         return foodVendor == null ? null : new DatabaseNPC(foodVendor);
     }
