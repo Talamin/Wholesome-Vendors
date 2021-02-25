@@ -30,10 +30,10 @@ public class RepairState : State
             if (PluginSettings.CurrentSetting.AutoRepair && ObjectManager.Me.GetDurabilityPercent < minDurability
                 || PluginSettings.CurrentSetting.AllowAutoSell && Bag.GetContainerNumFreeSlotsByType(BagType.Unspecified) <= maxFreeSlots)
             {
-                if (PluginSettings.CurrentSetting.AllowAutoSell && Bag.GetContainerNumFreeSlotsByType(BagType.Unspecified) <= maxFreeSlots)
-                    repairVendor = Database.GetSellVendor();
-                else
+                if (PluginSettings.CurrentSetting.AutoRepair && ObjectManager.Me.GetDurabilityPercent < minDurability)
                     repairVendor = Database.GetRepairVendor();
+                else
+                    repairVendor = Database.GetSellVendor();
 
                 if (repairVendor == null)
                 {
