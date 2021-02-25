@@ -1,14 +1,14 @@
-﻿using robotManager.FiniteStateMachine;
+﻿using PoisonMaster;
+using robotManager.FiniteStateMachine;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using wManager;
 using wManager.Wow.Bot.Tasks;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
-using PoisonMaster;
-using Timer = robotManager.Helpful.Timer;
-using System.Threading;
 using static PluginSettings;
-using System.Linq;
+using Timer = robotManager.Helpful.Timer;
 
 public class BuyDrinkState : State
 {
@@ -21,17 +21,19 @@ public class BuyDrinkState : State
     private string DrinkNameToBuy;
     private int DrinkAmountToBuy => wManagerSetting.CurrentSetting.DrinkAmount;
 
-    private readonly Dictionary<int, int> WaterDictionary = new Dictionary<int, int>
+    private readonly Dictionary<int, HashSet<int>> WaterDictionary = new Dictionary<int, HashSet<int>>
         {
-            { 75, 33444 }, // Pungent Seal Whey -- make sure this is only used in WotLK
-            { 65, 27860 }, // Purified Draenic Water
-            { 55, 28399 }, // Filtered Draenic Water -- make sure this is only used in TBC
-            { 45, 8766 }, // Morning Glory Dew
-            { 35, 1645 }, // Moonberry Juice
-            { 25, 1708 }, // Sweet Nectar
-            { 15, 1205 }, // Melon Juice
-            { 5, 1179 }, // Ice Cold Milk
-            { 0, 159 }, // Refreshing Spring water
+            { 75, new HashSet<int>{ 33445, 41731, 42777 } },
+            { 70, new HashSet<int>{ 33444 } }, // Pungent Seal Whey -- make sure this is only used in WotLK
+            { 65, new HashSet<int>{ 27860, 35954 } }, // Purified Draenic Water
+            { 55, new HashSet<int>{ 28399 } }, // Filtered Draenic Water -- make sure this is only used in TBC
+            { 45, new HashSet<int>{ 8766 } }, // Morning Glory Dew
+            { 35, new HashSet<int>{ 1645 } }, // Moonberry Juice
+            { 25, new HashSet<int>{ 1708 } }, // Sweet Nectar
+            { 15, new HashSet<int>{ 1205 } }, // Melon Juice
+            { 5, new HashSet<int>{ 1179 } }, // Ice Cold Milk
+            { 0, new HashSet<int>{ 159 } }, // Refreshing Spring water
+            { 0, new HashSet<int>{ 159 } }, // Refreshing Spring water
         };
 
     public override bool NeedToRun
@@ -112,16 +114,18 @@ public class BuyDrinkState : State
     {
         List<string> allDrinks = new List<string>();
 
-        foreach (KeyValuePair<int, int> drink in WaterDictionary)
-            allDrinks.Add(Database.GetItemName(drink.Value));
+        foreach (var drinks in WaterDictionary)
+            foreach (var drink in drinks.Value)
+                allDrinks.Add(Database.GetItemName(drink));
 
         return allDrinks;
     }
 
     private void ClearDoNotSellListFromDrinks()
     {
-        foreach (KeyValuePair<int, int> drink in WaterDictionary)
-            Helpers.RemoveItemFromDoNotSellList(Database.GetItemName(drink.Value));
+        foreach (var drinks in WaterDictionary)
+            foreach (var drink in drinks.Value)
+                Helpers.RemoveItemFromDoNotSellList(Database.GetItemName(drink));
     }
 
     private void SetDrinkAndVendor()
@@ -156,10 +160,15 @@ public class BuyDrinkState : State
     private List<int> GetListUsableDrink()
     {
         List<int> listDrink = new List<int>();
-        foreach (KeyValuePair<int, int> drink in WaterDictionary)
+        foreach (var drinks in WaterDictionary)
         {
-            if (drink.Key <= Me.Level)
-                listDrink.Add((int)drink.Value);
+            if (drinks.Key <= Me.Level)
+            {
+                foreach (var drink in drinks.Value)
+                {
+                    listDrink.Add(drink);
+                }
+            }
         }
         return listDrink;
     }
