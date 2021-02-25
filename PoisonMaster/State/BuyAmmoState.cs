@@ -57,20 +57,10 @@ public class BuyAmmoState : State
 
             SetAmmoAndVendor();
 
-            if (AmmoIdToBuy == 0)
-                return false;
-
-            if (AmmoVendor == null)
-            {
-                Main.Logger("Couldn't find ammo vendor");
-                return false;
-            }
-
-            if (!Helpers.HaveEnoughMoneyFor(AmmoAmountToBuy, AmmoNameToBuy))
-                return false;
-
-            if (GetNbAmmosInBags() <= 50)
-                return true;
+            if (AmmoIdToBuy > 0
+                && GetNbAmmosInBags() <= 50
+                && !Helpers.HaveEnoughMoneyFor(AmmoAmountToBuy, AmmoNameToBuy))
+                return AmmoVendor != null;
 
             return false;
         }

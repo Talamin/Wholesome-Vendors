@@ -8,6 +8,7 @@ using PoisonMaster;
 using Timer = robotManager.Helpful.Timer;
 using System.Threading;
 using static PluginSettings;
+using System.Linq;
 
 public class BuyDrinkState : State
 {
@@ -38,10 +39,10 @@ public class BuyDrinkState : State
         get
         {
             if (!stateTimer.IsReady
-            || Me.Level <= 3
-            || !CurrentSetting.AutoBuyWater
-            || wManagerSetting.CurrentSetting.DrinkAmount <= 0
-            || Me.IsOnTaxi)
+                || Me.Level <= 3
+                || !CurrentSetting.AutoBuyWater
+                || wManagerSetting.CurrentSetting.DrinkAmount <= 0
+                || Me.IsOnTaxi)
                 return false;
 
             stateTimer = new Timer(5000);
@@ -51,20 +52,10 @@ public class BuyDrinkState : State
 
             SetDrinkAndVendor();
 
-            if (DrinkIdToBuy == 0)
-                return false;
-
-            if (DrinkVendor == null)
-            {
-                Main.Logger("Couldn't find drink vendor");
-                return false;
-            }
-
-            if (!Helpers.HaveEnoughMoneyFor(DrinkAmountToBuy, DrinkNameToBuy))
-                return false;
-
-            if (GetNbDrinksInBags() <= 3)
-                return true;
+            if (DrinkIdToBuy > 0
+                && GetNbDrinksInBags() <= 3
+                && Helpers.HaveEnoughMoneyFor(DrinkAmountToBuy, DrinkNameToBuy))
+                return DrinkVendor != null;
 
             return false;
         }
@@ -82,8 +73,6 @@ public class BuyDrinkState : State
             if (Helpers.NpcIsAbsentOrDead(DrinkVendor))
                 return;
 
-            wManagerSetting.CurrentSetting.DrinkName = DrinkNameToBuy;
-            wManagerSetting.CurrentSetting.Save();
             ClearDoNotSellListFromDrinks();
             Helpers.AddItemToDoNotSellList(DrinkNameToBuy);
 
@@ -145,14 +134,26 @@ public class BuyDrinkState : State
                 DrinkIdToBuy = drink;
                 DrinkVendor = vendorWithThisDrink;
                 DrinkNameToBuy = Database.GetItemName(DrinkIdToBuy);
-                return;
+                break;
+            }
+        }
+
+        List<int> listDrinksInBags = GetListDrinksFromBags();
+        if (listDrinksInBags.Count > 0)
+        {
+            string drinkToSet = Database.GetItemName(listDrinksInBags.Last());
+            if (drinkToSet != wManagerSetting.CurrentSetting.DrinkName)
+            {
+                wManagerSetting.CurrentSetting.DrinkName = drinkToSet;
+                wManagerSetting.CurrentSetting.Save();
+                Main.Logger($"Setting drink to {drinkToSet}");
             }
         }
     }
 
-    private HashSet<int> GetListUsableDrink()
+    private List<int> GetListUsableDrink()
     {
-        HashSet<int> listDrink = new HashSet<int>();
+        List<int> listDrink = new List<int>();
         foreach (KeyValuePair<int,int> drink in WaterDictionary)
         {
             if (drink.Key <= Me.Level)
@@ -164,10 +165,19 @@ public class BuyDrinkState : State
     private int GetNbDrinksInBags()
     {
         int nbDrinksInBags = 0;
-        foreach (KeyValuePair<int, int> drink in WaterDictionary)
-            nbDrinksInBags += ItemsManager.GetItemCountById((uint)drink.Value);
+        GetListDrinksFromBags().ForEach(f => nbDrinksInBags += ItemsManager.GetItemCountById((uint)f));
         //Main.Logger($"We have {nbDrinksInBags} drink items in our bags");
         return nbDrinksInBags;
+    }
+
+    private List<int> GetListDrinksFromBags() // From best to worst
+    {
+        List<int> drinksInBags = new List<int>();
+        foreach (int drink in GetListUsableDrink())
+            if (ItemsManager.GetItemCountById((uint)drink) > 0)
+                drinksInBags.Add(drink);
+
+        return drinksInBags;
     }
 }
 

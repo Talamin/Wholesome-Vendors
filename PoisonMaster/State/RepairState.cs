@@ -27,21 +27,17 @@ public class RepairState : State
 
             stateTimer = new Timer(5000);
 
-            if (PluginSettings.CurrentSetting.AutoRepair && ObjectManager.Me.GetDurabilityPercent < minDurability
-                || PluginSettings.CurrentSetting.AllowAutoSell && Bag.GetContainerNumFreeSlotsByType(BagType.Unspecified) <= maxFreeSlots)
+            if (PluginSettings.CurrentSetting.AutoRepair && ObjectManager.Me.GetDurabilityPercent < minDurability)
             {
-                if (PluginSettings.CurrentSetting.AutoRepair && ObjectManager.Me.GetDurabilityPercent < minDurability)
-                    repairVendor = Database.GetRepairVendor();
-                else
-                    repairVendor = Database.GetSellVendor();
-
-                if (repairVendor == null)
-                {
-                    Main.Logger("Couldn't find repair vendor");
-                    return false;
-                }
-                return true;
+                repairVendor = Database.GetRepairVendor();
+                return repairVendor != null;
             }
+            else if (PluginSettings.CurrentSetting.AllowAutoSell && Bag.GetContainerNumFreeSlotsByType(BagType.Unspecified) <= maxFreeSlots)
+            {
+                repairVendor = Database.GetSellVendor();
+                return repairVendor != null;
+            }
+
             return false;
         }
     }

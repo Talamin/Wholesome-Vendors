@@ -15,7 +15,7 @@ public class TrainingState : State
 
     private DatabaseNPC TrainerVendor;
     private Timer stateTimer = new Timer();
-    private bool needToTrain => leveltoTrain.Exists(l => (int)ObjectManager.Me.Level >= l && PluginSettings.CurrentSetting.LastLevelTrained < l);
+    private bool NeedToTrain => leveltoTrain.Exists(l => (int)ObjectManager.Me.Level >= l && PluginSettings.CurrentSetting.LastLevelTrained < l);
 
     private List<int> leveltoTrain = new List<int>
     {2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 
@@ -27,7 +27,7 @@ public class TrainingState : State
         get
         {
             if (!stateTimer.IsReady 
-                || !needToTrain 
+                || !NeedToTrain 
                 || !PluginSettings.CurrentSetting.AutoTrain
                 || ObjectManager.Me.IsOnTaxi)
                 return false;
@@ -40,13 +40,7 @@ public class TrainingState : State
 
             TrainerVendor = Database.GetTrainer();
 
-            if (TrainerVendor == null)
-            {
-                Main.Logger("Couldn´t find Trainer NPC");
-                return false;
-            }
-
-            return true;
+            return TrainerVendor != null;
         }
     }
 

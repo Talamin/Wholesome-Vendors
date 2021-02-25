@@ -6,7 +6,6 @@ using DatabaseManager.WoW;
 using System.Collections.Generic;
 using System.Linq;
 using wManager;
-using wManager.Wow.Class;
 using wManager.Wow.Enums;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
@@ -88,177 +87,102 @@ public class Database
 
     public static DatabaseNPC GetAmmoVendor(HashSet<int> usableAmmo)
     {
-        if (PluginSettings.CurrentSetting.Databasetype == "external")
-        {
-            AmmoVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usableAmmo);
-            HashSet<int> usableZones = GetListUsableZones();
+        AmmoVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usableAmmo);
+        HashSet<int> usableZones = GetListUsableZones();
 
-            creature ammoVendor = DbCreature
-                .Get(AmmoVendorFilter)
-                .Where(q => usableZones.Contains(q.zoneId + 1)
-                    && !wManagerSetting.IsBlackListedNpcEntry(q.id))
-                .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
-                .FirstOrDefault();
+        creature ammoVendor = DbCreature
+            .Get(AmmoVendorFilter)
+            .Where(q => usableZones.Contains(q.zoneId + 1)
+                && !wManagerSetting.IsBlackListedNpcEntry(q.id))
+            .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
+            .FirstOrDefault();
 
-            return ammoVendor == null ? null : new DatabaseNPC(ammoVendor);
+        if (ammoVendor == null)
+            Main.Logger("Couldn't find any Drink Vendor");
 
-        }
-        else
-        {
-            Npc ammoVendor = NpcDB.ListNpc
-                .Where(q => (int)q.Faction == ObjectManager.Me.Faction
-                    && (q.VendorItemClass == Npc.NpcVendorItemClass.Arrow || q.VendorItemClass == Npc.NpcVendorItemClass.Bullet)
-                    && q.ContinentId == (ContinentId)Usefuls.ContinentId
-                    && !wManagerSetting.IsBlackListedNpcEntry(q.Entry)
-                    && q.Active)
-                .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
-                .FirstOrDefault();
-
-            return ammoVendor == null ? null : new DatabaseNPC(ammoVendor);
-        }
+        return ammoVendor == null ? null : new DatabaseNPC(ammoVendor);
     }
 
     public static DatabaseNPC GetDrinkVendor(HashSet<int> usableDrink)
     {
-        if (PluginSettings.CurrentSetting.Databasetype == "external")
-        {
-            HashSet<int> usableZones = GetListUsableZones();
-            FoodVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usableDrink);
-            creature drinkVendor = DbCreature
-                .Get(FoodVendorFilter)
-                .Where(q => !NPCBlackList.OnlyFoodBlacklist.Contains(q.id)
-                    && !wManagerSetting.IsBlackListedNpcEntry(q.id)
-                    && usableZones.Contains(q.zoneId + 1))
-                .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
-                .FirstOrDefault();
-
-            return drinkVendor == null ? null : new DatabaseNPC(drinkVendor);
-        }
-        else
-        {
-            Npc drinkVendor = NpcDB.ListNpc
-                .Where(q => (int)q.Faction == ObjectManager.Me.Faction
-                    && (q.VendorItemClass == Npc.NpcVendorItemClass.Consumable || q.VendorItemClass == Npc.NpcVendorItemClass.Food)
-                    && q.ContinentId == (ContinentId)Usefuls.ContinentId
-                    && !wManagerSetting.IsBlackListedNpcEntry(q.Entry)
-                    && q.Active)
-                .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
-                .FirstOrDefault();
-
-            return drinkVendor == null ? null : new DatabaseNPC(drinkVendor);
-        }
-    }
-    public static DatabaseNPC GetFoodVendor(HashSet<int> usableFood)
-    {
-        if (PluginSettings.CurrentSetting.Databasetype == "external")
-        {
-            HashSet<int> usableZones = GetListUsableZones();
-            FoodVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usableFood);
-            creature foodVendor = DbCreature
-                .Get(FoodVendorFilter)
-                .Where(q => usableZones.Contains(q.zoneId + 1)
-                    && !wManagerSetting.IsBlackListedNpcEntry(q.id))
-                .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
-                .FirstOrDefault();
-
-            return foodVendor == null ? null : new DatabaseNPC(foodVendor);
-        }
-        else
-        {
-            Npc foodVendor = NpcDB.ListNpc
-                .Where(q => (int)q.Faction == ObjectManager.Me.Faction
-                    && (q.VendorItemClass == Npc.NpcVendorItemClass.Consumable || q.VendorItemClass == Npc.NpcVendorItemClass.Food)
-                    && q.ContinentId == (ContinentId)Usefuls.ContinentId
-                    && !wManagerSetting.IsBlackListedNpcEntry(q.Entry)
-                    && q.Active)
-                .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
-                .FirstOrDefault();
-
-            return foodVendor == null ? null : new DatabaseNPC(foodVendor);
-        }
-    }
-    public static DatabaseNPC GetPoisonVendor(HashSet<int> usablePoison)
-    {
-        if (PluginSettings.CurrentSetting.Databasetype == "external")
-        {
-            HashSet<int> usableZones = GetListUsableZones();
-            PoisonVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usablePoison);
-            creature poisonVendor = DbCreature
-                .Get(PoisonVendorFilter)
-                .Where(q => usableZones.Contains(q.zoneId + 1) 
-                    && !wManagerSetting.IsBlackListedNpcEntry(q.id))
-                .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
-                .FirstOrDefault();
-
-            return poisonVendor == null ? null : new DatabaseNPC(poisonVendor);
-        }
-        else
-        {
-            Npc poisonVendor = NpcDB.ListNpc
-                .Where(q => (int)q.Faction == ObjectManager.Me.Faction
-                    && (q.VendorItemClass == Npc.NpcVendorItemClass.Potion)
-                    && q.ContinentId == (ContinentId)Usefuls.ContinentId
-                    && !wManagerSetting.IsBlackListedNpcEntry(q.Entry)
-                    && q.Active)
-                .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
-                .FirstOrDefault();
-
-            return poisonVendor == null ? null : new DatabaseNPC(poisonVendor);
-        }
-    }
-    public static DatabaseNPC GetRepairVendor()
-    {
-        if (PluginSettings.CurrentSetting.Databasetype == "external")
-        {
-            HashSet<int> usableZones = GetListUsableZones();
-            creature repairVendor = DbCreature
-                .Get(RepairVendorFilter)
-                .Where(q => usableZones.Contains(q.zoneId + 1)
-                    && !wManagerSetting.IsBlackListedNpcEntry(q.id))
-                .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
-                .FirstOrDefault();
-
-            return repairVendor == null ? null : new DatabaseNPC(repairVendor);
-        }
-        else
-        {
-            Npc repairVendor = NpcDB.ListNpc
-                .Where(q => (int)q.Faction == ObjectManager.Me.Faction
-                    && (q.Type == Npc.NpcType.Repair)
-                    && q.ContinentId == (ContinentId)Usefuls.ContinentId 
-                    && !wManagerSetting.IsBlackListedNpcEntry(q.Entry)
-                    && q.Active)
-                .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
-                .FirstOrDefault();
-
-            return repairVendor == null ? null : new DatabaseNPC(repairVendor);
-        }
-    }
-    public static DatabaseNPC GetSellVendor()
-    {
-        if (PluginSettings.CurrentSetting.Databasetype == "external")
-        {
-            HashSet<int> usableZones = GetListUsableZones();
-            creature sellVendor = DbCreature.Get(SellVendorFilter)
-                .Where(q => usableZones.Contains(q.zoneId + 1) 
-                    && !wManagerSetting.IsBlackListedNpcEntry(q.id))
-                .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
-                .FirstOrDefault();
-
-            return sellVendor == null ? null : new DatabaseNPC(sellVendor);
-        }
-        else
-        {
-            Npc sellVendor = NpcDB.ListNpc.Where(q => (int)q.Faction == ObjectManager.Me.Faction
-                    && (q.Type == Npc.NpcType.Repair || q.Type == Npc.NpcType.Vendor)
-                    && q.ContinentId == (ContinentId)Usefuls.ContinentId
-                    && !wManagerSetting.IsBlackListedNpcEntry(q.Entry)
-                    && q.Active)
+        HashSet<int> usableZones = GetListUsableZones();
+        FoodVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usableDrink);
+        creature drinkVendor = DbCreature
+            .Get(FoodVendorFilter)
+            .Where(q => !NPCBlackList.OnlyFoodBlacklist.Contains(q.id)
+                && !wManagerSetting.IsBlackListedNpcEntry(q.id)
+                && usableZones.Contains(q.zoneId + 1))
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
 
-            return sellVendor == null ? null : new DatabaseNPC(sellVendor);
-        }
+        if (drinkVendor == null)
+            Main.Logger("Couldn't find any Drink Vendor");
+
+        return drinkVendor == null ? null : new DatabaseNPC(drinkVendor);
+    }
+
+    public static DatabaseNPC GetFoodVendor(HashSet<int> usableFood)
+    {
+        HashSet<int> usableZones = GetListUsableZones();
+        FoodVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usableFood);
+        creature foodVendor = DbCreature
+            .Get(FoodVendorFilter)
+            .Where(q => usableZones.Contains(q.zoneId + 1)
+                && !wManagerSetting.IsBlackListedNpcEntry(q.id))
+            .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
+            .FirstOrDefault();
+
+        if (foodVendor == null)
+            Main.Logger("Couldn't find any Food Vendor");
+
+        return foodVendor == null ? null : new DatabaseNPC(foodVendor);
+    }
+    public static DatabaseNPC GetPoisonVendor(HashSet<int> usablePoison)
+    {
+        HashSet<int> usableZones = GetListUsableZones();
+        PoisonVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usablePoison);
+        creature poisonVendor = DbCreature
+            .Get(PoisonVendorFilter)
+            .Where(q => usableZones.Contains(q.zoneId + 1) 
+                && !wManagerSetting.IsBlackListedNpcEntry(q.id))
+            .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
+            .FirstOrDefault();
+
+        if (poisonVendor == null)
+            Main.Logger("Couldn't find any Poison Vendor");
+
+        return poisonVendor == null ? null : new DatabaseNPC(poisonVendor);
+    }
+
+    public static DatabaseNPC GetRepairVendor()
+    {
+        HashSet<int> usableZones = GetListUsableZones();
+        creature repairVendor = DbCreature
+            .Get(RepairVendorFilter)
+            .Where(q => usableZones.Contains(q.zoneId + 1)
+                && !wManagerSetting.IsBlackListedNpcEntry(q.id))
+            .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
+            .FirstOrDefault();
+
+        if (repairVendor == null)
+            Main.Logger("Couldn't find any Repair Vendor");
+
+        return repairVendor == null ? null : new DatabaseNPC(repairVendor);
+    }
+
+    public static DatabaseNPC GetSellVendor()
+    {
+        HashSet<int> usableZones = GetListUsableZones();
+        creature sellVendor = DbCreature.Get(SellVendorFilter)
+            .Where(q => usableZones.Contains(q.zoneId + 1) 
+                && !wManagerSetting.IsBlackListedNpcEntry(q.id))
+            .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
+            .FirstOrDefault();
+
+        if (sellVendor == null)
+            Main.Logger("Couldn't find any Sell Vendor");
+
+        return sellVendor == null ? null : new DatabaseNPC(sellVendor);
     }
 
     public static DatabaseNPC GetTrainer()
@@ -272,6 +196,9 @@ public class Database
             .Where(q => !q.Name.Contains(" Trainer"))
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
+
+        if (trainer == null)
+            Main.Logger("Couldn't find any Trainer");
 
         return trainer == null ? null : new DatabaseNPC(trainer);
     }

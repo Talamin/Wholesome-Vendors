@@ -72,20 +72,15 @@ public class BuyPoisonState : State
 
             if (InstantPoisonIdToBuy != 0 && NeedInstantPoison || DeadlyPoisonIdToBuy != 0 && NeedDeadlyPoison)
             {
-                if (PoisonVendor == null)
-                {
-                    Main.Logger("Couldn't find poison vendor");
-                    return false;
-                }
-
                 if (NeedInstantPoison && !Helpers.HaveEnoughMoneyFor(NbInstandPoisonToBuy, InstantPoisonNameToBuy))
                     return false;
 
                 if (NeedDeadlyPoison && !Helpers.HaveEnoughMoneyFor(NbDeadlyPoisonToBuy, DeadlyPoisonNameToBuy))
                     return false;
 
-                return true;
+                return PoisonVendor != null;
             }
+
             return false;
         }
     }

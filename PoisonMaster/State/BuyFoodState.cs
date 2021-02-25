@@ -52,20 +52,10 @@ public class BuyFoodState : State
 
             SetFoodAndVendor();
 
-            if (FoodIdToBuy == 0)
-                return false;
-
-            if (FoodVendor == null)
-            {
-                Main.Logger("Couldn't find food vendor");
-                return false;
-            }
-
-            if (!Helpers.HaveEnoughMoneyFor(FoodAmountToBuy, FoodNameToBuy))
-                return false;
-
-            if (GetNbOfFoodInBags() <= 3)
-                return true;
+            if (FoodIdToBuy > 0
+                && GetNbOfFoodInBags() <= 3
+                && Helpers.HaveEnoughMoneyFor(FoodAmountToBuy, FoodNameToBuy))
+                return FoodVendor != null;
 
             return false;
         }
@@ -83,8 +73,6 @@ public class BuyFoodState : State
             if (Helpers.NpcIsAbsentOrDead(FoodVendor))
                 return;
 
-            wManagerSetting.CurrentSetting.FoodName = FoodNameToBuy;
-            wManagerSetting.CurrentSetting.Save();
             ClearDoNotSellListFromFoods();
             Helpers.AddItemToDoNotSellList(FoodNameToBuy);
 
@@ -138,31 +126,42 @@ public class BuyFoodState : State
         FoodIdToBuy = 0;
         FoodVendor = null;
 
-        foreach (HashSet<int> listFood in GetListUsableFood())
+        foreach (int foodId in GetListUsableFood())
         {
-            foreach (int foodId in listFood)
+            DatabaseNPC vendorWithThisFood = Database.GetFoodVendor(new HashSet<int>() { foodId });
+            if (vendorWithThisFood != null)
             {
-                DatabaseNPC vendorWithThisFood = Database.GetFoodVendor(new HashSet<int>() { foodId });
-                if (vendorWithThisFood != null)
+                if (FoodVendor == null || FoodVendor.Position.DistanceTo2D(Me.Position) > vendorWithThisFood.Position.DistanceTo2D(Me.Position))
                 {
-                    if (FoodVendor == null || FoodVendor.Position.DistanceTo2D(Me.Position) > vendorWithThisFood.Position.DistanceTo2D(Me.Position))
-                    {
-                        FoodIdToBuy = foodId;
-                        FoodNameToBuy = Database.GetItemName(foodId);
-                        FoodVendor = vendorWithThisFood;
-                    }
+                    FoodIdToBuy = foodId;
+                    FoodNameToBuy = Database.GetItemName(foodId);
+                    FoodVendor = vendorWithThisFood;
+                    break;
                 }
+            }
+        }
+
+        List<int> listFoodInBags = GetListFoodFromBags();
+        if (listFoodInBags.Count > 0)
+        {
+            string foodNameToSet = Database.GetItemName(listFoodInBags.Last());
+            if (foodNameToSet != wManagerSetting.CurrentSetting.FoodName)
+            {
+                Main.Logger($"Setting food to {foodNameToSet}");
+                wManagerSetting.CurrentSetting.FoodName = foodNameToSet;
+                wManagerSetting.CurrentSetting.Save();
             }
         }
     }
 
-    private List<HashSet<int>> GetListUsableFood()
+    private List<int> GetListUsableFood() // From best to worst
     {
-        List<HashSet<int>> listFood = new List<HashSet<int>>();
-        foreach (KeyValuePair<int, HashSet<int>> food in FoodDictionary)
+        List<int> listFood = new List<int>();
+        foreach (KeyValuePair<int, HashSet<int>> foodSet in FoodDictionary)
         {
-            if (food.Key <= Me.Level)
-                listFood.Add(food.Value);
+            if (foodSet.Key <= Me.Level)
+                foreach(int food in foodSet.Value)
+                    listFood.Add(food);
         }
         return listFood;
     }
@@ -170,11 +169,18 @@ public class BuyFoodState : State
     private int GetNbOfFoodInBags()
     {
         int nbFoodsInBags = 0;
-        foreach (KeyValuePair<int, HashSet<int>> foods in FoodDictionary)
-            foreach (int food in foods.Value)
-                nbFoodsInBags += ItemsManager.GetItemCountById((uint)food);
-        //Main.Logger($"We have {nbFoodsInBags} food items in our bags");
+        GetListFoodFromBags().ForEach(f => nbFoodsInBags += ItemsManager.GetItemCountById((uint)f));
         return nbFoodsInBags;
+    }
+
+    private List<int> GetListFoodFromBags() // From best to worst
+    {
+        List<int> foodInBags = new List<int>();
+        foreach (int food in GetListUsableFood())
+            if (ItemsManager.GetItemCountById((uint)food) > 0)
+                foodInBags.Add(food);
+
+        return foodInBags;
     }
 }
 
