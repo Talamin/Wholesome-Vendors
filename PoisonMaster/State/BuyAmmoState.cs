@@ -59,7 +59,7 @@ public class BuyAmmoState : State
 
             if (AmmoIdToBuy > 0
                 && GetNbAmmosInBags() <= 50
-                && !Helpers.HaveEnoughMoneyFor(AmmoAmountToBuy, AmmoNameToBuy))
+                && Helpers.HaveEnoughMoneyFor(AmmoAmountToBuy, AmmoNameToBuy))
                 return AmmoVendor != null;
 
             return false;
