@@ -17,7 +17,7 @@ public class BuyFoodState : State
     private static readonly Dictionary<int, HashSet<int>> FoodDictionary = new Dictionary<int, HashSet<int>>
     {
         { 75, new HashSet<int>{ 35953 } }, // Mead Basted Caribouhl au
-        { 65, new HashSet<int>{ 29451, 29449, 29450, 29448, 29452, 29453, 33454 } }, // Clefthoof Ribs
+        { 65, new HashSet<int>{ 29451, 29449, 29450, 29448, 29452, 29453, 33454, 33443 } }, // Clefthoof Ribs
         { 55, new HashSet<int>{ 27854, 27855, 27856, 27857, 27858, 27859 } }, // Smoked Talbuk Venison -- make sure this is only used in TBC
         { 45, new HashSet<int>{ 8952, 8950, 8932, 8948, 8957} }, // Roasted Quail
         { 35, new HashSet<int>{ 4599, 4601, 3927, 4608, 6887 } }, // Cured Ham Steak
@@ -132,7 +132,7 @@ public class BuyFoodState : State
         {
             foreach (int foodId in foodEntry.Value)
             {
-                //Main.Logger($"Checking {Database.GetItemName(foodId)}");
+                //Main.Logger($"Checking {Database.GetItemName(foodId)} [{foodId}]");
                 DatabaseNPC vendorWithThisFood = Database.GetFoodVendor(new HashSet<int>() { foodId });
                 if (vendorWithThisFood != null)
                 {
