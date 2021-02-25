@@ -63,7 +63,7 @@ public class BuyDrinkState : State
 
     public override void Run()
     {
-        Main.Logger($"Buying {DrinkAmountToBuy} x {DrinkNameToBuy} at vendor {DrinkVendor.Name}");
+        Main.Logger($"Buying {DrinkAmountToBuy} x {DrinkNameToBuy} [{DrinkIdToBuy}] at vendor {DrinkVendor.Name}");
 
         if (Me.Position.DistanceTo(DrinkVendor.Position) >= 10)
             GoToTask.ToPosition(DrinkVendor.Position);

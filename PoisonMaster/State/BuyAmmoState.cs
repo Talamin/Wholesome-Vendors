@@ -68,7 +68,7 @@ public class BuyAmmoState : State
 
     public override void Run()
     {
-        Main.Logger($"Buying {AmmoAmountToBuy} x {AmmoNameToBuy} at vendor {AmmoVendor.Name}");
+        Main.Logger($"Buying {AmmoAmountToBuy} x {AmmoNameToBuy} [{AmmoIdToBuy}] at vendor {AmmoVendor.Name}");
 
         if (Me.Position.DistanceTo(AmmoVendor.Position) >= 10)
             GoToTask.ToPositionAndIntecractWithNpc(AmmoVendor.Position, AmmoVendor.Id);

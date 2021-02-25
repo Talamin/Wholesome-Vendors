@@ -17,7 +17,7 @@ public class BuyFoodState : State
     private static readonly Dictionary<int, HashSet<int>> FoodDictionary = new Dictionary<int, HashSet<int>>
     {
         { 75, new HashSet<int>{ 35953 } }, // Mead Basted Caribouhl au
-        { 65, new HashSet<int>{ 29451, 29449, 29450, 29448, 29452, 29453 } }, // Clefthoof Ribs
+        { 65, new HashSet<int>{ 29451, 29449, 29450, 29448, 29452, 29453, 33454 } }, // Clefthoof Ribs
         { 55, new HashSet<int>{ 27854, 27855, 27856, 27857, 27858, 27859 } }, // Smoked Talbuk Venison -- make sure this is only used in TBC
         { 45, new HashSet<int>{ 8952, 8950, 8932, 8948, 8957} }, // Roasted Quail
         { 35, new HashSet<int>{ 4599, 4601, 3927, 4608, 6887 } }, // Cured Ham Steak
@@ -63,7 +63,7 @@ public class BuyFoodState : State
 
     public override void Run()
     {
-        Main.Logger($"Buying {FoodAmountToBuy} x {FoodNameToBuy} at vendor {FoodVendor.Name}");
+        Main.Logger($"Buying {FoodAmountToBuy} x {FoodNameToBuy} [{FoodIdToBuy}] at vendor {FoodVendor.Name}");
 
         if (Me.Position.DistanceTo(FoodVendor.Position) >= 10)
             GoToTask.ToPosition(FoodVendor.Position);
@@ -126,19 +126,25 @@ public class BuyFoodState : State
         FoodIdToBuy = 0;
         FoodVendor = null;
 
-        foreach (int foodId in GetListUsableFood())
+        foreach (KeyValuePair<int, HashSet<int>> foodEntry in FoodDictionary.Where(f => f.Key <= Me.Level))
         {
-            DatabaseNPC vendorWithThisFood = Database.GetFoodVendor(new HashSet<int>() { foodId });
-            if (vendorWithThisFood != null)
+            foreach (int foodId in foodEntry.Value)
             {
-                if (FoodVendor == null || FoodVendor.Position.DistanceTo2D(Me.Position) > vendorWithThisFood.Position.DistanceTo2D(Me.Position))
+                //Main.Logger($"Checking {Database.GetItemName(foodId)}");
+                DatabaseNPC vendorWithThisFood = Database.GetFoodVendor(new HashSet<int>() { foodId });
+                if (vendorWithThisFood != null)
                 {
-                    FoodIdToBuy = foodId;
-                    FoodNameToBuy = Database.GetItemName(foodId);
-                    FoodVendor = vendorWithThisFood;
-                    break;
+                    if (FoodVendor == null || vendorWithThisFood.Position.DistanceTo2D(Me.Position) < FoodVendor.Position.DistanceTo2D(Me.Position))
+                    {
+                        //Main.Logger($"{vendorWithThisFood.Name} sells {Database.GetItemName(foodId)}");
+                        FoodIdToBuy = foodId;
+                        FoodNameToBuy = Database.GetItemName(foodId);
+                        FoodVendor = vendorWithThisFood;
+                    }
                 }
             }
+            if (FoodVendor != null)
+                break;
         }
 
         List<int> listFoodInBags = GetListFoodFromBags();

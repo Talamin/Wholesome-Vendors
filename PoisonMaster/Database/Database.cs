@@ -125,6 +125,7 @@ public class Database
     {
         HashSet<int> usableZones = GetListUsableZones();
         FoodVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usableFood);
+
         creature foodVendor = DbCreature
             .Get(FoodVendorFilter)
             .Where(q => usableZones.Contains(q.zoneId + 1)
@@ -221,7 +222,7 @@ public class Database
             if (zones.Value <= ObjectManager.Me.Level)
             {
                 listZones.Add(zones.Key);
-                //Main.Logger("Added: " + zones.Key + " to Savezones.");
+                //Main.Logger("Added: " + zones.Key + " to safe zones");
             }
         }
         return listZones;
