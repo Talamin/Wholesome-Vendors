@@ -59,7 +59,9 @@ public class BuyPoisonState : State
     {
         get
         {
-            if (!stateTimer.IsReady
+            if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
+                || !Main.IsLaunched
+                || !stateTimer.IsReady
                 || !CurrentSetting.AllowAutobuyPoison
                 || ObjectManager.Me.WowClass != WoWClass.Rogue
                 || ObjectManager.Me.Level < 20

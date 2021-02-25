@@ -21,7 +21,9 @@ public class RepairState : State
     {
         get
         {
-            if (!stateTimer.IsReady
+            if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
+                || !Main.IsLaunched
+                || !stateTimer.IsReady
                 || ObjectManager.Me.IsOnTaxi)
                 return false;
 

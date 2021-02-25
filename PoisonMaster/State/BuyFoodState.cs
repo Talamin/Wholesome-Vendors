@@ -38,7 +38,9 @@ public class BuyFoodState : State
     {
         get
         {
-            if (!StateTimer.IsReady
+            if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
+                || !Main.IsLaunched
+                || !StateTimer.IsReady
                 || Me.Level <= 3
                 || !CurrentSetting.AutobuyFood
                 || FoodAmountToBuy <= 0

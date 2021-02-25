@@ -47,7 +47,9 @@ public class BuyAmmoState : State
     {
         get
         {
-            if (!CurrentSetting.AutobuyAmmunition
+            if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
+                || !Main.IsLaunched
+                || !CurrentSetting.AutobuyAmmunition
                 || !stateTimer.IsReady
                 || Helpers.GetRangedWeaponType() == null
                 || Me.IsOnTaxi)

@@ -38,7 +38,9 @@ public class BuyDrinkState : State
     {
         get
         {
-            if (!stateTimer.IsReady
+            if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
+                || !Main.IsLaunched
+                || !stateTimer.IsReady
                 || Me.Level <= 3
                 || !CurrentSetting.AutoBuyWater
                 || wManagerSetting.CurrentSetting.DrinkAmount <= 0

@@ -14,7 +14,7 @@ public class Main : IPlugin
 {
     private readonly BackgroundWorker _pulseThread = new BackgroundWorker();
     private static string Name = "Wholesome Vendors";
-    //private static bool IsLaunched;
+    public static bool IsLaunched;
 
     private Timer stateAddTimer;
 
@@ -26,7 +26,7 @@ public class Main : IPlugin
     public static State repairState = new RepairState();
     public static State trainingState = new TrainingState();
 
-    public static string version = "0.1.11"; // Must match version in Version.txt
+    public static string version = "0.1.12"; // Must match version in Version.txt
 
     public void Initialize()
     {
@@ -46,7 +46,7 @@ public class Main : IPlugin
 
             EventsLua.AttachEventLua("PLAYER_EQUIPMENT_CHANGED", m => Helpers.GetRangedWeaponType());
             FiniteStateMachineEvents.OnRunState += StateAddEventHandler;
-            //IsLaunched = true;
+            IsLaunched = true;
             _pulseThread.RunWorkerAsync();
 
             if (PluginSettings.CurrentSetting.AutoBuyWater || PluginSettings.CurrentSetting.AutobuyFood)
@@ -63,7 +63,7 @@ public class Main : IPlugin
 
     public void Dispose()
     {
-        //IsLaunched = false;
+        IsLaunched = false;
         Helpers.RestoreWRobotUserSettings();
         FiniteStateMachineEvents.OnRunState -= StateAddEventHandler;
         _pulseThread.Dispose();

@@ -26,7 +26,9 @@ public class TrainingState : State
     {
         get
         {
-            if (!stateTimer.IsReady 
+            if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
+                || !Main.IsLaunched
+                || !stateTimer.IsReady 
                 || !NeedToTrain 
                 || !PluginSettings.CurrentSetting.AutoTrain
                 || ObjectManager.Me.IsOnTaxi)
