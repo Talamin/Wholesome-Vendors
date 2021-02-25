@@ -128,10 +128,10 @@ public class BuyDrinkState : State
     {
         DrinkIdToBuy = 0;
         DrinkVendor = null;
-        foreach(int drink in GetListUsableDrink())
+        foreach (int drink in GetListUsableDrink())
         {
             DatabaseNPC vendorWithThisDrink = Database.GetDrinkVendor(new HashSet<int>() { drink });
-            if(vendorWithThisDrink !=null)
+            if (vendorWithThisDrink != null)
             {
                 DrinkIdToBuy = drink;
                 DrinkVendor = vendorWithThisDrink;
@@ -156,7 +156,7 @@ public class BuyDrinkState : State
     private List<int> GetListUsableDrink()
     {
         List<int> listDrink = new List<int>();
-        foreach (KeyValuePair<int,int> drink in WaterDictionary)
+        foreach (KeyValuePair<int, int> drink in WaterDictionary)
         {
             if (drink.Key <= Me.Level)
                 listDrink.Add((int)drink.Value);

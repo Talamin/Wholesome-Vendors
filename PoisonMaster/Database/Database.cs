@@ -134,7 +134,7 @@ public class Database
             .FirstOrDefault();
 
         //if (foodVendor == null)
-            //Main.Logger($"Couldn't find any Food Vendor for {GetItemName(usableFood.First())}");
+        //Main.Logger($"Couldn't find any Food Vendor for {GetItemName(usableFood.First())}");
 
         return foodVendor == null ? null : new DatabaseNPC(foodVendor);
     }
@@ -144,7 +144,7 @@ public class Database
         PoisonVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usablePoison);
         creature poisonVendor = DbCreature
             .Get(PoisonVendorFilter)
-            .Where(q => usableZones.Contains(q.zoneId + 1) 
+            .Where(q => usableZones.Contains(q.zoneId + 1)
                 && !wManagerSetting.IsBlackListedNpcEntry(q.id))
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
@@ -175,7 +175,7 @@ public class Database
     {
         HashSet<int> usableZones = GetListUsableZones();
         creature sellVendor = DbCreature.Get(SellVendorFilter)
-            .Where(q => usableZones.Contains(q.zoneId + 1) 
+            .Where(q => usableZones.Contains(q.zoneId + 1)
                 && !wManagerSetting.IsBlackListedNpcEntry(q.id))
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
@@ -217,7 +217,7 @@ public class Database
     private static HashSet<int> GetListUsableZones()
     {
         HashSet<int> listZones = new HashSet<int>();
-        foreach (KeyValuePair<int,int> zones in ZoneLevelDictionary)
+        foreach (KeyValuePair<int, int> zones in ZoneLevelDictionary)
         {
             if (zones.Value <= ObjectManager.Me.Level)
             {

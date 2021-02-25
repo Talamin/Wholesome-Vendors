@@ -16,7 +16,7 @@ public class BuyPoisonState : State
     private WoWLocalPlayer Me = ObjectManager.Me;
 
     private int InstantPoisonIdToBuy;
-    private int NbInstandPoisonToBuy => 20 - ItemsManager.GetItemCountById((uint) InstantPoisonIdToBuy);
+    private int NbInstandPoisonToBuy => 20 - ItemsManager.GetItemCountById((uint)InstantPoisonIdToBuy);
     private string InstantPoisonNameToBuy;
 
     private int DeadlyPoisonIdToBuy;
