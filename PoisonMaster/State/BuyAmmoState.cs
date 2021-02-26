@@ -6,9 +6,7 @@ using wManager.Wow.ObjectManager;
 using Timer = robotManager.Helpful.Timer;
 using PoisonMaster;
 using System.Threading;
-using wManager;
 using static PluginSettings;
-using System.Linq;
 
 public class BuyAmmoState : State
 {
@@ -60,8 +58,7 @@ public class BuyAmmoState : State
             SetAmmoAndVendor();
 
             if (AmmoIdToBuy > 0
-                && GetNbAmmosInBags() <= 50
-                && Helpers.HaveEnoughMoneyFor(AmmoAmountToBuy, AmmoNameToBuy))
+                && GetNbAmmosInBags() <= 50)
                 return AmmoVendor != null;
 
             return false;
@@ -141,7 +138,7 @@ public class BuyAmmoState : State
         foreach (int ammoId in GetListUsableAmmo())
         {
             DatabaseNPC vendorWithThisAmmo = Database.GetAmmoVendor(new HashSet<int>() { ammoId });
-            if (vendorWithThisAmmo != null)
+            if (vendorWithThisAmmo != null && Helpers.HaveEnoughMoneyFor(AmmoAmountToBuy, Database.GetItemName(ammoId)))
             {
                 AmmoIdToBuy = ammoId;
                 AmmoVendor = vendorWithThisAmmo;

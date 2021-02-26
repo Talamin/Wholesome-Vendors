@@ -2,6 +2,7 @@
 using robotManager.FiniteStateMachine;
 using System.Collections.Generic;
 using System.Threading;
+using wManager;
 using wManager.Wow.Bot.Tasks;
 using wManager.Wow.Enums;
 using wManager.Wow.Helpers;
@@ -15,7 +16,7 @@ public class RepairState : State
     private DatabaseNPC repairVendor;
     private Timer stateTimer = new Timer();
     private int minDurability = 35;
-    private int maxFreeSlots = 3;
+    private int minFreeSlots => wManagerSetting.CurrentSetting.MinFreeBagSlotsToGoToTown;
 
     public override bool NeedToRun
     {
@@ -34,7 +35,7 @@ public class RepairState : State
                 repairVendor = Database.GetRepairVendor();
                 return repairVendor != null;
             }
-            else if (PluginSettings.CurrentSetting.AllowAutoSell && Bag.GetContainerNumFreeSlotsByType(BagType.Unspecified) <= maxFreeSlots)
+            else if (PluginSettings.CurrentSetting.AllowAutoSell && Bag.GetContainerNumFreeSlotsByType(BagType.Unspecified) <= minFreeSlots)
             {
                 repairVendor = Database.GetSellVendor();
                 return repairVendor != null;
@@ -46,13 +47,12 @@ public class RepairState : State
 
     public override void Run()
     {
+        Main.Logger($"Going to sell/repair vendor {repairVendor.Name}");
+
         List<WoWItem> bagItems = Bag.GetBagItem();
 
         if (ObjectManager.Me.Position.DistanceTo(repairVendor.Position) >= 10)
-        {
-            Main.Logger("Nearest Repair from player:\n" + "Name: " + repairVendor.Name + "[" + repairVendor.Id + "]\nPosition: " + repairVendor.Position.ToStringXml() + "\nDistance: " + repairVendor.Position.DistanceTo(ObjectManager.Me.Position) + " yrds");
             GoToTask.ToPosition(repairVendor.Position);
-        }
 
         if (ObjectManager.Me.Position.DistanceTo(repairVendor.Position) < 10)
         {
@@ -76,7 +76,7 @@ public class RepairState : State
                     break;
             }
 
-            if (ObjectManager.Me.GetDurabilityPercent < minDurability || Bag.GetContainerNumFreeSlotsByType(BagType.Unspecified) <= maxFreeSlots)
+            if (ObjectManager.Me.GetDurabilityPercent < minDurability || Bag.GetContainerNumFreeSlotsByType(BagType.Unspecified) <= minFreeSlots)
             {
                 Main.Logger($"Failed to sell/repair, blacklisting vendor");
                 NPCBlackList.AddNPCToBlacklist(repairVendor.Id);

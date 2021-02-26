@@ -362,7 +362,10 @@ namespace PoisonMaster
             {
                 VendorItem foodItem = CurrentSetting.VendorItems.Find(i => i.Name == itemName);
                 if (GetMoney < foodItem.Price / foodItem.Stack * amount)
+                {
+                    //Main.Logger($"You need {foodItem.Price / foodItem.Stack * amount} copper to buy {amount} x {itemName} but you only have {GetMoney}");
                     return false;
+                }
             }
             return true;
         }
