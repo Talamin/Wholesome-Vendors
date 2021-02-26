@@ -168,7 +168,7 @@ public class BuyFoodState : State
         foreach (KeyValuePair<int, HashSet<int>> foodSet in FoodDictionary)
         {
             if (foodSet.Key <= Me.Level)
-                foreach(int food in foodSet.Value)
+                foreach (int food in foodSet.Value)
                     listFood.Add(food);
         }
         return listFood;

@@ -26,7 +26,7 @@ public class Main : IPlugin
     public static State repairState = new RepairState();
     public static State trainingState = new TrainingState();
 
-    public static string version = "0.1.14"; // Must match version in Version.txt
+    public static string version = "0.1.16"; // Must match version in Version.txt
 
     public void Initialize()
     {
@@ -86,7 +86,7 @@ public class Main : IPlugin
     {
         if (engine.States.Count <= 5)
         {
-           if (stateAddTimer == null)
+            if (stateAddTimer == null)
                 Helpers.SoftRestart(); // hack to wait for correct engine to trigger
             return;
         }
@@ -95,7 +95,7 @@ public class Main : IPlugin
             stateAddTimer = new Timer();
 
         if (stateAddTimer.IsReady && engine != null)
-		{
+        {
             stateAddTimer = new Timer(3000);
 
             Helpers.AddState(engine, buyPoisonState, "To Town");
@@ -106,7 +106,7 @@ public class Main : IPlugin
             Helpers.AddState(engine, trainingState, "Trainers");
             //engine.States.ForEach(s => Logger($"{s.Priority} -> {s.DisplayName}"));
         }
-	}
+    }
 
     public static void Logger(string message)
     {

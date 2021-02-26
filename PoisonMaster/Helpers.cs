@@ -202,8 +202,8 @@ namespace PoisonMaster
             List<string> itemNames = GetVendorItemList();
             string bestConsumable = itemNames
                 .Where(i => i != null
-                    && !string.IsNullOrWhiteSpace(i) 
-                    && ItemsManager.GetItemSpell(i) == SpellListManager.SpellNameInGameByName(consumableType.ToString()) 
+                    && !string.IsNullOrWhiteSpace(i)
+                    && ItemsManager.GetItemSpell(i) == SpellListManager.SpellNameInGameByName(consumableType.ToString())
                     && new ItemInfo(i).ItemMinLevel <= ObjectManager.Me.Level)
                 .OrderByDescending(i => new ItemInfo(i).ItemLevel)
                 .FirstOrDefault();
@@ -274,8 +274,8 @@ namespace PoisonMaster
             List<string> listItemsToSell = new List<string>();
             foreach (WoWItem item in bagItems)
             {
-                if (item != null 
-                    && !wManagerSetting.CurrentSetting.DoNotSellList.Contains(item.Name) 
+                if (item != null
+                    && !wManagerSetting.CurrentSetting.DoNotSellList.Contains(item.Name)
                     && item.GetItemInfo.ItemSellPrice > 0)
                     listItemsToSell.Add(item.Name);
             }
