@@ -84,6 +84,33 @@ public class Database
             }),
     };
 
+    private static CreatureFilter MailboxFilter = new CreatureFilter
+    {
+        ContinentId = (ContinentId)Usefuls.ContinentId,
+        ExcludeIds = NPCBlackList.myBlacklist,
+        Faction = new Faction(ObjectManager.Me.Faction, ReactionType.Friendly),
+        NpcFlags = new NpcFlag(Operator.Or,
+            new List<UnitNPCFlags>
+            {
+                UnitNPCFlags.MailInfo
+            }),
+    };
+
+    public static DatabaseNPC GetMailbox()
+    {
+        HashSet<int> usableZones = GetListUsableZones();
+        creature Mailbox = DbCreature
+            .Get(MailboxFilter)
+            .Where(q => usableZones.Contains(q.zoneId + 1)
+                && !wManagerSetting.IsBlackListedNpcEntry(q.id))
+            .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
+            .FirstOrDefault();
+
+        if (Mailbox == null)
+            Main.Logger("Couldn´t find any Mailbox");
+
+        return Mailbox == null ? null : new DatabaseNPC(Mailbox);
+    }
 
     public static DatabaseNPC GetAmmoVendor(HashSet<int> usableAmmo)
     {
