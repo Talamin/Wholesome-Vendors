@@ -265,6 +265,24 @@ namespace PoisonMaster
             return listQualitySell;
         }
 
+        public static List<WoWItemQuality> GetListQualityToMail()
+        {
+            List<WoWItemQuality> listQualityMail = new List<WoWItemQuality>();
+
+            if (wManagerSetting.CurrentSetting.MailGray)
+                listQualityMail.Add(WoWItemQuality.Poor);
+            if (wManagerSetting.CurrentSetting.MailWhite)
+                listQualityMail.Add(WoWItemQuality.Common);
+            if (wManagerSetting.CurrentSetting.MailGreen)
+                listQualityMail.Add(WoWItemQuality.Uncommon);
+            if (wManagerSetting.CurrentSetting.MailBlue)
+                listQualityMail.Add(WoWItemQuality.Rare);
+            if (wManagerSetting.CurrentSetting.MailPurple)
+                listQualityMail.Add(WoWItemQuality.Epic);
+
+            return listQualityMail;
+        }
+
         public static void SellItems(DatabaseNPC vendor)
         {
             Main.Logger("Selling items");

@@ -7,6 +7,7 @@ using Timer = robotManager.Helpful.Timer;
 using PoisonMaster;
 using System.Threading;
 using static PluginSettings;
+using wManager;
 
 public class BuyAmmoState : State
 {
@@ -15,6 +16,7 @@ public class BuyAmmoState : State
     private WoWLocalPlayer Me = ObjectManager.Me;
     private Timer stateTimer = new Timer();
     private DatabaseNPC AmmoVendor;
+    private DatabaseNPC BestMailbox;
     private int AmmoIdToBuy;
     private string AmmoNameToBuy;
     private int AmmoAmountToBuy = 2000;
@@ -56,7 +58,8 @@ public class BuyAmmoState : State
             stateTimer = new Timer(5000);
 
             SetAmmoAndVendor();
-
+            SetMailbox();
+            
             if (AmmoIdToBuy > 0
                 && GetNbAmmosInBags() <= 50)
                 return AmmoVendor != null;
@@ -68,6 +71,22 @@ public class BuyAmmoState : State
     public override void Run()
     {
         Main.Logger($"Buying {AmmoAmountToBuy} x {AmmoNameToBuy} [{AmmoIdToBuy}] at vendor {AmmoVendor.Name}");
+        
+        //if(wManagerSetting.CurrentSetting.UseMail)
+        //{
+        //    Main.Logger($"Important, befire Buying we need to Mail Items");
+        //    if (Me.Position.DistanceTo(BestMailbox.Position) >= 10)
+        //        GoToTask.ToPositionAndIntecractWithNpc(BestMailbox.Position, BestMailbox.Id);
+        //    if(Me.Position.DistanceTo(BestMailbox.Position) < 10)
+        //        if (Helpers.NpcIsAbsentOrDead(BestMailbox))
+        //            return;
+
+        //    bool mailSendingCompleted = false;
+        //    for(int i = 7; i>0 && !mailSendingCompleted; i--)
+        //    {
+        //        Interact.InteractGameObject(BestMailbox.)
+        //    }
+        //}
 
         if (Me.Position.DistanceTo(AmmoVendor.Position) >= 10)
             GoToTask.ToPositionAndIntecractWithNpc(AmmoVendor.Position, AmmoVendor.Id);
@@ -79,7 +98,7 @@ public class BuyAmmoState : State
 
             ClearDoNotSellListFromAmmos();
             Helpers.AddItemToDoNotSellList(AmmoNameToBuy);
-
+ 
             List<string> allAmmoNames = GetPotentialAmmoNames();
 
             for (int i = 0; i <= 5; i++)
@@ -131,6 +150,11 @@ public class BuyAmmoState : State
             Helpers.RemoveItemFromDoNotSellList(Database.GetItemName(bullet.Value));
     }
 
+    private void SetMailbox()
+    {
+        DatabaseNPC nearestMailbox = Database.GetMailbox();
+        BestMailbox = nearestMailbox;
+    }
     private void SetAmmoAndVendor()
     {
         AmmoVendor = null;
