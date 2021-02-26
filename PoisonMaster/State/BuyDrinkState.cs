@@ -56,8 +56,7 @@ public class BuyDrinkState : State
             SetDrinkAndVendor();
 
             if (DrinkIdToBuy > 0
-                && GetNbDrinksInBags() <= 3
-                && Helpers.HaveEnoughMoneyFor(DrinkAmountToBuy, DrinkNameToBuy))
+                && GetNbDrinksInBags() <= 3)
                 return DrinkVendor != null;
 
             return false;
@@ -131,16 +130,31 @@ public class BuyDrinkState : State
     {
         DrinkIdToBuy = 0;
         DrinkVendor = null;
-        foreach (int drink in GetListUsableDrink())
+
+        foreach (KeyValuePair<int, HashSet<int>> drinkEntry in WaterDictionary.Where(f => f.Key <= Me.Level))
         {
-            DatabaseNPC vendorWithThisDrink = Database.GetDrinkVendor(new HashSet<int>() { drink });
-            if (vendorWithThisDrink != null)
+            foreach (int drinkId in drinkEntry.Value)
             {
-                DrinkIdToBuy = drink;
-                DrinkVendor = vendorWithThisDrink;
-                DrinkNameToBuy = Database.GetItemName(DrinkIdToBuy);
-                break;
+                //Main.Logger($"Checking {Database.GetItemName(drinkId)} [{drinkId}]");
+                DatabaseNPC vendorWithThisDrink = Database.GetDrinkVendor(new HashSet<int>() { drinkId });
+
+                // Skip to lower tier drink if we don't have enough money for this tier
+                if (!Helpers.HaveEnoughMoneyFor(DrinkAmountToBuy, Database.GetItemName(drinkId)))
+                    break;
+
+                if (vendorWithThisDrink != null)
+                {
+                    if (DrinkVendor == null || vendorWithThisDrink.Position.DistanceTo2D(Me.Position) < DrinkVendor.Position.DistanceTo2D(Me.Position))
+                    {
+                        //Main.Logger($"{vendorWithThisDrink.Name} sells {Database.GetItemName(drinkId)}");
+                        DrinkIdToBuy = drinkId;
+                        DrinkNameToBuy = Database.GetItemName(drinkId);
+                        DrinkVendor = vendorWithThisDrink;
+                    }
+                }
             }
+            if (DrinkVendor != null)
+                break;
         }
 
         List<int> listDrinksInBags = GetListDrinksFromBags();
@@ -149,9 +163,9 @@ public class BuyDrinkState : State
             string drinkToSet = Database.GetItemName(listDrinksInBags.Last());
             if (drinkToSet != wManagerSetting.CurrentSetting.DrinkName)
             {
+                Main.Logger($"Setting drink to {drinkToSet}");
                 wManagerSetting.CurrentSetting.DrinkName = drinkToSet;
                 wManagerSetting.CurrentSetting.Save();
-                Main.Logger($"Setting drink to {drinkToSet}");
             }
         }
     }

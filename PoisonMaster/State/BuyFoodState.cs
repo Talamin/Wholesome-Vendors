@@ -55,8 +55,7 @@ public class BuyFoodState : State
             SetFoodAndVendor();
 
             if (FoodIdToBuy > 0
-                && GetNbOfFoodInBags() <= 3
-                && Helpers.HaveEnoughMoneyFor(FoodAmountToBuy, FoodNameToBuy))
+                && GetNbOfFoodInBags() <= 3)
                 return FoodVendor != null;
 
             return false;
@@ -134,6 +133,11 @@ public class BuyFoodState : State
             {
                 //Main.Logger($"Checking {Database.GetItemName(foodId)} [{foodId}]");
                 DatabaseNPC vendorWithThisFood = Database.GetFoodVendor(new HashSet<int>() { foodId });
+
+                // Skip to lower tier food if we don't have enough money for this tier
+                if (!Helpers.HaveEnoughMoneyFor(FoodAmountToBuy, Database.GetItemName(foodId)))
+                    break;
+
                 if (vendorWithThisFood != null)
                 {
                     if (FoodVendor == null || vendorWithThisFood.Position.DistanceTo2D(Me.Position) < FoodVendor.Position.DistanceTo2D(Me.Position))
