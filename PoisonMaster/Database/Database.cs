@@ -220,7 +220,7 @@ public class Database
 
         creature trainer = DbCreature.Get(TrainerFilter)
             .Where(q => usableZones.Contains(q.zoneId + 1))
-            .Where(q => ObjectManager.Me.Level <= q.MinLevel || q.MinLevel > 20)
+            .Where(q => ObjectManager.Me.Level < q.MinLevel || q.MinLevel > 20)
             .Where(q => !q.Name.Contains(" Trainer"))
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
