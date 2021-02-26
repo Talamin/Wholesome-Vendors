@@ -21,7 +21,7 @@ public class BuyDrinkState : State
     private string DrinkNameToBuy;
     private int DrinkAmountToBuy => wManagerSetting.CurrentSetting.DrinkAmount;
 
-    private readonly Dictionary<int, HashSet<int>> WaterDictionary = new Dictionary<int, HashSet<int>>
+    private static readonly Dictionary<int, HashSet<int>> WaterDictionary = new Dictionary<int, HashSet<int>>
         {
             { 75, new HashSet<int>{ 33445, 41731, 42777 } },
             { 70, new HashSet<int>{ 33444 } }, // Pungent Seal Whey -- make sure this is only used in WotLK
@@ -32,7 +32,6 @@ public class BuyDrinkState : State
             { 25, new HashSet<int>{ 1708 } }, // Sweet Nectar
             { 15, new HashSet<int>{ 1205 } }, // Melon Juice
             { 5, new HashSet<int>{ 1179 } }, // Ice Cold Milk
-            { 0, new HashSet<int>{ 159 } }, // Refreshing Spring water
             { 0, new HashSet<int>{ 159 } }, // Refreshing Spring water
         };
 
