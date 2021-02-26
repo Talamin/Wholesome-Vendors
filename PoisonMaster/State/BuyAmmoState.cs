@@ -81,14 +81,14 @@ public class BuyAmmoState : State
                 if (Helpers.NpcIsAbsentOrDead(BestMailbox))
                     return;
 
-            bool needRunAgain = false;
-            for (int i = 7; i > 0 && !needRunAgain; i--)
+            bool needRunAgain = true;
+            for (int i = 7; i > 0 && needRunAgain; i--)
             {
                 GoToTask.ToPositionAndIntecractWithNpc(BestMailbox.Position, BestMailbox.Id);
                 Thread.Sleep(500);
-                Mail.SendMessage(wManagerSetting.CurrentSetting.MailRecipient,"Post",wManagerSetting.CurrentSetting.ForceMailList,wManagerSetting.CurrentSetting.DoNotMailList, Helpers.GetListQualityToMail(), out needRunAgain = true);
+                Mail.SendMessage(wManagerSetting.CurrentSetting.MailRecipient,"Post",wManagerSetting.CurrentSetting.ForceMailList,wManagerSetting.CurrentSetting.DoNotMailList, Helpers.GetListQualityToMail(), out needRunAgain);
             }
-            if (needRunAgain)
+            if (!needRunAgain)
                 Main.Logger($"Send Items to the Player {wManagerSetting.CurrentSetting.MailRecipient}");
 
             Mail.CloseMailFrame();
