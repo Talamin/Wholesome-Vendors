@@ -58,7 +58,7 @@ public class BuyAmmoState : State
             stateTimer = new Timer(5000);
 
             SetAmmoAndVendor();
-            SetMailbox();
+            SetMailbox(AmmoVendor);
             
             if (AmmoIdToBuy > 0
                 && GetNbAmmosInBags() <= 50)
@@ -72,7 +72,7 @@ public class BuyAmmoState : State
     {
         Main.Logger($"Buying {AmmoAmountToBuy} x {AmmoNameToBuy} [{AmmoIdToBuy}] at vendor {AmmoVendor.Name}");
 
-        if (wManagerSetting.CurrentSetting.UseMail)
+        if (wManagerSetting.CurrentSetting.UseMail && BestMailbox != null)
         {
             Main.Logger($"Important, befire Buying we need to Mail Items");
             if (Me.Position.DistanceTo(BestMailbox.Position) >= 10)
@@ -162,9 +162,9 @@ public class BuyAmmoState : State
             Helpers.RemoveItemFromDoNotSellList(Database.GetItemName(bullet.Value));
     }
 
-    private void SetMailbox()
+    private void SetMailbox(DatabaseNPC NearTo)
     {
-        DatabaseNPC nearestMailbox = Database.GetMailbox();
+        DatabaseNPC nearestMailbox = Database.GetMailbox(NearTo);
         BestMailbox = nearestMailbox;
     }
     private void SetAmmoAndVendor()

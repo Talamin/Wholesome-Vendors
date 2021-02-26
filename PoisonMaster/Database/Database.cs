@@ -96,13 +96,13 @@ public class Database
             }),
     };
 
-    public static DatabaseNPC GetMailbox()
+    public static DatabaseNPC GetMailbox(DatabaseNPC NearTo)
     {
         HashSet<int> usableZones = GetListUsableZones();
         creature Mailbox = DbCreature
             .Get(MailboxFilter)
             .Where(q => usableZones.Contains(q.zoneId + 1)
-                && !wManagerSetting.IsBlackListedNpcEntry(q.id))
+                && !wManagerSetting.IsBlackListedNpcEntry(q.id) && q.Position.DistanceTo(NearTo.Position) <= 100)
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
 
