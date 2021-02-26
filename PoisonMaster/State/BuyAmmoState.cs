@@ -71,22 +71,28 @@ public class BuyAmmoState : State
     public override void Run()
     {
         Main.Logger($"Buying {AmmoAmountToBuy} x {AmmoNameToBuy} [{AmmoIdToBuy}] at vendor {AmmoVendor.Name}");
-        
-        //if(wManagerSetting.CurrentSetting.UseMail)
-        //{
-        //    Main.Logger($"Important, befire Buying we need to Mail Items");
-        //    if (Me.Position.DistanceTo(BestMailbox.Position) >= 10)
-        //        GoToTask.ToPositionAndIntecractWithNpc(BestMailbox.Position, BestMailbox.Id);
-        //    if(Me.Position.DistanceTo(BestMailbox.Position) < 10)
-        //        if (Helpers.NpcIsAbsentOrDead(BestMailbox))
-        //            return;
 
-        //    bool mailSendingCompleted = false;
-        //    for(int i = 7; i>0 && !mailSendingCompleted; i--)
-        //    {
-        //        Interact.InteractGameObject(BestMailbox.)
-        //    }
-        //}
+        if (wManagerSetting.CurrentSetting.UseMail)
+        {
+            Main.Logger($"Important, befire Buying we need to Mail Items");
+            if (Me.Position.DistanceTo(BestMailbox.Position) >= 10)
+                GoToTask.ToPositionAndIntecractWithNpc(BestMailbox.Position, BestMailbox.Id);
+            if (Me.Position.DistanceTo(BestMailbox.Position) < 10)
+                if (Helpers.NpcIsAbsentOrDead(BestMailbox))
+                    return;
+
+            bool needRunAgain = false;
+            for (int i = 7; i > 0 && !needRunAgain; i--)
+            {
+                GoToTask.ToPositionAndIntecractWithNpc(BestMailbox.Position, BestMailbox.Id);
+                Thread.Sleep(500);
+                Mail.SendMessage(wManagerSetting.CurrentSetting.MailRecipient,"Post",wManagerSetting.CurrentSetting.ForceMailList,wManagerSetting.CurrentSetting.DoNotMailList, Helpers.GetListQualityToMail(), out needRunAgain = true);
+            }
+            if (needRunAgain)
+                Main.Logger($"Send Items to the Player {wManagerSetting.CurrentSetting.MailRecipient}");
+
+            Lua.LuaDoString("CloseMail()");
+        }
 
         if (Me.Position.DistanceTo(AmmoVendor.Position) >= 10)
             GoToTask.ToPositionAndIntecractWithNpc(AmmoVendor.Position, AmmoVendor.Id);
