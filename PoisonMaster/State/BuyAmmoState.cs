@@ -91,7 +91,7 @@ public class BuyAmmoState : State
             if (needRunAgain)
                 Main.Logger($"Send Items to the Player {wManagerSetting.CurrentSetting.MailRecipient}");
 
-            Lua.LuaDoString("CloseMail()");
+            Mail.CloseMailFrame();
         }
 
         if (Me.Position.DistanceTo(AmmoVendor.Position) >= 10)
