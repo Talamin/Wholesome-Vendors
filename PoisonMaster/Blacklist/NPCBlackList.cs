@@ -66,6 +66,12 @@ public static class NPCBlackList
         26755,
         26756,
         26757,
-        26759
+        26759,
+        5958, // Portal trainer
+        5957, // Portal Trainer
+        2492, // Portal Trainer
+        2485, // Portal Trainer
+        2489, // Portal Trainer
+        4165, // Portal Trainer
     };
 }
