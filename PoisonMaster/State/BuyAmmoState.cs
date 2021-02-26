@@ -86,7 +86,13 @@ public class BuyAmmoState : State
             {
                 GoToTask.ToPositionAndIntecractWithNpc(BestMailbox.Position, BestMailbox.Id);
                 Thread.Sleep(500);
-                Mail.SendMessage(wManagerSetting.CurrentSetting.MailRecipient,"Post",wManagerSetting.CurrentSetting.ForceMailList,wManagerSetting.CurrentSetting.DoNotMailList, Helpers.GetListQualityToMail(), out needRunAgain = true);
+                Mail.SendMessage(wManagerSetting.CurrentSetting.MailRecipient,
+                    "Post",
+                    "Message",
+                    wManagerSetting.CurrentSetting.ForceMailList,
+                    wManagerSetting.CurrentSetting.DoNotMailList,
+                    Helpers.GetListQualityToMail(),
+                    out needRunAgain);
             }
             if (needRunAgain)
                 Main.Logger($"Send Items to the Player {wManagerSetting.CurrentSetting.MailRecipient}");
