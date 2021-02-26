@@ -78,7 +78,7 @@ public class BuyAmmoState : State
             if (Me.Position.DistanceTo(BestMailbox.Position) >= 10)
                 GoToTask.ToPositionAndIntecractWithNpc(BestMailbox.Position, BestMailbox.Id);
             if (Me.Position.DistanceTo(BestMailbox.Position) < 10)
-                if (Helpers.NpcIsAbsentOrDead(BestMailbox))
+                if (Helpers.MailboxIsAbsent(BestMailbox))
                     return;
 
             bool needRunAgain = true;

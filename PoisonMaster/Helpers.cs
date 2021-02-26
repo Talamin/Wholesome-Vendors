@@ -247,6 +247,17 @@ namespace PoisonMaster
             return false;
         }
 
+        public static bool MailboxIsAbsent(DatabaseNPC npc)
+        {
+            if (ObjectManager.GetObjectWoWUnit().Count(x => x.Name == npc.Name) <= 0)
+            {
+                Main.Logger("Looks like " + npc.Name + " is not here, blacklisting");
+                NPCBlackList.AddNPCToBlacklist(npc.Id);
+                return true;
+            }
+            return false;
+        }
+
         public static List<WoWItemQuality> GetListQualityToSell()
         {
             List<WoWItemQuality> listQualitySell = new List<WoWItemQuality>();
