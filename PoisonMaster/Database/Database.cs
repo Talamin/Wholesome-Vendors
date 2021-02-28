@@ -160,9 +160,6 @@ public class Database
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
 
-        //if (foodVendor == null)
-        //Main.Logger($"Couldn't find any Food Vendor for {GetItemName(usableFood.First())}");
-
         return foodVendor == null ? null : new DatabaseNPC(foodVendor);
     }
     public static DatabaseNPC GetPoisonVendor(HashSet<int> usablePoison)
@@ -194,7 +191,17 @@ public class Database
 
         if (repairVendor == null)
             Main.Logger("Couldn't find any Repair Vendor");
+        /*
+        List<world_map_area> listMap = DbWorldMapArea.Get();
+        foreach (world_map_area mapObject in listMap)
+        {
+            Main.Logger(mapObject.areaName);
+            Main.Logger("Area ID = " + mapObject.areaID.ToString());
+            Main.Logger("ID = " + mapObject.ID.ToString());
+        }
 
+        Main.Logger($"Repair vendor {repairVendor.Name} found in area {repairVendor.areaId} - zone {repairVendor.zoneId} - zone {repairVendor.map}");
+        */
         return repairVendor == null ? null : new DatabaseNPC(repairVendor);
     }
 
@@ -266,14 +273,14 @@ public class Database
         {463,1}, //EversongWoods
         {42,1}, //Teldrassil
         {21,1}, //Tirisfal
-        {481,10 }, //SilvermoonCity
+        {481,10}, //SilvermoonCity
         {11,10}, //Barrens
         {477,10}, //BloodmystIsle
         {43,10}, //Darkshore
         {464,10}, //Ghostlands
         {342,10}, //Ironforge
         {36,10}, //LochModan
-        {10,10}, //Mulgore
+        {10,1}, //Mulgore
         {322,10}, //Ogrimmar
         {22,10}, //Silverpine
         {302,10}, //Stormwind
