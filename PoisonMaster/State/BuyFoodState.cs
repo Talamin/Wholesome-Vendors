@@ -32,6 +32,7 @@ public class BuyFoodState : State
     private DatabaseNPC FoodVendor;
     private int FoodIdToBuy;
     private string FoodNameToBuy;
+    private GameObjects BestMailbox;
     private int FoodAmountToBuy => wManagerSetting.CurrentSetting.FoodAmount;
 
     public override bool NeedToRun
@@ -53,6 +54,7 @@ public class BuyFoodState : State
                 NPCBlackList.AddNPCListToBlacklist(new[] { 5871, 8307, 3489 });
 
             SetFoodAndVendor();
+            SetMailbox(FoodVendor);
 
             if (FoodIdToBuy > 0
                 && GetNbOfFoodInBags() <= 3)
@@ -65,6 +67,36 @@ public class BuyFoodState : State
     public override void Run()
     {
         Main.Logger($"Buying {FoodAmountToBuy} x {FoodNameToBuy} [{FoodIdToBuy}] at vendor {FoodVendor.Name}");
+        
+        //Mailing Start
+        if (wManagerSetting.CurrentSetting.UseMail && BestMailbox != null)
+        {
+            Main.Logger($"Important, before Buying we need to Mail Items");
+            if (Me.Position.DistanceTo(BestMailbox.Position) >= 10)
+                GoToTask.ToPositionAndIntecractWithGameObject(BestMailbox.Position, BestMailbox.Id);
+            if (Me.Position.DistanceTo(BestMailbox.Position) < 10)
+                if (Helpers.MailboxIsAbsent(BestMailbox))
+                    return;
+
+            bool needRunAgain = true;
+            for (int i = 7; i > 0 && needRunAgain; i--)
+            {
+                GoToTask.ToPositionAndIntecractWithGameObject(BestMailbox.Position, BestMailbox.Id);
+                Thread.Sleep(500);
+                Mail.SendMessage(wManagerSetting.CurrentSetting.MailRecipient,
+                    "Post",
+                    "Message",
+                    wManagerSetting.CurrentSetting.ForceMailList,
+                    wManagerSetting.CurrentSetting.DoNotMailList,
+                    Helpers.GetListQualityToMail(),
+                    out needRunAgain);
+            }
+            if (!needRunAgain)
+                Main.Logger($"Send Items to the Player {wManagerSetting.CurrentSetting.MailRecipient}");
+
+            Mail.CloseMailFrame();
+        }
+        //Mailing End
 
         if (Me.Position.DistanceTo(FoodVendor.Position) >= 10)
             GoToTask.ToPosition(FoodVendor.Position);
@@ -76,6 +108,7 @@ public class BuyFoodState : State
 
             ClearDoNotSellListFromFoods();
             Helpers.AddItemToDoNotSellList(FoodNameToBuy);
+            Helpers.AddItemToDoNotMailList(FoodNameToBuy);
 
             List<string> allFoodNames = GetPotentialFoodNames();
 
@@ -193,6 +226,11 @@ public class BuyFoodState : State
                 foodInBags.Add(food);
 
         return foodInBags;
+    }
+    private void SetMailbox(DatabaseNPC NearTo)
+    {
+        GameObjects nearestMailbox = Database.GetMailbox(NearTo);
+        BestMailbox = nearestMailbox;
     }
 }
 

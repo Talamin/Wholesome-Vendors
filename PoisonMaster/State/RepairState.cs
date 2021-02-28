@@ -16,6 +16,7 @@ public class RepairState : State
     private DatabaseNPC repairVendor;
     private Timer stateTimer = new Timer();
     private int minDurability = 35;
+    private GameObjects BestMailbox;
     private int minFreeSlots => wManagerSetting.CurrentSetting.MinFreeBagSlotsToGoToTown;
 
     public override bool NeedToRun
@@ -33,11 +34,13 @@ public class RepairState : State
             if (PluginSettings.CurrentSetting.AutoRepair && ObjectManager.Me.GetDurabilityPercent < minDurability)
             {
                 repairVendor = Database.GetRepairVendor();
+                SetMailbox(repairVendor);
                 return repairVendor != null;
             }
             else if (PluginSettings.CurrentSetting.AllowAutoSell && Bag.GetContainerNumFreeSlotsByType(BagType.Unspecified) <= minFreeSlots)
             {
                 repairVendor = Database.GetSellVendor();
+                SetMailbox(repairVendor);
                 return repairVendor != null;
             }
 
@@ -48,6 +51,36 @@ public class RepairState : State
     public override void Run()
     {
         Main.Logger($"Going to sell/repair vendor {repairVendor.Name}");
+        
+        //Mailing Start
+        if (wManagerSetting.CurrentSetting.UseMail && BestMailbox != null)
+        {
+            Main.Logger($"Important, before Buying we need to Mail Items");
+            if (ObjectManager.Me.Position.DistanceTo(BestMailbox.Position) >= 10)
+                GoToTask.ToPositionAndIntecractWithGameObject(BestMailbox.Position, BestMailbox.Id);
+            if (ObjectManager.Me.Position.DistanceTo(BestMailbox.Position) < 10)
+                if (Helpers.MailboxIsAbsent(BestMailbox))
+                    return;
+
+            bool needRunAgain = true;
+            for (int i = 7; i > 0 && needRunAgain; i--)
+            {
+                GoToTask.ToPositionAndIntecractWithGameObject(BestMailbox.Position, BestMailbox.Id);
+                Thread.Sleep(500);
+                Mail.SendMessage(wManagerSetting.CurrentSetting.MailRecipient,
+                    "Post",
+                    "Message",
+                    wManagerSetting.CurrentSetting.ForceMailList,
+                    wManagerSetting.CurrentSetting.DoNotMailList,
+                    Helpers.GetListQualityToMail(),
+                    out needRunAgain);
+            }
+            if (!needRunAgain)
+                Main.Logger($"Send Items to the Player {wManagerSetting.CurrentSetting.MailRecipient}");
+
+            Mail.CloseMailFrame();
+        }
+        //Mailing End
 
         List<WoWItem> bagItems = Bag.GetBagItem();
 
@@ -83,4 +116,10 @@ public class RepairState : State
             }
         }
     }
+    private void SetMailbox(DatabaseNPC NearTo)
+    {
+        GameObjects nearestMailbox = Database.GetMailbox(NearTo);
+        BestMailbox = nearestMailbox;
+    }
+
 }

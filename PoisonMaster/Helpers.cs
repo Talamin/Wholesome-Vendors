@@ -158,6 +158,14 @@ namespace PoisonMaster
                 wManagerSetting.CurrentSetting.Save();
             }
         }
+        public static void AddItemToDoNotMailList(string itemName)
+        {
+            if(!wManagerSetting.CurrentSetting.DoNotMailList.Contains(itemName))
+            {
+                wManagerSetting.CurrentSetting.DoNotMailList.Add(itemName);
+                wManagerSetting.CurrentSetting.Save();
+            }
+        }
 
         public static void SoftRestart()
         {

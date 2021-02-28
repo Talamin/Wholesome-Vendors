@@ -2,6 +2,7 @@
 using robotManager.FiniteStateMachine;
 using System.Collections.Generic;
 using System.Threading;
+using wManager;
 using wManager.Wow.Bot.Tasks;
 using wManager.Wow.Enums;
 using wManager.Wow.Helpers;
@@ -25,6 +26,7 @@ public class BuyPoisonState : State
 
     private Timer stateTimer = new Timer();
     private DatabaseNPC PoisonVendor;
+    private GameObjects BestMailbox;
 
     private bool NeedInstantPoison => ItemsManager.GetItemCountById((uint)InstantPoisonIdToBuy) <= 0;
     private bool NeedDeadlyPoison => ObjectManager.Me.Level >= 30 && ItemsManager.GetItemCountById((uint)DeadlyPoisonIdToBuy) <= 0;
@@ -71,6 +73,7 @@ public class BuyPoisonState : State
             stateTimer = new Timer(5000);
 
             SetPoisonAndVendor();
+            SetMailbox(PoisonVendor);
 
             if (InstantPoisonIdToBuy != 0 && NeedInstantPoison || DeadlyPoisonIdToBuy != 0 && NeedDeadlyPoison)
                 return PoisonVendor != null;
@@ -82,6 +85,36 @@ public class BuyPoisonState : State
     public override void Run()
     {
         Main.Logger($"Buying poisons at vendor {PoisonVendor.Name}");
+        
+        //Mailing Start
+        if (wManagerSetting.CurrentSetting.UseMail && BestMailbox != null)
+        {
+            Main.Logger($"Important, before Buying we need to Mail Items");
+            if (Me.Position.DistanceTo(BestMailbox.Position) >= 10)
+                GoToTask.ToPositionAndIntecractWithGameObject(BestMailbox.Position, BestMailbox.Id);
+            if (Me.Position.DistanceTo(BestMailbox.Position) < 10)
+                if (Helpers.MailboxIsAbsent(BestMailbox))
+                    return;
+
+            bool needRunAgain = true;
+            for (int i = 7; i > 0 && needRunAgain; i--)
+            {
+                GoToTask.ToPositionAndIntecractWithGameObject(BestMailbox.Position, BestMailbox.Id);
+                Thread.Sleep(500);
+                Mail.SendMessage(wManagerSetting.CurrentSetting.MailRecipient,
+                    "Post",
+                    "Message",
+                    wManagerSetting.CurrentSetting.ForceMailList,
+                    wManagerSetting.CurrentSetting.DoNotMailList,
+                    Helpers.GetListQualityToMail(),
+                    out needRunAgain);
+            }
+            if (!needRunAgain)
+                Main.Logger($"Send Items to the Player {wManagerSetting.CurrentSetting.MailRecipient}");
+
+            Mail.CloseMailFrame();
+        }
+        //Mailing End
 
         if (Me.Position.DistanceTo(PoisonVendor.Position) >= 10)
             GoToTask.ToPosition(PoisonVendor.Position);
@@ -187,6 +220,7 @@ public class BuyPoisonState : State
                     PoisonVendor = vendorWithThisPoison;
                     ClearDoNotSellListFromDeadlies();
                     Helpers.AddItemToDoNotSellList(DeadlyPoisonNameToBuy);
+                    Helpers.AddItemToDoNotMailList(DeadlyPoisonNameToBuy);
                     break;
                 }
             }
@@ -204,6 +238,7 @@ public class BuyPoisonState : State
                     PoisonVendor = vendorWithThisPoison;
                     ClearDoNotSellListFromInstants();
                     Helpers.AddItemToDoNotSellList(InstantPoisonNameToBuy);
+                    Helpers.AddItemToDoNotMailList(InstantPoisonNameToBuy);
                     break;
                 }
             }
@@ -230,5 +265,10 @@ public class BuyPoisonState : State
                 listDeadlys.Add(deadly.Value);
         }
         return listDeadlys;
+    }
+    private void SetMailbox(DatabaseNPC NearTo)
+    {
+        GameObjects nearestMailbox = Database.GetMailbox(NearTo);
+        BestMailbox = nearestMailbox;
     }
 }

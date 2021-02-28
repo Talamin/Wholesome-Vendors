@@ -71,7 +71,8 @@ public class BuyAmmoState : State
     public override void Run()
     {
         Main.Logger($"Buying {AmmoAmountToBuy} x {AmmoNameToBuy} [{AmmoIdToBuy}] at vendor {AmmoVendor.Name}");
-
+        
+        //Mailing Start
         if (wManagerSetting.CurrentSetting.UseMail && BestMailbox != null)
         {
             Main.Logger($"Important, before Buying we need to Mail Items");
@@ -99,6 +100,8 @@ public class BuyAmmoState : State
 
             Mail.CloseMailFrame();
         }
+        //Mailing End
+
         if (Me.Position.DistanceTo(AmmoVendor.Position) >= 10)
             GoToTask.ToPositionAndIntecractWithNpc(AmmoVendor.Position, AmmoVendor.Id);
 
@@ -109,6 +112,7 @@ public class BuyAmmoState : State
 
             ClearDoNotSellListFromAmmos();
             Helpers.AddItemToDoNotSellList(AmmoNameToBuy);
+            Helpers.AddItemToDoNotMailList(AmmoNameToBuy);
  
             List<string> allAmmoNames = GetPotentialAmmoNames();
 
