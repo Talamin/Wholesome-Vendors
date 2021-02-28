@@ -84,32 +84,26 @@ public class Database
             }),
     };
 
-    private static CreatureFilter MailboxFilter = new CreatureFilter
+    private static GameObjectFilter MailboxFilter = new GameObjectFilter
     {
         ContinentId = (ContinentId)Usefuls.ContinentId,
         ExcludeIds = NPCBlackList.myBlacklist,
-        Faction = new Faction(ObjectManager.Me.Faction, ReactionType.Friendly),
-        NpcFlags = new NpcFlag(Operator.Or,
-            new List<UnitNPCFlags>
-            {
-                UnitNPCFlags.MailInfo
-            }),
+        Type = GameObjectType.Mailbox
     };
 
-    public static DatabaseNPC GetMailbox(DatabaseNPC NearTo)
+    public static GameObjects GetMailbox(DatabaseNPC NearTo)
     {
         HashSet<int> usableZones = GetListUsableZones();
-        creature Mailbox = DbCreature
+        gameobject Mailbox = DbGameObject
             .Get(MailboxFilter)
-            .Where(q => usableZones.Contains(q.zoneId + 1)
-                && !wManagerSetting.IsBlackListedNpcEntry(q.id) && q.Position.DistanceTo(NearTo.Position) <= 100)
+            .Where(q => q.Position.DistanceTo(NearTo.Position) <= 300)
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
 
         if (Mailbox == null)
             Main.Logger("Couldn´t find any Mailbox");
 
-        return Mailbox == null ? null : new DatabaseNPC(Mailbox);
+        return Mailbox == null ? null : new GameObjects(Mailbox);
     }
 
     public static DatabaseNPC GetAmmoVendor(HashSet<int> usableAmmo)

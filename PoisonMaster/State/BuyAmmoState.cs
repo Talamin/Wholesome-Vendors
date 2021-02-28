@@ -16,7 +16,7 @@ public class BuyAmmoState : State
     private WoWLocalPlayer Me = ObjectManager.Me;
     private Timer stateTimer = new Timer();
     private DatabaseNPC AmmoVendor;
-    private DatabaseNPC BestMailbox;
+    private GameObjects BestMailbox;
     private int AmmoIdToBuy;
     private string AmmoNameToBuy;
     private int AmmoAmountToBuy = 2000;
@@ -74,9 +74,9 @@ public class BuyAmmoState : State
 
         if (wManagerSetting.CurrentSetting.UseMail && BestMailbox != null)
         {
-            Main.Logger($"Important, befire Buying we need to Mail Items");
+            Main.Logger($"Important, before Buying we need to Mail Items");
             if (Me.Position.DistanceTo(BestMailbox.Position) >= 10)
-                GoToTask.ToPositionAndIntecractWithNpc(BestMailbox.Position, BestMailbox.Id);
+                GoToTask.ToPositionAndIntecractWithGameObject(BestMailbox.Position, BestMailbox.Id);
             if (Me.Position.DistanceTo(BestMailbox.Position) < 10)
                 if (Helpers.MailboxIsAbsent(BestMailbox))
                     return;
@@ -84,7 +84,7 @@ public class BuyAmmoState : State
             bool needRunAgain = true;
             for (int i = 7; i > 0 && needRunAgain; i--)
             {
-                GoToTask.ToPositionAndIntecractWithNpc(BestMailbox.Position, BestMailbox.Id);
+                GoToTask.ToPositionAndIntecractWithGameObject(BestMailbox.Position, BestMailbox.Id);
                 Thread.Sleep(500);
                 Mail.SendMessage(wManagerSetting.CurrentSetting.MailRecipient,
                     "Post",
@@ -99,7 +99,6 @@ public class BuyAmmoState : State
 
             Mail.CloseMailFrame();
         }
-
         if (Me.Position.DistanceTo(AmmoVendor.Position) >= 10)
             GoToTask.ToPositionAndIntecractWithNpc(AmmoVendor.Position, AmmoVendor.Id);
 
@@ -164,7 +163,7 @@ public class BuyAmmoState : State
 
     private void SetMailbox(DatabaseNPC NearTo)
     {
-        DatabaseNPC nearestMailbox = Database.GetMailbox(NearTo);
+        GameObjects nearestMailbox = Database.GetMailbox(NearTo);
         BestMailbox = nearestMailbox;
     }
     private void SetAmmoAndVendor()
