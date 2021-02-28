@@ -55,7 +55,7 @@ public class RepairState : State
         //Mailing Start
         if (wManagerSetting.CurrentSetting.UseMail && BestMailbox != null)
         {
-            Main.Logger($"Important, before Buying we need to Mail Items");
+            Main.Logger($"Important, before Repairing we need to Mail Items");
             if (ObjectManager.Me.Position.DistanceTo(BestMailbox.Position) >= 10)
                 GoToTask.ToPositionAndIntecractWithGameObject(BestMailbox.Position, BestMailbox.Id);
             if (ObjectManager.Me.Position.DistanceTo(BestMailbox.Position) < 10)
