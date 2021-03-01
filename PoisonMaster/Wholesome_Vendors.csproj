@@ -247,9 +247,20 @@
   <PropertyGroup>
     <PostBuildEvent>copy /Y "$(ProjectDir)\bin\$(Configuration)\$(TargetFileName)" "$(SolutionDir)\PoisonMaster\Compiled\Wholesome_Vendors.dll"</PostBuildEvent>
   </PropertyGroup>
+    <Target Name="EmbedSQLiteInteropFiles" BeforeTargets="ResolveReferences">
+        <ItemGroup>
+            <!-- Condition on item metadata trick adapted from https://stackoverflow.com/questions/5103026/in-msbuild-can-i-use-the-string-replace-function-on-a-metadata-item/8904902#8904902 -->
+            <EmbeddedResource Include="@(SQLiteInteropFiles)">
+                <!-- Syntax could be simplified in the future in MSBuild, see [Metadata should support instance methods](https://github.com/microsoft/msbuild/issues/1155) -->
+                <Link Condition="$([MSBuild]::ValueOrDefault('%(Identity)', '').Contains('x86'))">costura32\%(Filename)%(Extension)</Link>
+                <Link Condition="$([MSBuild]::ValueOrDefault('%(Identity)', '').Contains('x64'))">costura64\%(Filename)%(Extension)</Link>
+            </EmbeddedResource>
+        </ItemGroup>
+    </Target>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+      <CopySQLiteInteropFiles>false</CopySQLiteInteropFiles>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\EntityFramework.6.3.0\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.3.0\build\EntityFramework.props'))" />
     <Error Condition="!Exists('..\packages\EntityFramework.6.3.0\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.3.0\build\EntityFramework.targets'))" />
