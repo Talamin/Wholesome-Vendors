@@ -30,7 +30,7 @@ public class Main : IPlugin
     public static State repairState = new RepairState();
     public static State trainingState = new TrainingState();
 
-    public static string version = "0.1.18"; // Must match version in Version.txt
+    public static string version = "0.2.1"; // Must match version in Version.txt
 
     private DB _database;
 
@@ -51,7 +51,7 @@ public class Main : IPlugin
             Logger($"Launching version {version} on client {Helpers.GetWoWVersion()}");
 
             Logger($"Checking for actual Database, maybe download is needed");
-            if (File.Exists("Data/WoW335"))
+            if (File.Exists("Data/WoWDB335"))
             {
                 _database = new DB();
                 var databaseUpdater = new DBUpdater(_database);
@@ -78,16 +78,14 @@ public class Main : IPlugin
                             return false;
                         }
                     }
-                    return true;
-                }).ContinueWith(task =>
-                {
+
                     Logger($"Extracting Wholesome Database.");
-                    if (task.Result)
-                    {
+
                         System.IO.Compression.ZipFile.ExtractToDirectory("Data/wholesome_db_temp.zip", "Data");
                         File.Delete("Data/wholesome_db_temp.zip");
-                    }
+
                     Logger($"Successfully downloaded Wholesome Database");
+                    return true;
                 });
             }
 
