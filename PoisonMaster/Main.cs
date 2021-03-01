@@ -9,10 +9,10 @@ using PoisonMaster;
 using System.Drawing;
 using Timer = robotManager.Helpful.Timer;
 using wManager;
-using System.IO;
 using WoWDBUpdater;
 using System.Threading.Tasks;
 using System.Net;
+using System.IO;
 
 public class Main : IPlugin
 {
@@ -30,7 +30,7 @@ public class Main : IPlugin
     public static State repairState = new RepairState();
     public static State trainingState = new TrainingState();
 
-    public static string version = "0.2.1"; // Must match version in Version.txt
+    public static string version = "0.2.2"; // Must match version in Version.txt
 
     private DB _database;
 

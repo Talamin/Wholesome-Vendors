@@ -413,5 +413,43 @@ namespace PoisonMaster
                 && !PlayerInBloodElfStartingZone()
                 && !PlayerInDraneiStartingZone();
         }
+
+        public static void CheckMailboxNearby(DatabaseNPC vendor)
+        {
+            if (!wManagerSetting.CurrentSetting.UseMail)
+                return;
+
+            Main.Logger($"Checking for a mailbox nearby {vendor.Name}");
+
+            GameObjects mailbox = Database.GetMailboxNearby(vendor);
+
+            if (mailbox == null)
+                return;
+
+            if (ObjectManager.Me.Position.DistanceTo(mailbox.Position) >= 10)
+                GoToTask.ToPositionAndIntecractWithGameObject(mailbox.Position, mailbox.Id);
+
+            if (ObjectManager.Me.Position.DistanceTo(mailbox.Position) < 10)
+                if (MailboxIsAbsent(mailbox))
+                    return;
+
+            bool needRunAgain = true;
+            for (int i = 7; i > 0 && needRunAgain; i--)
+            {
+                GoToTask.ToPositionAndIntecractWithGameObject(mailbox.Position, mailbox.Id);
+                Thread.Sleep(500);
+                Mail.SendMessage(wManagerSetting.CurrentSetting.MailRecipient,
+                    "Post",
+                    "Message",
+                    wManagerSetting.CurrentSetting.ForceMailList,
+                    wManagerSetting.CurrentSetting.DoNotMailList,
+                    GetListQualityToMail(),
+                    out needRunAgain);
+            }
+            if (!needRunAgain)
+                Main.Logger($"Sent Items to {wManagerSetting.CurrentSetting.MailRecipient}");
+
+            Mail.CloseMailFrame();
+        }
     }
 }

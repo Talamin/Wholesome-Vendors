@@ -13,11 +13,10 @@ public class RepairState : State
 {
     public override string DisplayName => "WV Repair and Sell";
 
-    private DatabaseNPC repairVendor;
+    private DatabaseNPC RepairVendor;
     private Timer stateTimer = new Timer();
-    private int minDurability = 35;
-    private GameObjects BestMailbox;
-    private int minFreeSlots => wManagerSetting.CurrentSetting.MinFreeBagSlotsToGoToTown;
+    private int MinDurability = 35;
+    private int MinFreeSlots => wManagerSetting.CurrentSetting.MinFreeBagSlotsToGoToTown;
 
     public override bool NeedToRun
     {
@@ -31,17 +30,15 @@ public class RepairState : State
 
             stateTimer = new Timer(5000);
 
-            if (PluginSettings.CurrentSetting.AutoRepair && ObjectManager.Me.GetDurabilityPercent < minDurability)
+            if (PluginSettings.CurrentSetting.AutoRepair && ObjectManager.Me.GetDurabilityPercent < MinDurability)
             {
-                repairVendor = Database.GetRepairVendor();
-                SetMailbox(repairVendor);
-                return repairVendor != null;
+                RepairVendor = Database.GetRepairVendor();
+                return RepairVendor != null;
             }
-            else if (PluginSettings.CurrentSetting.AllowAutoSell && Bag.GetContainerNumFreeSlotsByType(BagType.Unspecified) <= minFreeSlots)
+            else if (PluginSettings.CurrentSetting.AllowAutoSell && Bag.GetContainerNumFreeSlotsByType(BagType.Unspecified) <= MinFreeSlots)
             {
-                repairVendor = Database.GetSellVendor();
-                SetMailbox(repairVendor);
-                return repairVendor != null;
+                RepairVendor = Database.GetSellVendor();
+                return RepairVendor != null;
             }
 
             return false;
@@ -50,76 +47,42 @@ public class RepairState : State
 
     public override void Run()
     {
-        Main.Logger($"Going to sell/repair vendor {repairVendor.Name}");
-        
-        //Mailing Start
-        if (wManagerSetting.CurrentSetting.UseMail && BestMailbox != null)
-        {
-            Main.Logger($"Important, before Repairing we need to Mail Items");
-            if (ObjectManager.Me.Position.DistanceTo(BestMailbox.Position) >= 10)
-                GoToTask.ToPositionAndIntecractWithGameObject(BestMailbox.Position, BestMailbox.Id);
-            if (ObjectManager.Me.Position.DistanceTo(BestMailbox.Position) < 10)
-                if (Helpers.MailboxIsAbsent(BestMailbox))
-                    return;
+        Main.Logger($"Going to sell/repair vendor {RepairVendor.Name}");
 
-            bool needRunAgain = true;
-            for (int i = 7; i > 0 && needRunAgain; i--)
-            {
-                GoToTask.ToPositionAndIntecractWithGameObject(BestMailbox.Position, BestMailbox.Id);
-                Thread.Sleep(500);
-                Mail.SendMessage(wManagerSetting.CurrentSetting.MailRecipient,
-                    "Post",
-                    "Message",
-                    wManagerSetting.CurrentSetting.ForceMailList,
-                    wManagerSetting.CurrentSetting.DoNotMailList,
-                    Helpers.GetListQualityToMail(),
-                    out needRunAgain);
-            }
-            if (!needRunAgain)
-                Main.Logger($"Send Items to the Player {wManagerSetting.CurrentSetting.MailRecipient}");
-
-            Mail.CloseMailFrame();
-        }
-        //Mailing End
+        Helpers.CheckMailboxNearby(RepairVendor);
 
         List<WoWItem> bagItems = Bag.GetBagItem();
 
-        if (ObjectManager.Me.Position.DistanceTo(repairVendor.Position) >= 10)
-            GoToTask.ToPosition(repairVendor.Position);
+        if (ObjectManager.Me.Position.DistanceTo(RepairVendor.Position) >= 10)
+            GoToTask.ToPosition(RepairVendor.Position);
 
-        if (ObjectManager.Me.Position.DistanceTo(repairVendor.Position) < 10)
+        if (ObjectManager.Me.Position.DistanceTo(RepairVendor.Position) < 10)
         {
-            if (Helpers.NpcIsAbsentOrDead(repairVendor))
+            if (Helpers.NpcIsAbsentOrDead(RepairVendor))
                 return;
 
             // Sell first
-            Helpers.SellItems(repairVendor);
+            Helpers.SellItems(RepairVendor);
 
             // Then repair
             for (int i = 0; i <= 5; i++)
             {
-                GoToTask.ToPositionAndIntecractWithNpc(repairVendor.Position, repairVendor.Id, i);
+                GoToTask.ToPositionAndIntecractWithNpc(RepairVendor.Position, RepairVendor.Id, i);
                 Vendor.RepairAllItems();
                 Lua.LuaDoString("MerchantRepairAllButton:Click();", false);
                 Lua.LuaDoString("RepairAllItems();", false);
                 Helpers.CloseWindow();
                 Thread.Sleep(1000);
 
-                if (ObjectManager.Me.GetDurabilityPercent >= minDurability)
+                if (ObjectManager.Me.GetDurabilityPercent >= MinDurability)
                     break;
             }
 
-            if (ObjectManager.Me.GetDurabilityPercent < minDurability || Bag.GetContainerNumFreeSlotsByType(BagType.Unspecified) <= minFreeSlots)
+            if (ObjectManager.Me.GetDurabilityPercent < MinDurability || Bag.GetContainerNumFreeSlotsByType(BagType.Unspecified) <= MinFreeSlots)
             {
                 Main.Logger($"Failed to sell/repair, blacklisting vendor");
-                NPCBlackList.AddNPCToBlacklist(repairVendor.Id);
+                NPCBlackList.AddNPCToBlacklist(RepairVendor.Id);
             }
         }
     }
-    private void SetMailbox(DatabaseNPC NearTo)
-    {
-        GameObjects nearestMailbox = Database.GetMailbox(NearTo);
-        BestMailbox = nearestMailbox;
-    }
-
 }

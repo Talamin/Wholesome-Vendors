@@ -19,7 +19,6 @@ public class BuyDrinkState : State
     private DatabaseNPC DrinkVendor;
     private int DrinkIdToBuy;
     private string DrinkNameToBuy;
-    private GameObjects BestMailbox;
     private int DrinkAmountToBuy => wManagerSetting.CurrentSetting.DrinkAmount;
 
     private static readonly Dictionary<int, HashSet<int>> WaterDictionary = new Dictionary<int, HashSet<int>>
@@ -55,7 +54,7 @@ public class BuyDrinkState : State
                 NPCBlackList.AddNPCListToBlacklist(new[] { 5871, 8307, 3489 });
 
             SetDrinkAndVendor();
-            SetMailbox(DrinkVendor);
+
             if (DrinkIdToBuy > 0
                 && GetNbDrinksInBags() <= 3)
                 return DrinkVendor != null;
@@ -67,36 +66,8 @@ public class BuyDrinkState : State
     public override void Run()
     {
         Main.Logger($"Buying {DrinkAmountToBuy} x {DrinkNameToBuy} [{DrinkIdToBuy}] at vendor {DrinkVendor.Name}");
-        
-        //Mailing Start
-        if (wManagerSetting.CurrentSetting.UseMail && BestMailbox != null)
-        {
-            Main.Logger($"Important, before Buying we need to Mail Items");
-            if (Me.Position.DistanceTo(BestMailbox.Position) >= 10)
-                GoToTask.ToPositionAndIntecractWithGameObject(BestMailbox.Position, BestMailbox.Id);
-            if (Me.Position.DistanceTo(BestMailbox.Position) < 10)
-                if (Helpers.MailboxIsAbsent(BestMailbox))
-                    return;
 
-            bool needRunAgain = true;
-            for (int i = 7; i > 0 && needRunAgain; i--)
-            {
-                GoToTask.ToPositionAndIntecractWithGameObject(BestMailbox.Position, BestMailbox.Id);
-                Thread.Sleep(500);
-                Mail.SendMessage(wManagerSetting.CurrentSetting.MailRecipient,
-                    "Post",
-                    "Message",
-                    wManagerSetting.CurrentSetting.ForceMailList,
-                    wManagerSetting.CurrentSetting.DoNotMailList,
-                    Helpers.GetListQualityToMail(),
-                    out needRunAgain);
-            }
-            if (!needRunAgain)
-                Main.Logger($"Send Items to the Player {wManagerSetting.CurrentSetting.MailRecipient}");
-
-            Mail.CloseMailFrame();
-        }
-        //Mailing End
+        Helpers.CheckMailboxNearby(DrinkVendor);
 
         if (Me.Position.DistanceTo(DrinkVendor.Position) >= 10)
             GoToTask.ToPosition(DrinkVendor.Position);
@@ -234,11 +205,6 @@ public class BuyDrinkState : State
                 drinksInBags.Add(drink);
 
         return drinksInBags;
-    }
-    private void SetMailbox(DatabaseNPC NearTo)
-    {
-        GameObjects nearestMailbox = Database.GetMailbox(NearTo);
-        BestMailbox = nearestMailbox;
     }
 }
 

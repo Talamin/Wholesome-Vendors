@@ -91,12 +91,11 @@ public class Database
         Type = GameObjectType.Mailbox
     };
 
-    public static GameObjects GetMailbox(DatabaseNPC NearTo)
+    public static GameObjects GetMailboxNearby(DatabaseNPC npc)
     {
-        HashSet<int> usableZones = GetListUsableZones();
         gameobject Mailbox = DbGameObject
             .Get(MailboxFilter)
-            .Where(q => q.Position.DistanceTo(NearTo.Position) <= 300)
+            .Where(q => q.Position.DistanceTo(npc.Position) <= 300)
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
 

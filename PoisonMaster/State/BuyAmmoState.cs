@@ -7,7 +7,6 @@ using Timer = robotManager.Helpful.Timer;
 using PoisonMaster;
 using System.Threading;
 using static PluginSettings;
-using wManager;
 
 public class BuyAmmoState : State
 {
@@ -16,7 +15,6 @@ public class BuyAmmoState : State
     private WoWLocalPlayer Me = ObjectManager.Me;
     private Timer stateTimer = new Timer();
     private DatabaseNPC AmmoVendor;
-    private GameObjects BestMailbox;
     private int AmmoIdToBuy;
     private string AmmoNameToBuy;
     private int AmmoAmountToBuy = 2000;
@@ -58,7 +56,6 @@ public class BuyAmmoState : State
             stateTimer = new Timer(5000);
 
             SetAmmoAndVendor();
-            SetMailbox(AmmoVendor);
             
             if (AmmoIdToBuy > 0
                 && GetNbAmmosInBags() <= 50)
@@ -71,36 +68,8 @@ public class BuyAmmoState : State
     public override void Run()
     {
         Main.Logger($"Buying {AmmoAmountToBuy} x {AmmoNameToBuy} [{AmmoIdToBuy}] at vendor {AmmoVendor.Name}");
-        
-        //Mailing Start
-        if (wManagerSetting.CurrentSetting.UseMail && BestMailbox != null)
-        {
-            Main.Logger($"Important, before Buying we need to Mail Items");
-            if (Me.Position.DistanceTo(BestMailbox.Position) >= 10)
-                GoToTask.ToPositionAndIntecractWithGameObject(BestMailbox.Position, BestMailbox.Id);
-            if (Me.Position.DistanceTo(BestMailbox.Position) < 10)
-                if (Helpers.MailboxIsAbsent(BestMailbox))
-                    return;
 
-            bool needRunAgain = true;
-            for (int i = 7; i > 0 && needRunAgain; i--)
-            {
-                GoToTask.ToPositionAndIntecractWithGameObject(BestMailbox.Position, BestMailbox.Id);
-                Thread.Sleep(500);
-                Mail.SendMessage(wManagerSetting.CurrentSetting.MailRecipient,
-                    "Post",
-                    "Message",
-                    wManagerSetting.CurrentSetting.ForceMailList,
-                    wManagerSetting.CurrentSetting.DoNotMailList,
-                    Helpers.GetListQualityToMail(),
-                    out needRunAgain);
-            }
-            if (!needRunAgain)
-                Main.Logger($"Send Items to the Player {wManagerSetting.CurrentSetting.MailRecipient}");
-
-            Mail.CloseMailFrame();
-        }
-        //Mailing End
+        Helpers.CheckMailboxNearby(AmmoVendor);
 
         if (Me.Position.DistanceTo(AmmoVendor.Position) >= 10)
             GoToTask.ToPositionAndIntecractWithNpc(AmmoVendor.Position, AmmoVendor.Id);
@@ -165,11 +134,6 @@ public class BuyAmmoState : State
             Helpers.RemoveItemFromDoNotSellList(Database.GetItemName(bullet.Value));
     }
 
-    private void SetMailbox(DatabaseNPC NearTo)
-    {
-        GameObjects nearestMailbox = Database.GetMailbox(NearTo);
-        BestMailbox = nearestMailbox;
-    }
     private void SetAmmoAndVendor()
     {
         AmmoVendor = null;

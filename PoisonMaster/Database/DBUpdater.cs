@@ -1,7 +1,4 @@
-﻿using System;
-using System.Data.SQLite;
-using System.Net;
-using System.Threading.Tasks;
+﻿using System.Net;
 using robotManager.Helpful;
 
 namespace WoWDBUpdater
