@@ -51,7 +51,7 @@ public class Main : IPlugin
             Logger($"Launching version {version} on client {Helpers.GetWoWVersion()}");
 
             Logger($"Checking for actual Database, maybe download is needed");
-            if(File.Exists("Data/WoW335"))
+            if (File.Exists("Data/WoW335"))
             {
                 _database = new DB();
                 var databaseUpdater = new DBUpdater(_database);
@@ -59,39 +59,38 @@ public class Main : IPlugin
                 {
                     databaseUpdater.Update();
                 }
-                else
-                {
-                    Logger($"Downloading Wholesome DB");
-                    Task.Factory.StartNew(() =>
-                    {
-                        using (var client = new WebClient())
-                        {
-                            try
-                            {
-                                client.DownloadFile("https://s3-eu-west-1.amazonaws.com/wholesome.team/WoWDb335.zip",
-                                "Data/wholesome_db_temp.zip");
-                            }
-                            catch (WebException e)
-                            {
-                                LoggerError($"Failed to download/write Wholesome Database!\n" + e.Message);
-                                return false;
-                            }
-                        }
-                        return true;
-                    }).ContinueWith(task =>
-                    {
-                        Logger($"Extracting Wholesome Database.");
-                        if (task.Result)
-                        {
-                            System.IO.Compression.ZipFile.ExtractToDirectory("Data/wholesome_db_temp.zip", "Data");
-                            File.Delete("Data/wholesome_db_temp.zip");
-                        }
-                        Logger($"Successfully downloaded Wholesome Database");
-                    });
-                }
-
-
             }
+            else
+            {
+                Logger($"Downloading Wholesome DB");
+                Task.Factory.StartNew(() =>
+                {
+                    using (var client = new WebClient())
+                    {
+                        try
+                        {
+                            client.DownloadFile("https://s3-eu-west-1.amazonaws.com/wholesome.team/WoWDb335.zip",
+                            "Data/wholesome_db_temp.zip");
+                        }
+                        catch (WebException e)
+                        {
+                            LoggerError($"Failed to download/write Wholesome Database!\n" + e.Message);
+                            return false;
+                        }
+                    }
+                    return true;
+                }).ContinueWith(task =>
+                {
+                    Logger($"Extracting Wholesome Database.");
+                    if (task.Result)
+                    {
+                        System.IO.Compression.ZipFile.ExtractToDirectory("Data/wholesome_db_temp.zip", "Data");
+                        File.Delete("Data/wholesome_db_temp.zip");
+                    }
+                    Logger($"Successfully downloaded Wholesome Database");
+                });
+            }
+
             EventsLua.AttachEventLua("PLAYER_EQUIPMENT_CHANGED", m => Helpers.GetRangedWeaponType());
             FiniteStateMachineEvents.OnRunState += StateAddEventHandler;
             IsLaunched = true;
