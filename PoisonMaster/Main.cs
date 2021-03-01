@@ -9,6 +9,10 @@ using PoisonMaster;
 using System.Drawing;
 using Timer = robotManager.Helpful.Timer;
 using wManager;
+using System.IO;
+using WoWDBUpdater;
+using System.Threading.Tasks;
+using System.Net;
 
 public class Main : IPlugin
 {
@@ -28,6 +32,8 @@ public class Main : IPlugin
 
     public static string version = "0.1.18"; // Must match version in Version.txt
 
+    private DB _database;
+
     public void Initialize()
     {
         try
@@ -44,6 +50,48 @@ public class Main : IPlugin
 
             Logger($"Launching version {version} on client {Helpers.GetWoWVersion()}");
 
+            Logger($"Checking for actual Database, maybe download is needed");
+            if(File.Exists("Data/WoW335"))
+            {
+                _database = new DB();
+                var databaseUpdater = new DBUpdater(_database);
+                if (databaseUpdater.CheckUpdate())
+                {
+                    databaseUpdater.Update();
+                }
+                else
+                {
+                    Logger($"Downloading Wholesome DB");
+                    Task.Factory.StartNew(() =>
+                    {
+                        using (var client = new WebClient())
+                        {
+                            try
+                            {
+                                client.DownloadFile("https://s3-eu-west-1.amazonaws.com/wholesome.team/WoWDb335.zip",
+                                "Data/wholesome_db_temp.zip");
+                            }
+                            catch (WebException e)
+                            {
+                                LoggerError($"Failed to download/write Wholesome Database!\n" + e.Message);
+                                return false;
+                            }
+                        }
+                        return true;
+                    }).ContinueWith(task =>
+                    {
+                        Logger($"Extracting Wholesome Database.");
+                        if (task.Result)
+                        {
+                            System.IO.Compression.ZipFile.ExtractToDirectory("Data/wholesome_db_temp.zip", "Data");
+                            File.Delete("Data/wholesome_db_temp.zip");
+                        }
+                        Logger($"Successfully downloaded Wholesome Database");
+                    });
+                }
+
+
+            }
             EventsLua.AttachEventLua("PLAYER_EQUIPMENT_CHANGED", m => Helpers.GetRangedWeaponType());
             FiniteStateMachineEvents.OnRunState += StateAddEventHandler;
             IsLaunched = true;
@@ -64,6 +112,7 @@ public class Main : IPlugin
     public void Dispose()
     {
         IsLaunched = false;
+        _database?.Dispose();
         Helpers.RestoreWRobotUserSettings();
         FiniteStateMachineEvents.OnRunState -= StateAddEventHandler;
         _pulseThread.Dispose();
