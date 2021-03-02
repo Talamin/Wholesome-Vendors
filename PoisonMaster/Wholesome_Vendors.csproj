@@ -34,6 +34,15 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Zero_conf|AnyCPU'">
+    <OutputPath>F:\WoW\WoW Wotlk\WRobot WOTLK\Plugins\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Costura, Version=5.0.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Costura.Fody.5.0.2\lib\netstandard1.0\Costura.dll</HintPath>
@@ -245,7 +254,7 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(ProjectDir)\bin\$(Configuration)\$(TargetFileName)" "$(SolutionDir)\PoisonMaster\Compiled\Wholesome_Vendors.dll"</PostBuildEvent>
+    <PostBuildEvent>copy /Y "$(TargetDir)\$(ProjectName).dll" "$(SolutionDir)\PoisonMaster\Compiled\Wholesome_Vendors.dll"</PostBuildEvent>
   </PropertyGroup>
   <Target Name="EmbedSQLiteInteropFiles" BeforeTargets="ResolveReferences">
     <ItemGroup>
