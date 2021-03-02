@@ -37,7 +37,8 @@ public class TrainingState : State
             stateTimer = new Timer(5000);
 
             if ((ContinentId)Usefuls.ContinentId == ContinentId.Northrend
-                || Helpers.PlayerIsInOutland())
+                || Helpers.PlayerIsInOutland()
+                || (ContinentId)Usefuls.ContinentId == ContinentId.Azeroth && ObjectManager.Me.WowClass == WoWClass.Druid)
                 return false;
 
             TrainerVendor = Database.GetTrainer();
