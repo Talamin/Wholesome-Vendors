@@ -17,7 +17,7 @@ public class BuyAmmoState : State
     private DatabaseNPC AmmoVendor;
     private int AmmoIdToBuy;
     private string AmmoNameToBuy;
-    private int AmmoAmountToBuy = 2000;
+    private int AmmoAmountToBuy = CurrentSetting.AutobuyAmmunitionAmount;
 
     private readonly Dictionary<int, int> ArrowDictionary = new Dictionary<int, int>
     {

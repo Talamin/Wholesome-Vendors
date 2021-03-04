@@ -40,6 +40,13 @@ public class PluginSettings : Settings
     public bool AutobuyAmmunition { get; set; }
 
     [Setting]
+    [DefaultValue(2000)]
+    [Category("Buying")]
+    [DisplayName("Buy Ammunition Ammount")]
+    [Description("Set the Ammount to Buy")]
+    public int AutobuyAmmunitionAmount { get; set; }
+
+    [Setting]
     [DefaultValue(true)]
     [Category("SellRepair")]
     [DisplayName("Sell")]
@@ -79,6 +86,7 @@ public class PluginSettings : Settings
         AutoBuyWater = true;
         AllowAutobuyPoison = true;
         AutobuyAmmunition = true;
+        AutobuyAmmunitionAmount = 2000;
         AutoRepair = true;
         AllowAutoSell = true;
         AutoTrain = true;
