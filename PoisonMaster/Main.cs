@@ -30,7 +30,7 @@ public class Main : IPlugin
     public static State repairState = new RepairState();
     public static State trainingState = new TrainingState();
 
-    public static string version = "0.2.6"; // Must match version in Version.txt
+    public static string version = "0.2.8"; // Must match version in Version.txt
 
     private DB _database;
 
@@ -146,7 +146,6 @@ public class Main : IPlugin
             Helpers.AddState(engine, repairState, "To Town");
             Helpers.AddState(engine, trainingState, "Trainers");
             engine.RemoveStateByName("To Town");
-            //engine.States.ForEach(s => Logger($"{s.Priority} -> {s.DisplayName}"));
         }
     }
 

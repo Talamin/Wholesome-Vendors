@@ -18,7 +18,7 @@ public class BuyFoodState : State
     {
         { 75, new HashSet<int>{ 35953 } }, // Mead Basted Caribouhl au
         { 65, new HashSet<int>{ 29451, 29449, 29450, 29448, 29452, 29453, 33454, 33443 } }, // Clefthoof Ribs
-        { 55, new HashSet<int>{ 27854, 27855, 27856, 27857, 27858, 27859 } }, // Smoked Talbuk Venison -- make sure this is only used in TBC
+        { 55, new HashSet<int>{ 27854, 27855, 27856, 27857, 27858, 27859 } }, // Smoked Talbuk Venison 
         { 45, new HashSet<int>{ 8952, 8950, 8932, 8948, 8957} }, // Roasted Quail
         { 35, new HashSet<int>{ 4599, 4601, 3927, 4608, 6887 } }, // Cured Ham Steak
         { 25, new HashSet<int>{ 3771, 4544, 1707, 4607, 4594, 4539 } }, // Wild Hog Shank
@@ -134,7 +134,6 @@ public class BuyFoodState : State
         {
             foreach (int foodId in foodEntry.Value)
             {
-                //Main.Logger($"Checking {Database.GetItemName(foodId)} [{foodId}]");
                 DatabaseNPC vendorWithThisFood = Database.GetFoodVendor(new HashSet<int>() { foodId });
 
                 // Skip to lower tier food if we don't have enough money for this tier
@@ -145,7 +144,6 @@ public class BuyFoodState : State
                 {
                     if (FoodVendor == null || vendorWithThisFood.Position.DistanceTo2D(Me.Position) < FoodVendor.Position.DistanceTo2D(Me.Position))
                     {
-                        //Main.Logger($"{vendorWithThisFood.Name} sells {Database.GetItemName(foodId)}");
                         FoodIdToBuy = foodId;
                         FoodNameToBuy = Database.GetItemName(foodId);
                         FoodVendor = vendorWithThisFood;

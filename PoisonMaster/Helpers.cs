@@ -90,37 +90,7 @@ namespace PoisonMaster
                 Memory.WowMemory.UnlockFrame();
             }
         }
-        /*
-        public static bool OutOfFood()
-        {
-            var allFoodAmount = Bag.GetBagItem()
-                .Where(
-                    i => PMConsumableType.Food.ToString() == ItemsManager.GetItemSpell(i.Name) &&
-                         i.GetItemInfo.ItemMinLevel <= ObjectManager.Me.Level)
-                .Select(i => ItemsManager.GetItemCountById((uint)i.Entry))
-                .Aggregate(0, (i, i2) => i + i2);
 
-            if (allFoodAmount < 1 && wManagerSetting.CurrentSetting.FoodAmount > 0)
-                return true;
-
-            return false;
-        }
-
-        public static bool OutOfDrink()
-        {
-            var allDrinkAmount = Bag.GetBagItem()
-                .Where(
-                    i => PMConsumableType.Drink.ToString() == ItemsManager.GetItemSpell(i.Name) 
-                    && i.GetItemInfo.ItemMinLevel <= ObjectManager.Me.Level)
-                .Select(i => ItemsManager.GetItemCountById((uint)i.Entry))
-                .Aggregate(0, (i, i2) => i + i2);
-
-            if (allDrinkAmount < 1 && wManagerSetting.CurrentSetting.DrinkAmount > 0)
-                return true;
-
-            return false;
-        }
-        */
         public static string GetRangedWeaponType()
         {
             uint myRangedWeapon = ObjectManager.Me.GetEquipedItemBySlot(InventorySlot.INVSLOT_RANGED);
@@ -202,21 +172,6 @@ namespace PoisonMaster
                 .FirstOrDefault();
 
             return bestConsumable == null ? null : bestConsumable.Name;
-        }
-
-        public static string GetBestFromVendor(PMConsumableType consumableType)
-        {
-            // this works only when you had item in the bag in current wow session because http://wow.gamepedia.com/API_GetItemSpell seem to use wow cache. 
-            List<string> itemNames = GetVendorItemList();
-            string bestConsumable = itemNames
-                .Where(i => i != null
-                    && !string.IsNullOrWhiteSpace(i)
-                    && ItemsManager.GetItemSpell(i) == SpellListManager.SpellNameInGameByName(consumableType.ToString())
-                    && new ItemInfo(i).ItemMinLevel <= ObjectManager.Me.Level)
-                .OrderByDescending(i => new ItemInfo(i).ItemLevel)
-                .FirstOrDefault();
-
-            return bestConsumable == null ? null : bestConsumable;
         }
 
         public static List<string> GetVendorItemList()
