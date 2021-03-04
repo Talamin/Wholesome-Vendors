@@ -146,7 +146,6 @@ public class Main : IPlugin
             Helpers.AddState(engine, repairState, "To Town");
             Helpers.AddState(engine, trainingState, "Trainers");
             engine.RemoveStateByName("To Town");
-            //engine.States.ForEach(s => Logger($"{s.Priority} -> {s.DisplayName}"));
         }
     }
 

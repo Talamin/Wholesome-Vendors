@@ -24,9 +24,9 @@ public class BuyDrinkState : State
     private static readonly Dictionary<int, HashSet<int>> WaterDictionary = new Dictionary<int, HashSet<int>>
         {
             { 75, new HashSet<int>{ 33445, 41731, 42777 } },
-            { 70, new HashSet<int>{ 33444 } }, // Pungent Seal Whey -- make sure this is only used in WotLK
+            { 70, new HashSet<int>{ 33444 } }, // Pungent Seal Whey 
             { 65, new HashSet<int>{ 27860, 35954 } }, // Purified Draenic Water
-            { 55, new HashSet<int>{ 28399 } }, // Filtered Draenic Water -- make sure this is only used in TBC
+            { 55, new HashSet<int>{ 28399 } }, // Filtered Draenic Water 
             { 45, new HashSet<int>{ 8766 } }, // Morning Glory Dew
             { 35, new HashSet<int>{ 1645 } }, // Moonberry Juice
             { 25, new HashSet<int>{ 1708 } }, // Sweet Nectar
@@ -50,7 +50,7 @@ public class BuyDrinkState : State
 
             stateTimer = new Timer(5000);
 
-            if (Me.Level > 10) // to be moved
+            if (Me.Level > 10) 
                 NPCBlackList.AddNPCListToBlacklist(new[] { 5871, 8307, 3489 });
 
             SetDrinkAndVendor();
@@ -138,7 +138,6 @@ public class BuyDrinkState : State
         {
             foreach (int drinkId in drinkEntry.Value)
             {
-                //Main.Logger($"Checking {Database.GetItemName(drinkId)} [{drinkId}]");
                 DatabaseNPC vendorWithThisDrink = Database.GetDrinkVendor(new HashSet<int>() { drinkId });
 
                 // Skip to lower tier drink if we don't have enough money for this tier
@@ -149,7 +148,6 @@ public class BuyDrinkState : State
                 {
                     if (DrinkVendor == null || vendorWithThisDrink.Position.DistanceTo2D(Me.Position) < DrinkVendor.Position.DistanceTo2D(Me.Position))
                     {
-                        //Main.Logger($"{vendorWithThisDrink.Name} sells {Database.GetItemName(drinkId)}");
                         DrinkIdToBuy = drinkId;
                         DrinkNameToBuy = Database.GetItemName(drinkId);
                         DrinkVendor = vendorWithThisDrink;
@@ -193,7 +191,6 @@ public class BuyDrinkState : State
     {
         int nbDrinksInBags = 0;
         GetListDrinksFromBags().ForEach(f => nbDrinksInBags += ItemsManager.GetItemCountById((uint)f));
-        //Main.Logger($"We have {nbDrinksInBags} drink items in our bags");
         return nbDrinksInBags;
     }
 
