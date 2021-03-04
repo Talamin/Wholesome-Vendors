@@ -32,6 +32,7 @@ public static class NPCBlackList
         5134, //NPC died
         543,  //unable to generate path
         198,   //starter trainer without all spells or use minLevel in filter for this
+        3771, //Vendor inside Alliance, but it´s Horde
         7952,
         7772, //bugged Vendor
         23533,
