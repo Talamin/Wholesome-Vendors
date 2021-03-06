@@ -26,7 +26,7 @@ public class BuyDrinkState : State
             { 75, new HashSet<int>{ 33445, 41731, 42777 } },
             { 70, new HashSet<int>{ 33444 } }, // Pungent Seal Whey 
             { 65, new HashSet<int>{ 27860, 35954 } }, // Purified Draenic Water
-            { 55, new HashSet<int>{ 28399 } }, // Filtered Draenic Water 
+            { 60, new HashSet<int>{ 28399 } }, // Filtered Draenic Water 
             { 45, new HashSet<int>{ 8766 } }, // Morning Glory Dew
             { 35, new HashSet<int>{ 1645 } }, // Moonberry Juice
             { 25, new HashSet<int>{ 1708 } }, // Sweet Nectar
