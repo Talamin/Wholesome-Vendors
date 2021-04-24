@@ -19,6 +19,7 @@ namespace PoisonMaster
     public class Helpers
     {
         private static bool saveWRobotSettingRepair;
+        private static bool saveWRobotSettingSell;
 
         public static int GetMoney => (int)ObjectManager.Me.GetMoneyCopper;
 
@@ -259,6 +260,9 @@ namespace PoisonMaster
 
         public static void SellItems(DatabaseNPC vendor)
         {
+            if (!CurrentSetting.AllowAutoSell)
+                return;
+
             Main.Logger("Selling items");
             List<WoWItem> bagItems = Bag.GetBagItem();
             int nbItemsInBags = bagItems.Count;
@@ -290,10 +294,16 @@ namespace PoisonMaster
 
         public static void OverrideWRobotUserSettings()
         {
-            if (PluginSettings.CurrentSetting.AutoRepair)
+            if (CurrentSetting.AutoRepair)
             {
                 saveWRobotSettingRepair = wManagerSetting.CurrentSetting.Repair; // save user setting
                 wManagerSetting.CurrentSetting.Repair = false; // disable user setting
+            }
+
+            if (CurrentSetting.AllowAutoSell)
+            {
+                saveWRobotSettingSell = wManagerSetting.CurrentSetting.Selling; // save user setting
+                wManagerSetting.CurrentSetting.Selling = false; // disable user setting
             }
 
             wManagerSetting.CurrentSetting.Save();
@@ -302,6 +312,7 @@ namespace PoisonMaster
         public static void RestoreWRobotUserSettings()
         {
             wManagerSetting.CurrentSetting.Repair = saveWRobotSettingRepair;
+            wManagerSetting.CurrentSetting.Selling = saveWRobotSettingSell;
             wManagerSetting.CurrentSetting.Save();
         }
 

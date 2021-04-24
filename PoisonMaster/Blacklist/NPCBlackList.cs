@@ -29,6 +29,7 @@ public static class NPCBlackList
 
     public static readonly HashSet<int> myBlacklist = new HashSet<int>
     {
+        15124, // Vendor in Refuge Pointe, unreachable for Horde
         5134, //NPC died
         543,  //unable to generate path
         198,   //starter trainer without all spells or use minLevel in filter for this
