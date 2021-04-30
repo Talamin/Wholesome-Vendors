@@ -29,6 +29,8 @@ public static class NPCBlackList
 
     public static readonly HashSet<int> myBlacklist = new HashSet<int>
     {
+        14961, // Neutral vendor in Alliance camp
+        4085, // Nizzik in StoneTalon, hard to reach
         15124, // Vendor in Refuge Pointe, unreachable for Horde
         5134, //NPC died
         543,  //unable to generate path
