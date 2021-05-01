@@ -29,16 +29,17 @@ public static class NPCBlackList
 
     public static readonly HashSet<int> myBlacklist = new HashSet<int>
     {
+        3093, // Grod from TB, detected in Tirisfal Glades
         8305, // Kixxle
         14961, // Neutral vendor in Alliance camp
         4085, // Nizzik in StoneTalon, hard to reach
         15124, // Vendor in Refuge Pointe, unreachable for Horde
-        5134, //NPC died
-        543,  //unable to generate path
-        198,   //starter trainer without all spells or use minLevel in filter for this
-        3771, //Vendor inside Alliance, but it´s Horde
+        5134, // NPC died
+        543,  // unable to generate path
+        198,   // starter trainer without all spells or use minLevel in filter for this
+        3771, // Vendor inside Alliance, but it´s Horde
         7952,
-        7772, //bugged Vendor
+        7772, // bugged Vendor
         23533,
         23603,
         23604,
@@ -46,11 +47,11 @@ public static class NPCBlackList
         24495,
         24501,
         26309,
-        26328, //not prefered           
-        26325, //bugged Hunter Trainer
+        26328, // not prefered           
+        26325, // bugged Hunter Trainer
         26332,
         26724,
-        26758, //bugged warlocktrainer
+        26758, // bugged warlocktrainer
         26738,
         26739,
         26740,

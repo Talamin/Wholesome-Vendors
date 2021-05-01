@@ -178,7 +178,7 @@ public class BuyAmmoState : State
         int nbAmmosInBags = 0;
         foreach (int arrow in GetListUsableAmmo())
             nbAmmosInBags += ItemsManager.GetItemCountById((uint)arrow);
-        //Main.Logger($"We have {nbAmmosInBags} ammo items in our bags");
+
         return nbAmmosInBags;
     }
 }
