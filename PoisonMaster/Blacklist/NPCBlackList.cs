@@ -29,6 +29,8 @@ public static class NPCBlackList
 
     public static readonly HashSet<int> myBlacklist = new HashSet<int>
     {
+        10857, // Neutral in alliance camp
+        34685, // event NPC
         3093, // Grod from TB, detected in Tirisfal Glades
         8305, // Kixxle
         14961, // Neutral vendor in Alliance camp
