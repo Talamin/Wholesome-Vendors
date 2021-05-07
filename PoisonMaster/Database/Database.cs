@@ -118,7 +118,7 @@ public class Database
             .FirstOrDefault();
 
         if (ammoVendor == null)
-            Main.Logger("Couldn't find any Drink Vendor");
+            Main.Logger("Couldn't find any Ammo Vendor");
 
         return ammoVendor == null ? null : new DatabaseNPC(ammoVendor);
     }
@@ -152,6 +152,9 @@ public class Database
                 && !wManagerSetting.IsBlackListedNpcEntry(q.id))
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
+
+        if (foodVendor == null)
+            Main.Logger("Couldn't find any Food Vendor");
 
         return foodVendor == null ? null : new DatabaseNPC(foodVendor);
     }
