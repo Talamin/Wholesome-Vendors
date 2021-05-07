@@ -30,7 +30,7 @@ public class Main : IPlugin
     public static State repairState = new RepairState();
     public static State trainingState = new TrainingState();
 
-    public static string version = "0.2.87"; // Must match version in Version.txt
+    public static string version = "0.2.88"; // Must match version in Version.txt
 
     private DB _database;
 
