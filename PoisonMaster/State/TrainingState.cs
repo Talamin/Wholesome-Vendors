@@ -15,12 +15,13 @@ public class TrainingState : State
 
     private DatabaseNPC TrainerVendor;
     private Timer stateTimer = new Timer();
-    private bool NeedToTrain => leveltoTrain.Exists(l => (int)ObjectManager.Me.Level >= l && PluginSettings.CurrentSetting.LastLevelTrained < l);
 
-    private List<int> leveltoTrain = new List<int>
-    {2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28,
-        30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56,
-        58, 60, 62, 64, 66, 68, 70, 72, 74, 76, 78, 80 };
+    private List<int> leveltoTrain => PluginSettings.CurrentSetting.TrainLevels.Count > 0 ? PluginSettings.CurrentSetting.TrainLevels : new List<int>
+        {2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28,
+            30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56,
+            58, 60, 62, 64, 66, 68, 70, 72, 74, 76, 78, 80 };
+
+    private int LevelToTrain => leveltoTrain.Find(l => (int)ObjectManager.Me.Level >= l && PluginSettings.CurrentSetting.LastLevelTrained < l);
 
     public override bool NeedToRun
     {
@@ -29,7 +30,7 @@ public class TrainingState : State
             if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
                 || !Main.IsLaunched
                 || !stateTimer.IsReady
-                || !NeedToTrain
+                || LevelToTrain <= 0
                 || !PluginSettings.CurrentSetting.AutoTrain
                 || ObjectManager.Me.IsOnTaxi)
                 return false;

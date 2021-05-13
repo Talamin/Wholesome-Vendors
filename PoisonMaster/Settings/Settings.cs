@@ -43,7 +43,7 @@ public class PluginSettings : Settings
     [DefaultValue(2000)]
     [Category("Buying")]
     [DisplayName("Buy Ammunition Ammount")]
-    [Description("Set the Ammount to Buy")]
+    [Description("Set the Amount to Buy")]
     public int AutobuyAmmunitionAmount { get; set; }
 
     [Setting]
@@ -62,10 +62,16 @@ public class PluginSettings : Settings
 
     [Setting]
     [DefaultValue(true)]
-    [Category("Train")]
+    [Category("Training")]
     [DisplayName("Training")]
     [Description("Allow Autotraining")]
     public bool AutoTrain { get; set; }
+
+    [Setting]
+    [Category("Training")]
+    [DisplayName("Training levels")]
+    [Description("Set at which levels you want to train. Leave empty if you want to train every 2 levels.")]
+    public List<int> TrainLevels { get; set; }
 
     //[Setting]
     //[DefaultValue(false)]
@@ -92,6 +98,8 @@ public class PluginSettings : Settings
         AutoTrain = true;
         LastUpdateDate = 0;
         LastLevelTrained = (int)ObjectManager.Me.Level;
+
+        TrainLevels = new List<int> {};
 
         VendorItems = new List<VendorItem>();
     }
