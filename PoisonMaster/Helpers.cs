@@ -10,7 +10,6 @@ using wManager.Wow.ObjectManager;
 using static PoisonMaster.PMEnums;
 using robotManager.Products;
 using System.Collections.Generic;
-using wManager.Wow.Class;
 using wManager.Wow.Bot.Tasks;
 using static PluginSettings;
 
@@ -311,8 +310,12 @@ namespace PoisonMaster
 
         public static void RestoreWRobotUserSettings()
         {
-            wManagerSetting.CurrentSetting.Repair = saveWRobotSettingRepair;
-            wManagerSetting.CurrentSetting.Selling = saveWRobotSettingSell;
+            if (CurrentSetting.AutoRepair)
+                wManagerSetting.CurrentSetting.Repair = saveWRobotSettingRepair;
+
+            if (CurrentSetting.AllowAutoSell)
+                wManagerSetting.CurrentSetting.Selling = saveWRobotSettingSell;
+
             wManagerSetting.CurrentSetting.Save();
         }
 
