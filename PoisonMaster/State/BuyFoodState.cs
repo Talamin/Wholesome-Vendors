@@ -49,9 +49,6 @@ public class BuyFoodState : State
 
             StateTimer = new Timer(5000);
 
-            if (Me.Level > 10) // to be moved
-                NPCBlackList.AddNPCListToBlacklist(new[] { 5871, 8307, 3489 });
-
             SetFoodAndVendor();
 
             if (FoodIdToBuy > 0

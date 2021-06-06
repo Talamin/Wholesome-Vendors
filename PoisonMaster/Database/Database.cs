@@ -15,7 +15,7 @@ public class Database
     private static CreatureFilter AmmoVendorFilter = new CreatureFilter
     {
         ContinentId = (ContinentId)Usefuls.ContinentId,
-        ExcludeIds = NPCBlackList.myBlacklist,
+        ExcludeIds = NPCBlackList.SessionBlacklist,
         Faction = new Faction(ObjectManager.Me.Faction, ReactionType.Friendly),
         NpcFlags = new NpcFlag(Operator.Or,
         new List<UnitNPCFlags>
@@ -27,7 +27,7 @@ public class Database
     private static CreatureFilter FoodVendorFilter = new CreatureFilter
     {
         ContinentId = (ContinentId)Usefuls.ContinentId,
-        ExcludeIds = NPCBlackList.myBlacklist,
+        ExcludeIds = NPCBlackList.SessionBlacklist,
         Faction = new Faction(ObjectManager.Me.Faction, ReactionType.Friendly),
         NpcFlags = new NpcFlag(Operator.Or,
             new List<UnitNPCFlags>
@@ -38,7 +38,7 @@ public class Database
 
     private static CreatureFilter PoisonVendorFilter = new CreatureFilter
     {
-        ExcludeIds = NPCBlackList.myBlacklist,
+        ExcludeIds = NPCBlackList.SessionBlacklist,
         ContinentId = (ContinentId)Usefuls.ContinentId,
         Faction = new Faction(ObjectManager.Me.Faction, ReactionType.Friendly),
         NpcFlags = new NpcFlag(Operator.Or,
@@ -51,7 +51,7 @@ public class Database
     private static CreatureFilter RepairVendorFilter = new CreatureFilter
     {
         ContinentId = (ContinentId)Usefuls.ContinentId,
-        ExcludeIds = NPCBlackList.myBlacklist,
+        ExcludeIds = NPCBlackList.SessionBlacklist,
         Faction = new Faction(ObjectManager.Me.Faction, ReactionType.Friendly),
         NpcFlags = new NpcFlag(Operator.Or,
             new List<UnitNPCFlags>
@@ -63,7 +63,7 @@ public class Database
     private static CreatureFilter SellVendorFilter = new CreatureFilter
     {
         ContinentId = (ContinentId)Usefuls.ContinentId,
-        ExcludeIds = NPCBlackList.myBlacklist,
+        ExcludeIds = NPCBlackList.SessionBlacklist,
         Faction = new Faction(ObjectManager.Me.Faction, ReactionType.Friendly),
         NpcFlags = new NpcFlag(Operator.Or,
             new List<UnitNPCFlags>
@@ -75,7 +75,7 @@ public class Database
     private static CreatureFilter TrainerFilter = new CreatureFilter
     {
         ContinentId = (ContinentId)Usefuls.ContinentId,
-        ExcludeIds = NPCBlackList.myBlacklist,
+        ExcludeIds = NPCBlackList.SessionBlacklist,
         Faction = new Faction(ObjectManager.Me.Faction, ReactionType.Friendly),
         NpcFlags = new NpcFlag(Operator.Or,
             new List<UnitNPCFlags>
@@ -87,7 +87,7 @@ public class Database
     private static GameObjectFilter MailboxFilter = new GameObjectFilter
     {
         ContinentId = (ContinentId)Usefuls.ContinentId,
-        ExcludeIds = NPCBlackList.myBlacklist,
+        ExcludeIds = NPCBlackList.SessionBlacklist,
         Type = GameObjectType.Mailbox
     };
 

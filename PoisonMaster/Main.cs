@@ -30,7 +30,7 @@ public class Main : IPlugin
     public static State repairState = new RepairState();
     public static State trainingState = new TrainingState();
 
-    public static string version = "0.2.91"; // Must match version in Version.txt
+    public static string version = "0.2.92"; // Must match version in Version.txt
 
     private DB _database;
 
@@ -40,6 +40,7 @@ public class Main : IPlugin
         {
             PluginSettings.Load();
             Helpers.OverrideWRobotUserSettings();
+            NPCBlackList.AddNPCListToBlacklist();
 
             if (AutoUpdater.CheckUpdate(version))
             {

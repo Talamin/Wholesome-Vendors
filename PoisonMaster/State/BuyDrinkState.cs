@@ -50,9 +50,6 @@ public class BuyDrinkState : State
 
             stateTimer = new Timer(5000);
 
-            if (Me.Level > 10) 
-                NPCBlackList.AddNPCListToBlacklist(new[] { 5871, 8307, 3489 });
-
             SetDrinkAndVendor();
 
             if (DrinkIdToBuy > 0

@@ -1,45 +1,57 @@
-﻿using System.Collections.Generic;
+﻿using PoisonMaster;
+using System.Collections.Generic;
+using wManager.Wow.ObjectManager;
 
 public static class NPCBlackList
 {
-    public static void AddNPCListToBlacklist(IEnumerable<int> ids)
+    public static void AddNPCListToBlacklist()
     {
-        foreach (var id in myBlacklist)
-            AddNPCToBlacklist(id);
+        if (Helpers.IsHorde())
+            AddNPCToBlacklist(hordeBlacklist);
+        else
+            AddNPCToBlacklist(allianceBlacklist);
+
+        if (ObjectManager.Me.Level > 10)
+            AddNPCToBlacklist(new HashSet<int> { 5871, 8307, 3489 }); // starter zone vendors
     }
 
     public static void AddNPCToBlacklist(int npcId)
     {
-        if (!myBlacklist.Contains(npcId))
+        if (!SessionBlacklist.Contains(npcId))
         {
-            myBlacklist.Add(npcId);
+            SessionBlacklist.Add(npcId);
             Main.Logger("Added to NPC blacklist: " + npcId);
         }
     }
 
-    public static readonly HashSet<int> OnlyFoodBlacklist = new HashSet<int>
+    public static void AddNPCToBlacklist(HashSet<int> npcIds)
     {
-            3312, //only Meat Vendor
-            3342, // only food Vendor
-            3329, //only Mushrooms
-            3368, //only meat
-            3547, //Mushrooms only
-            3480, // Only Bread   
-    };
+        foreach (int id in npcIds)
+            AddNPCToBlacklist(id);
+    }
 
-    public static readonly HashSet<int> myBlacklist = new HashSet<int>
+    private static readonly HashSet<int> hordeBlacklist = new HashSet<int>
     {
         10857, // Neutral in alliance camp
-        34685, // event NPC
-        3093, // Grod from TB, detected in Tirisfal Glades
         8305, // Kixxle
         14961, // Neutral vendor in Alliance camp
-        4085, // Nizzik in StoneTalon, hard to reach
         15124, // Vendor in Refuge Pointe, unreachable for Horde
+        3771, // Vendor inside Alliance, but it´s Horde
+    };
+
+    private static readonly HashSet<int> allianceBlacklist = new HashSet<int>
+    {
+
+    };
+
+    public static readonly HashSet<int> SessionBlacklist = new HashSet<int>
+    {
+        34685, // event NPC
+        3093, // Grod from TB, detected in Tirisfal Glades
+        4085, // Nizzik in StoneTalon, hard to reach
         5134, // NPC died
         543,  // unable to generate path
         198,   // starter trainer without all spells or use minLevel in filter for this
-        3771, // Vendor inside Alliance, but it´s Horde
         7952,
         7772, // bugged Vendor
         23533,
@@ -82,5 +94,15 @@ public static class NPCBlackList
         2489, // Portal Trainer
         4165, // Portal Trainer
         5783,
+    };
+
+    public static readonly HashSet<int> OnlyFoodBlacklist = new HashSet<int>
+    {
+        3312, //only Meat Vendor
+        3342, // only food Vendor
+        3329, //only Mushrooms
+        3368, //only meat
+        3547, //Mushrooms only
+        3480, // Only Bread   
     };
 }

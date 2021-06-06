@@ -21,6 +21,13 @@ namespace PoisonMaster
         private static bool saveWRobotSettingSell;
 
         public static int GetMoney => (int)ObjectManager.Me.GetMoneyCopper;
+        
+        public static bool IsHorde()
+        {
+            return ObjectManager.Me.Faction == (uint)PlayerFactions.Orc || ObjectManager.Me.Faction == (uint)PlayerFactions.Tauren
+                || ObjectManager.Me.Faction == (uint)PlayerFactions.Undead || ObjectManager.Me.Faction == (uint)PlayerFactions.BloodElf
+                || ObjectManager.Me.Faction == (uint)PlayerFactions.Troll;
+        }
 
         public static void AddState(Engine engine, State state, string replace)
         {
