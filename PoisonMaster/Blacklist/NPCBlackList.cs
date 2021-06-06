@@ -41,7 +41,7 @@ public static class NPCBlackList
 
     private static readonly HashSet<int> allianceBlacklist = new HashSet<int>
     {
-
+        15125, // Kosco Copperpinch
     };
 
     public static readonly HashSet<int> SessionBlacklist = new HashSet<int>
