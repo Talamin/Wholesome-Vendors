@@ -53,6 +53,9 @@ public class BuyAmmoState : State
                 || Me.IsOnTaxi)
                 return false;
 
+            if (Usefuls.ContinentId != 0 || Usefuls.ContinentId != 1 || Usefuls.ContinentId != 530 || Usefuls.ContinentId != 1571)
+                return false;
+
             stateTimer = new Timer(5000);
 
             SetAmmoAndVendor();
