@@ -47,7 +47,7 @@ public class BuyFoodState : State
                 || Me.IsOnTaxi)
                 return false;
 
-            if (Usefuls.ContinentId != 0 || Usefuls.ContinentId != 1 || Usefuls.ContinentId != 530 || Usefuls.ContinentId != 1571)
+            if (Usefuls.ContinentId != 0 || Usefuls.ContinentId != 1 || Usefuls.ContinentId != 530 || Usefuls.ContinentId != 571)
                 return false;
 
             StateTimer = new Timer(5000);
