@@ -20,7 +20,7 @@ public static class NPCBlackList
         if (!SessionBlacklist.Contains(npcId))
         {
             SessionBlacklist.Add(npcId);
-            Main.Logger("Added to NPC blacklist: " + npcId);
+            //Main.Logger("Added to NPC blacklist: " + npcId);
         }
     }
 
@@ -37,6 +37,7 @@ public static class NPCBlackList
         14961, // Neutral vendor in Alliance camp
         15124, // Vendor in Refuge Pointe, unreachable for Horde
         3771, // Vendor inside Alliance, but it´s Horde
+        14963, // Gapp Jinglepocket, Neutral in Ashenvale
     };
 
     private static readonly HashSet<int> allianceBlacklist = new HashSet<int>
