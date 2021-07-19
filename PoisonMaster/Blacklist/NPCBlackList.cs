@@ -47,6 +47,7 @@ public static class NPCBlackList
 
     public static readonly HashSet<int> SessionBlacklist = new HashSet<int>
     {
+        3180, // Dark Iron Entrepreneur in Wetlands
         34685, // event NPC
         3093, // Grod from TB, detected in Tirisfal Glades
         4085, // Nizzik in StoneTalon, hard to reach
