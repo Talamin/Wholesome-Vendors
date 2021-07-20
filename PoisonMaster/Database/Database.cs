@@ -14,7 +14,6 @@ public class Database
 {
     private static CreatureFilter AmmoVendorFilter = new CreatureFilter
     {
-        ContinentId = (ContinentId)Usefuls.ContinentId,
         ExcludeIds = NPCBlackList.SessionBlacklist,
         Faction = new Faction(ObjectManager.Me.Faction, ReactionType.Friendly),
         NpcFlags = new NpcFlag(Operator.Or,
@@ -26,7 +25,6 @@ public class Database
 
     private static CreatureFilter FoodVendorFilter = new CreatureFilter
     {
-        ContinentId = (ContinentId)Usefuls.ContinentId,
         ExcludeIds = NPCBlackList.SessionBlacklist,
         Faction = new Faction(ObjectManager.Me.Faction, ReactionType.Friendly),
         NpcFlags = new NpcFlag(Operator.Or,
@@ -39,7 +37,6 @@ public class Database
     private static CreatureFilter PoisonVendorFilter = new CreatureFilter
     {
         ExcludeIds = NPCBlackList.SessionBlacklist,
-        ContinentId = (ContinentId)Usefuls.ContinentId,
         Faction = new Faction(ObjectManager.Me.Faction, ReactionType.Friendly),
         NpcFlags = new NpcFlag(Operator.Or,
             new List<UnitNPCFlags>
@@ -50,7 +47,6 @@ public class Database
 
     private static CreatureFilter RepairVendorFilter = new CreatureFilter
     {
-        ContinentId = (ContinentId)Usefuls.ContinentId,
         ExcludeIds = NPCBlackList.SessionBlacklist,
         Faction = new Faction(ObjectManager.Me.Faction, ReactionType.Friendly),
         NpcFlags = new NpcFlag(Operator.Or,
@@ -62,7 +58,6 @@ public class Database
 
     private static CreatureFilter SellVendorFilter = new CreatureFilter
     {
-        ContinentId = (ContinentId)Usefuls.ContinentId,
         ExcludeIds = NPCBlackList.SessionBlacklist,
         Faction = new Faction(ObjectManager.Me.Faction, ReactionType.Friendly),
         NpcFlags = new NpcFlag(Operator.Or,
@@ -74,7 +69,6 @@ public class Database
 
     private static CreatureFilter TrainerFilter = new CreatureFilter
     {
-        ContinentId = (ContinentId)Usefuls.ContinentId,
         ExcludeIds = NPCBlackList.SessionBlacklist,
         Faction = new Faction(ObjectManager.Me.Faction, ReactionType.Friendly),
         NpcFlags = new NpcFlag(Operator.Or,
@@ -86,13 +80,13 @@ public class Database
 
     private static GameObjectFilter MailboxFilter = new GameObjectFilter
     {
-        ContinentId = (ContinentId)Usefuls.ContinentId,
         ExcludeIds = NPCBlackList.SessionBlacklist,
         Type = GameObjectType.Mailbox
     };
 
     public static GameObjects GetMailboxNearby(DatabaseNPC npc)
     {
+        MailboxFilter.ContinentId = (ContinentId)Usefuls.ContinentId;
         gameobject Mailbox = DbGameObject
             .Get(MailboxFilter)
             .Where(q => q.Position.DistanceTo(npc.Position) <= 300)
@@ -107,6 +101,7 @@ public class Database
 
     public static DatabaseNPC GetAmmoVendor(HashSet<int> usableAmmo)
     {
+        AmmoVendorFilter.ContinentId = (ContinentId)Usefuls.ContinentId;
         AmmoVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usableAmmo);
         HashSet<int> usableZones = GetListUsableZones();
 
@@ -125,6 +120,7 @@ public class Database
 
     public static DatabaseNPC GetDrinkVendor(HashSet<int> usableDrink)
     {
+        FoodVendorFilter.ContinentId = (ContinentId)Usefuls.ContinentId;
         HashSet<int> usableZones = GetListUsableZones();
         FoodVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usableDrink);
         creature drinkVendor = DbCreature
@@ -143,6 +139,7 @@ public class Database
 
     public static DatabaseNPC GetFoodVendor(HashSet<int> usableFood)
     {
+        FoodVendorFilter.ContinentId = (ContinentId)Usefuls.ContinentId;
         HashSet<int> usableZones = GetListUsableZones();
         FoodVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usableFood);
 
@@ -158,8 +155,10 @@ public class Database
 
         return foodVendor == null ? null : new DatabaseNPC(foodVendor);
     }
+
     public static DatabaseNPC GetPoisonVendor(HashSet<int> usablePoison)
     {
+        PoisonVendorFilter.ContinentId = (ContinentId)Usefuls.ContinentId;
         HashSet<int> usableZones = GetListUsableZones();
         PoisonVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usablePoison);
         creature poisonVendor = DbCreature
@@ -177,6 +176,7 @@ public class Database
 
     public static DatabaseNPC GetRepairVendor()
     {
+        RepairVendorFilter.ContinentId = (ContinentId)Usefuls.ContinentId;
         HashSet<int> usableZones = GetListUsableZones();
         creature repairVendor = DbCreature
             .Get(RepairVendorFilter)
@@ -203,6 +203,7 @@ public class Database
 
     public static DatabaseNPC GetSellVendor()
     {
+        SellVendorFilter.ContinentId = (ContinentId)Usefuls.ContinentId;
         HashSet<int> usableZones = GetListUsableZones();
         creature sellVendor = DbCreature.Get(SellVendorFilter)
             .Where(q => usableZones.Contains(q.zoneId + 1)
@@ -218,6 +219,7 @@ public class Database
 
     public static DatabaseNPC GetTrainer()
     {
+        TrainerFilter.ContinentId = (ContinentId)Usefuls.ContinentId;
         HashSet<int> usableZones = GetListUsableZones();
         TrainerFilter.Trainer = (Train)ObjectManager.Me.WowClass;
 
