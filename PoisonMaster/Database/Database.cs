@@ -121,8 +121,8 @@ public class Database
     public static DatabaseNPC GetDrinkVendor(HashSet<int> usableDrink)
     {
         FoodVendorFilter.ContinentId = (ContinentId)Usefuls.ContinentId;
-        HashSet<int> usableZones = GetListUsableZones();
         FoodVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usableDrink);
+        HashSet<int> usableZones = GetListUsableZones();
         creature drinkVendor = DbCreature
             .Get(FoodVendorFilter)
             .Where(q => !NPCBlackList.OnlyFoodBlacklist.Contains(q.id)
@@ -140,8 +140,8 @@ public class Database
     public static DatabaseNPC GetFoodVendor(HashSet<int> usableFood)
     {
         FoodVendorFilter.ContinentId = (ContinentId)Usefuls.ContinentId;
-        HashSet<int> usableZones = GetListUsableZones();
         FoodVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usableFood);
+        HashSet<int> usableZones = GetListUsableZones();
 
         creature foodVendor = DbCreature
             .Get(FoodVendorFilter)
@@ -159,8 +159,8 @@ public class Database
     public static DatabaseNPC GetPoisonVendor(HashSet<int> usablePoison)
     {
         PoisonVendorFilter.ContinentId = (ContinentId)Usefuls.ContinentId;
-        HashSet<int> usableZones = GetListUsableZones();
         PoisonVendorFilter.HasItems = new ItemIds(ContainedIn.Merchant, usablePoison);
+        HashSet<int> usableZones = GetListUsableZones();
         creature poisonVendor = DbCreature
             .Get(PoisonVendorFilter)
             .Where(q => usableZones.Contains(q.zoneId + 1)
@@ -220,8 +220,8 @@ public class Database
     public static DatabaseNPC GetTrainer()
     {
         TrainerFilter.ContinentId = (ContinentId)Usefuls.ContinentId;
-        HashSet<int> usableZones = GetListUsableZones();
         TrainerFilter.Trainer = (Train)ObjectManager.Me.WowClass;
+        HashSet<int> usableZones = GetListUsableZones();
 
         creature trainer = DbCreature.Get(TrainerFilter)
             .Where(q => usableZones.Contains(q.zoneId + 1))
