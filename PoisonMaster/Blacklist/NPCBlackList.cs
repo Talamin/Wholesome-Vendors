@@ -47,6 +47,13 @@ public static class NPCBlackList
 
     public static readonly HashSet<int> SessionBlacklist = new HashSet<int>
     {
+        23511, // Event NPC
+        23605, // Event NPC
+        23606, // Event NPC
+        24510, // Event NPC
+        35342, // Event NPC
+        15012, // Event NPC
+        36382, // Event NPC
         22264, // Ogri'la Steelshaper
         3180, // Dark Iron Entrepreneur in Wetlands
         34685, // event NPC
