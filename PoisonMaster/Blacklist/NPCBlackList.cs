@@ -47,6 +47,7 @@ public static class NPCBlackList
 
     public static readonly HashSet<int> SessionBlacklist = new HashSet<int>
     {
+        15898, // Event NPC
         23511, // Event NPC
         23605, // Event NPC
         23606, // Event NPC
