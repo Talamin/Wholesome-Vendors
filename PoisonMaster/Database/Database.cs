@@ -9,9 +9,20 @@ using wManager;
 using wManager.Wow.Enums;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
+using Timer = robotManager.Helpful.Timer;
 
 public class Database
 {
+    private static double timerLength = 30000;
+    private static Timer noFoodVendorTimer = new Timer();
+    private static Timer noAmmoVendorTimer = new Timer();
+    private static Timer noDrinkVendorTimer = new Timer();
+    private static Timer noTrainerTimer = new Timer();
+    private static Timer noMailboxTimer = new Timer();
+    private static Timer noPosionVendorTimer = new Timer();
+    private static Timer noRepairTimer = new Timer();
+    private static Timer noSellTimer = new Timer();
+
     private static CreatureFilter AmmoVendorFilter = new CreatureFilter
     {
         ExcludeIds = NPCBlackList.SessionBlacklist,
@@ -93,8 +104,11 @@ public class Database
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
 
-        if (Mailbox == null)
+        if (Mailbox == null && noMailboxTimer.IsReady)
+        {
+            noMailboxTimer = new Timer(timerLength);
             Main.Logger("Couldn´t find any Mailbox");
+        }
 
         return Mailbox == null ? null : new GameObjects(Mailbox);
     }
@@ -112,8 +126,11 @@ public class Database
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
 
-        if (ammoVendor == null)
+        if (ammoVendor == null && noAmmoVendorTimer.IsReady)
+        {
+            noAmmoVendorTimer = new Timer(timerLength);
             Main.Logger("Couldn't find any Ammo Vendor");
+        }
 
         return ammoVendor == null ? null : new DatabaseNPC(ammoVendor);
     }
@@ -131,8 +148,11 @@ public class Database
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
 
-        if (drinkVendor == null)
+        if (drinkVendor == null && noDrinkVendorTimer.IsReady)
+        {
+            noDrinkVendorTimer = new Timer(timerLength);
             Main.Logger("Couldn't find any Drink Vendor");
+        }
 
         return drinkVendor == null ? null : new DatabaseNPC(drinkVendor);
     }
@@ -150,8 +170,11 @@ public class Database
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
 
-        if (foodVendor == null)
+        if (foodVendor == null && noFoodVendorTimer.IsReady)
+        {
+            noFoodVendorTimer = new Timer(timerLength); 
             Main.Logger("Couldn't find any Food Vendor");
+        }
 
         return foodVendor == null ? null : new DatabaseNPC(foodVendor);
     }
@@ -168,8 +191,11 @@ public class Database
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
 
-        if (poisonVendor == null)
+        if (poisonVendor == null && noPosionVendorTimer.IsReady)
+        {
+            noPosionVendorTimer = new Timer(timerLength);
             Main.Logger("Couldn't find any Poison Vendor");
+        }
 
         return poisonVendor == null ? null : new DatabaseNPC(poisonVendor);
     }
@@ -185,8 +211,11 @@ public class Database
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
 
-        if (repairVendor == null)
+        if (repairVendor == null && noRepairTimer.IsReady)
+        {
+            noRepairTimer = new Timer(timerLength);
             Main.Logger("Couldn't find any Repair Vendor");
+        }
         /*
         List<world_map_area> listMap = DbWorldMapArea.Get();
         foreach (world_map_area mapObject in listMap)
@@ -211,8 +240,11 @@ public class Database
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
 
-        if (sellVendor == null)
+        if (sellVendor == null && noSellTimer.IsReady)
+        {
+            noSellTimer = new Timer(timerLength);
             Main.Logger("Couldn't find any Sell Vendor");
+        }
 
         return sellVendor == null ? null : new DatabaseNPC(sellVendor);
     }
@@ -230,8 +262,11 @@ public class Database
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
 
-        if (trainer == null)
+        if (trainer == null && noTrainerTimer.IsReady)
+        {
+            noTrainerTimer = new Timer(timerLength);
             Main.Logger("Couldn't find any Trainer");
+        }
 
         return trainer == null ? null : new DatabaseNPC(trainer);
     }
