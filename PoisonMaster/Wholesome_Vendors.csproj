@@ -43,13 +43,15 @@
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
+  <PropertyGroup>
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Costura, Version=5.0.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Costura.Fody.5.0.2\lib\netstandard1.0\Costura.dll</HintPath>
     </Reference>
     <Reference Include="DatabaseManager">
       <HintPath>..\Dependencies\DatabaseManager.dll</HintPath>
-      <Private>True</Private>
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.dll</HintPath>
@@ -72,8 +74,7 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="robotManager">
-      <HintPath>..\Dependencies\robotManager.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>F:\WoW\WoW Wotlk\WRobot WOTLK\Bin\robotManager.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.AppContext, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -223,8 +224,7 @@
     </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="wManager">
-      <HintPath>..\Dependencies\wManager.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>F:\WoW\WoW Wotlk\WRobot WOTLK\Bin\wManager.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
