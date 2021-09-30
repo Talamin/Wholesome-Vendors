@@ -61,7 +61,6 @@
     </Reference>
     <Reference Include="MahApps.Metro">
       <HintPath>..\Dependencies\MahApps.Metro.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="MarsSettingsGUI">
       <HintPath>..\Dependencies\MarsSettingsGUI.dll</HintPath>
@@ -74,7 +73,7 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="robotManager">
-      <HintPath>F:\WoW\WoW Wotlk\WRobot WOTLK\Bin\robotManager.dll</HintPath>
+      <HintPath>..\Dependencies\robotManager.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.AppContext, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -224,7 +223,7 @@
     </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="wManager">
-      <HintPath>F:\WoW\WoW Wotlk\WRobot WOTLK\Bin\wManager.dll</HintPath>
+      <HintPath>..\Dependencies\wManager.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
