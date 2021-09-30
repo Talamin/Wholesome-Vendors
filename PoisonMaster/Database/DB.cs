@@ -12,7 +12,7 @@ namespace WoWDBUpdater
 
         public DB()
         {
-            _con = new SQLiteConnection("Data Source=Data/WoWDb335");
+            _con = new SQLiteConnection("Data Source=Data/WoWDb335;Cache=Shared;");
             _con.Open();
             _cmd = _con.CreateCommand();
         }
