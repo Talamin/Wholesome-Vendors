@@ -9,20 +9,9 @@ using wManager;
 using wManager.Wow.Enums;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
-using Timer = robotManager.Helpful.Timer;
 
 public class Database
 {
-    private static double timerLength = 30000;
-    private static Timer noFoodVendorTimer = new Timer();
-    private static Timer noAmmoVendorTimer = new Timer();
-    private static Timer noDrinkVendorTimer = new Timer();
-    private static Timer noTrainerTimer = new Timer();
-    private static Timer noMailboxTimer = new Timer();
-    private static Timer noPosionVendorTimer = new Timer();
-    private static Timer noRepairTimer = new Timer();
-    private static Timer noSellTimer = new Timer();
-
     private static CreatureFilter AmmoVendorFilter = new CreatureFilter
     {
         ExcludeIds = NPCBlackList.SessionBlacklist,
@@ -30,7 +19,8 @@ public class Database
         NpcFlags = new NpcFlag(Operator.Or,
         new List<UnitNPCFlags>
         {
-                UnitNPCFlags.SellsAmmo
+                UnitNPCFlags.SellsAmmo,
+                UnitNPCFlags.CanSell
         }),
     };
 
@@ -41,7 +31,8 @@ public class Database
         NpcFlags = new NpcFlag(Operator.Or,
             new List<UnitNPCFlags>
             {
-                UnitNPCFlags.SellsFood
+                UnitNPCFlags.SellsFood,
+                UnitNPCFlags.CanSell
             }),
     };
 
@@ -104,12 +95,6 @@ public class Database
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
 
-        if (Mailbox == null && noMailboxTimer.IsReady)
-        {
-            noMailboxTimer = new Timer(timerLength);
-            Main.Logger("Couldn´t find any Mailbox");
-        }
-
         return Mailbox == null ? null : new GameObjects(Mailbox);
     }
 
@@ -125,12 +110,6 @@ public class Database
                 && !wManagerSetting.IsBlackListedNpcEntry(q.id))
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
-
-        if (ammoVendor == null && noAmmoVendorTimer.IsReady)
-        {
-            noAmmoVendorTimer = new Timer(timerLength);
-            Main.Logger("Couldn't find any Ammo Vendor");
-        }
 
         return ammoVendor == null ? null : new DatabaseNPC(ammoVendor);
     }
@@ -148,12 +127,6 @@ public class Database
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
 
-        if (drinkVendor == null && noDrinkVendorTimer.IsReady)
-        {
-            noDrinkVendorTimer = new Timer(timerLength);
-            Main.Logger("Couldn't find any Drink Vendor");
-        }
-
         return drinkVendor == null ? null : new DatabaseNPC(drinkVendor);
     }
 
@@ -165,16 +138,11 @@ public class Database
 
         creature foodVendor = DbCreature
             .Get(FoodVendorFilter)
-            .Where(q => usableZones.Contains(q.zoneId + 1)
+            .Where(q => !NPCBlackList.OnlyFoodBlacklist.Contains(q.id)
+                && usableZones.Contains(q.zoneId + 1)
                 && !wManagerSetting.IsBlackListedNpcEntry(q.id))
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
-
-        if (foodVendor == null && noFoodVendorTimer.IsReady)
-        {
-            noFoodVendorTimer = new Timer(timerLength); 
-            Main.Logger("Couldn't find any Food Vendor");
-        }
 
         return foodVendor == null ? null : new DatabaseNPC(foodVendor);
     }
@@ -191,12 +159,6 @@ public class Database
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
 
-        if (poisonVendor == null && noPosionVendorTimer.IsReady)
-        {
-            noPosionVendorTimer = new Timer(timerLength);
-            Main.Logger("Couldn't find any Poison Vendor");
-        }
-
         return poisonVendor == null ? null : new DatabaseNPC(poisonVendor);
     }
 
@@ -211,22 +173,6 @@ public class Database
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
 
-        if (repairVendor == null && noRepairTimer.IsReady)
-        {
-            noRepairTimer = new Timer(timerLength);
-            Main.Logger("Couldn't find any Repair Vendor");
-        }
-        /*
-        List<world_map_area> listMap = DbWorldMapArea.Get();
-        foreach (world_map_area mapObject in listMap)
-        {
-            Main.Logger(mapObject.areaName);
-            Main.Logger("Area ID = " + mapObject.areaID.ToString());
-            Main.Logger("ID = " + mapObject.ID.ToString());
-        }
-
-        Main.Logger($"Repair vendor {repairVendor.Name} found in area {repairVendor.areaId} - zone {repairVendor.zoneId} - zone {repairVendor.map}");
-        */
         return repairVendor == null ? null : new DatabaseNPC(repairVendor);
     }
 
@@ -239,12 +185,6 @@ public class Database
                 && !wManagerSetting.IsBlackListedNpcEntry(q.id))
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
-
-        if (sellVendor == null && noSellTimer.IsReady)
-        {
-            noSellTimer = new Timer(timerLength);
-            Main.Logger("Couldn't find any Sell Vendor");
-        }
 
         return sellVendor == null ? null : new DatabaseNPC(sellVendor);
     }
@@ -261,12 +201,6 @@ public class Database
             .Where(q => !q.Name.Contains(" Trainer"))
             .OrderBy(q => ObjectManager.Me.Position.DistanceTo(q.Position))
             .FirstOrDefault();
-
-        if (trainer == null && noTrainerTimer.IsReady)
-        {
-            noTrainerTimer = new Timer(timerLength);
-            Main.Logger("Couldn't find any Trainer");
-        }
 
         return trainer == null ? null : new DatabaseNPC(trainer);
     }
@@ -297,8 +231,6 @@ public class Database
 
     private static readonly Dictionary<int, int> ZoneLevelDictionary = new Dictionary<int, int>
     {
-        {14,10 }, //Kalimdor
-        {15,10}, //Azeroth
         {465,1}, //AzuremystIsle
         {28,1}, //DunMorogh
         {5,1}, //Durotar
@@ -306,20 +238,25 @@ public class Database
         {463,1}, //EversongWoods
         {42,1}, //Teldrassil
         {21,1}, //Tirisfal
-        {481,10}, //SilvermoonCity
-        {11,10}, //Barrens
-        {477,10}, //BloodmystIsle
-        {43,10}, //Darkshore
-        {464,10}, //Ghostlands
-        {342,10}, //Ironforge
-        {36,10}, //LochModan
         {10,1}, //Mulgore
-        {322,10}, //Ogrimmar
+
+        {481,5}, //SilvermoonCity
+        {342,5}, //Ironforge
+        {322,5}, //Ogrimmar
+        {302,5}, //Stormwind
+        {472,5}, //TheExodar
+        {363,5}, //ThunderBluff
+        {383,5}, //Undercity
+
+        {14,10}, //Kalimdor
+        {15,10}, //Azeroth
+
         {22,10}, //Silverpine
-        {302,10}, //Stormwind
-        {472,10}, //TheExodar
-        {363,10}, //ThunderBluff
-        {383,10}, //Undercity
+        {36,10}, //LochModan
+        {464,10}, //Ghostlands
+        {11,10}, //Barrens
+        {43,10}, //Darkshore
+        {477,10}, //BloodmystIsle
         {40,10}, //Westfall
         {37,15}, //Redridge
         {82,15}, //StonetalonMountains

@@ -149,6 +149,9 @@ public class BuyAmmoState : State
                 return;
             }
         }
+
+        if (AmmoVendor == null)
+            Main.Logger($"Couldn't find any ammo vendor");
     }
 
     private HashSet<int> GetListUsableAmmo()

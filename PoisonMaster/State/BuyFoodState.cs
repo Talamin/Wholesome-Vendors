@@ -23,7 +23,7 @@ public class BuyFoodState : State
         { 35, new HashSet<int>{ 4599, 4601, 3927, 4608, 6887 } }, // Cured Ham Steak
         { 25, new HashSet<int>{ 3771, 4544, 1707, 4607, 4594, 4539 } }, // Wild Hog Shank
         { 15, new HashSet<int>{ 3770, 4542, 422, 4606, 4593, 4538 } }, // Mutton Chop
-        { 5, new HashSet<int>{ 2287, 4541, 414, 4605, 4592, 4538} }, // Haunch of Meat
+        { 10, new HashSet<int>{ 2287, 4541, 414, 4605, 4592, 4538} }, // Haunch of Meat
         { 0, new HashSet<int>{ 117, 4540, 2070, 4604, 787 , 4536} }, // Haunch of Meat
     };
 
@@ -149,6 +149,12 @@ public class BuyFoodState : State
             }
             if (FoodVendor != null)
                 break;
+        }
+
+        if (FoodVendor == null)
+        {
+            Main.Logger($"Couldn't find any food vendor");
+            return;
         }
 
         List<int> listFoodInBags = GetListFoodFromBags();

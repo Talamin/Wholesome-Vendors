@@ -19,6 +19,7 @@ namespace PoisonMaster
     {
         private static bool saveWRobotSettingRepair;
         private static bool saveWRobotSettingSell;
+        private static bool saveWRobotSettingTrain;
 
         public static int GetMoney => (int)ObjectManager.Me.GetMoneyCopper;
         
@@ -47,12 +48,12 @@ namespace PoisonMaster
 
                     int priorityToSet = stateToReplace.Priority;
 
-
                     // Move all superior states one slot up
                     foreach (State s in engine.States)
                     {
                         if (s.Priority > priorityToSet)
                             s.Priority++;
+                        //Main.Logger($"{s.DisplayName} => {s.Priority}");
                     }
 
                     engine.AddState(state);
@@ -312,16 +313,20 @@ namespace PoisonMaster
                 wManagerSetting.CurrentSetting.Selling = false; // disable user setting
             }
 
+            if (CurrentSetting.AutoTrain)
+            {
+                saveWRobotSettingTrain = wManagerSetting.CurrentSetting.TrainNewSkills; // save user setting
+                wManagerSetting.CurrentSetting.TrainNewSkills = false; // disable user setting
+            }
+
             wManagerSetting.CurrentSetting.Save();
         }
 
         public static void RestoreWRobotUserSettings()
         {
-            if (CurrentSetting.AutoRepair)
-                wManagerSetting.CurrentSetting.Repair = saveWRobotSettingRepair;
-
-            if (CurrentSetting.AllowAutoSell)
-                wManagerSetting.CurrentSetting.Selling = saveWRobotSettingSell;
+            wManagerSetting.CurrentSetting.Repair = saveWRobotSettingRepair;
+            wManagerSetting.CurrentSetting.Selling = saveWRobotSettingSell;
+            wManagerSetting.CurrentSetting.TrainNewSkills = saveWRobotSettingTrain;
 
             wManagerSetting.CurrentSetting.Save();
         }

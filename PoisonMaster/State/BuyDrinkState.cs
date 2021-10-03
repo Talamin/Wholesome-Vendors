@@ -31,7 +31,7 @@ public class BuyDrinkState : State
             { 35, new HashSet<int>{ 1645 } }, // Moonberry Juice
             { 25, new HashSet<int>{ 1708 } }, // Sweet Nectar
             { 15, new HashSet<int>{ 1205 } }, // Melon Juice
-            { 5, new HashSet<int>{ 1179 } }, // Ice Cold Milk
+            { 10, new HashSet<int>{ 1179 } }, // Ice Cold Milk
             { 0, new HashSet<int>{ 159 } }, // Refreshing Spring water
         };
 
@@ -153,6 +153,12 @@ public class BuyDrinkState : State
             }
             if (DrinkVendor != null)
                 break;
+        }
+
+        if (DrinkVendor == null)
+        {
+            Main.Logger($"Couldn't find any drink vendor");
+            return;
         }
 
         List<int> listDrinksInBags = GetListDrinksFromBags();
