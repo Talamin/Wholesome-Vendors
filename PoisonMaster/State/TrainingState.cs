@@ -31,7 +31,7 @@ public class TrainingState : State
                 || !Main.IsLaunched
                 || !stateTimer.IsReady
                 || LevelToTrain <= 0
-                || !PluginSettings.CurrentSetting.AutoTrain
+                || !PluginSettings.CurrentSetting.AllowTrain
                 || ObjectManager.Me.IsOnTaxi)
                 return false;
 

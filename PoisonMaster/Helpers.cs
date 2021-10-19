@@ -11,7 +11,6 @@ using static PoisonMaster.PMEnums;
 using robotManager.Products;
 using System.Collections.Generic;
 using wManager.Wow.Bot.Tasks;
-using static PluginSettings;
 
 namespace PoisonMaster
 {
@@ -233,15 +232,15 @@ namespace PoisonMaster
         {
             List<WoWItemQuality> listQualitySell = new List<WoWItemQuality>();
 
-            if (CurrentSetting.SellGray)
+            if (PluginSettings.CurrentSetting.SellGrayItems)
                 listQualitySell.Add(WoWItemQuality.Poor);
-            if (CurrentSetting.SellWhite)
+            if (PluginSettings.CurrentSetting.SellWhiteItems)
                 listQualitySell.Add(WoWItemQuality.Common);
-            if (CurrentSetting.SellGreen)
+            if (PluginSettings.CurrentSetting.SellGreenItems)
                 listQualitySell.Add(WoWItemQuality.Uncommon);
-            if (CurrentSetting.SellBlue)
+            if (PluginSettings.CurrentSetting.SellBlueItems)
                 listQualitySell.Add(WoWItemQuality.Rare);
-            if (CurrentSetting.SellPurple)
+            if (PluginSettings.CurrentSetting.SellPurpleItems)
                 listQualitySell.Add(WoWItemQuality.Epic);
 
             return listQualitySell;
@@ -251,15 +250,15 @@ namespace PoisonMaster
         {
             List<WoWItemQuality> listQualityMail = new List<WoWItemQuality>();
 
-            if (CurrentSetting.MailGray)
+            if (PluginSettings.CurrentSetting.MailGrayItems)
                 listQualityMail.Add(WoWItemQuality.Poor);
-            if (CurrentSetting.MailWhite)
+            if (PluginSettings.CurrentSetting.MailWhiteItems)
                 listQualityMail.Add(WoWItemQuality.Common);
-            if (CurrentSetting.MailGreen)
+            if (PluginSettings.CurrentSetting.MailGreenItems)
                 listQualityMail.Add(WoWItemQuality.Uncommon);
-            if (CurrentSetting.MailBlue)
+            if (PluginSettings.CurrentSetting.MailBlueItems)
                 listQualityMail.Add(WoWItemQuality.Rare);
-            if (CurrentSetting.MailPurple)
+            if (PluginSettings.CurrentSetting.MailPurpleItems)
                 listQualityMail.Add(WoWItemQuality.Epic);
 
             return listQualityMail;
@@ -267,7 +266,7 @@ namespace PoisonMaster
 
         public static void SellItems(DatabaseNPC vendor)
         {
-            if (!CurrentSetting.AllowAutoSell)
+            if (!PluginSettings.CurrentSetting.AllowSell)
                 return;
 
             Main.Logger("Selling items");
@@ -301,19 +300,19 @@ namespace PoisonMaster
 
         public static void OverrideWRobotUserSettings()
         {
-            if (CurrentSetting.AutoRepair)
+            if (PluginSettings.CurrentSetting.AllowRepair)
             {
                 saveWRobotSettingRepair = wManagerSetting.CurrentSetting.Repair; // save user setting
                 wManagerSetting.CurrentSetting.Repair = false; // disable user setting
             }
 
-            if (CurrentSetting.AllowAutoSell)
+            if (PluginSettings.CurrentSetting.AllowSell)
             {
                 saveWRobotSettingSell = wManagerSetting.CurrentSetting.Selling; // save user setting
                 wManagerSetting.CurrentSetting.Selling = false; // disable user setting
             }
 
-            if (CurrentSetting.AutoTrain)
+            if (PluginSettings.CurrentSetting.AllowTrain)
             {
                 saveWRobotSettingTrain = wManagerSetting.CurrentSetting.TrainNewSkills; // save user setting
                 wManagerSetting.CurrentSetting.TrainNewSkills = false; // disable user setting
@@ -376,9 +375,9 @@ namespace PoisonMaster
 
         public static bool HaveEnoughMoneyFor(int amount, string itemName)
         {
-            if (CurrentSetting.VendorItems.Exists(i => i.Name == itemName))
+            if (PluginSettings.CurrentSetting.VendorItems.Exists(i => i.Name == itemName))
             {
-                VendorItem foodItem = CurrentSetting.VendorItems.Find(i => i.Name == itemName);
+                PluginSettings.VendorItem foodItem = PluginSettings.CurrentSetting.VendorItems.Find(i => i.Name == itemName);
                 if (GetMoney < foodItem.Price / foodItem.Stack * amount)
                 {
                     //Main.Logger($"You need {foodItem.Price / foodItem.Stack * amount} copper to buy {amount} x {itemName} but you only have {GetMoney}");
@@ -397,7 +396,7 @@ namespace PoisonMaster
 
         public static void CheckMailboxNearby(DatabaseNPC vendor)
         {
-            if (!CurrentSetting.AllowMailing)
+            if (!PluginSettings.CurrentSetting.AllowMail)
                 return;
 
             Main.Logger($"Checking for a mailbox nearby {vendor.Name}");
@@ -419,7 +418,7 @@ namespace PoisonMaster
             {
                 GoToTask.ToPositionAndIntecractWithGameObject(mailbox.Position, mailbox.Id);
                 Thread.Sleep(500);
-                Mail.SendMessage(CurrentSetting.MailRecipient,
+                Mail.SendMessage(PluginSettings.CurrentSetting.MailingRecipient,
                     "Post",
                     "Message",
                     wManagerSetting.CurrentSetting.ForceMailList,
@@ -428,7 +427,7 @@ namespace PoisonMaster
                     out needRunAgain);
             }
             if (!needRunAgain)
-                Main.Logger($"Sent Items to {CurrentSetting.MailRecipient}");
+                Main.Logger($"Sent Items to {PluginSettings.CurrentSetting.MailingRecipient}");
 
             Mail.CloseMailFrame();
         }

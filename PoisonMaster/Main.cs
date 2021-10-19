@@ -30,7 +30,7 @@ public class Main : IPlugin
     public static State repairState = new RepairState();
     public static State trainingState = new TrainingState();
 
-    public static string version = "1.0.02"; // Must match version in Version.txt
+    public static string version = "1.0.03"; // Must match version in Version.txt
 
     private DB _database;
 
@@ -95,7 +95,7 @@ public class Main : IPlugin
             IsLaunched = true;
             _pulseThread.RunWorkerAsync();
 
-            if (PluginSettings.CurrentSetting.DrinkAmount > 0 || PluginSettings.CurrentSetting.FoodAmount > 0)
+            if (PluginSettings.CurrentSetting.DrinkNbToBuy > 0 || PluginSettings.CurrentSetting.FoodNbToBuy > 0)
             {
                 wManagerSetting.CurrentSetting.TryToUseBestBagFoodDrink = false;
                 wManagerSetting.CurrentSetting.Save();

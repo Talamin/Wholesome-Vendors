@@ -15,7 +15,7 @@ public class RepairState : State
     private DatabaseNPC RepairVendor;
     private Timer stateTimer = new Timer();
     private int MinDurability = 35;
-    private int MinFreeSlots => PluginSettings.CurrentSetting.MinFreeBagSlots;
+    private int MinFreeSlots => PluginSettings.CurrentSetting.MinFreeSlots;
 
     public override bool NeedToRun
     {
@@ -29,12 +29,12 @@ public class RepairState : State
 
             stateTimer = new Timer(5000);
 
-            if (PluginSettings.CurrentSetting.AutoRepair && ObjectManager.Me.GetDurabilityPercent < MinDurability)
+            if (PluginSettings.CurrentSetting.AllowRepair && ObjectManager.Me.GetDurabilityPercent < MinDurability)
             {
                 RepairVendor = Database.GetRepairVendor();
                 return RepairVendor != null;
             }
-            else if (PluginSettings.CurrentSetting.AllowAutoSell && Bag.GetContainerNumFreeSlotsByType(BagType.Unspecified) <= MinFreeSlots)
+            else if (PluginSettings.CurrentSetting.AllowSell && Bag.GetContainerNumFreeSlotsByType(BagType.Unspecified) <= MinFreeSlots)
             {
                 RepairVendor = Database.GetSellVendor();
                 return RepairVendor != null;

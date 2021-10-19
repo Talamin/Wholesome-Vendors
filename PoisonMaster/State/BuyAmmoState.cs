@@ -6,7 +6,6 @@ using wManager.Wow.ObjectManager;
 using Timer = robotManager.Helpful.Timer;
 using PoisonMaster;
 using System.Threading;
-using static PluginSettings;
 
 public class BuyAmmoState : State
 {
@@ -17,7 +16,7 @@ public class BuyAmmoState : State
     private DatabaseNPC AmmoVendor;
     private int AmmoIdToBuy;
     private string AmmoNameToBuy;
-    private int AmmoAmountToBuy => CurrentSetting.AutobuyAmmunitionAmount;
+    private int AmmoAmountToBuy => PluginSettings.CurrentSetting.AmmoAmount;
 
     private readonly Dictionary<int, int> ArrowDictionary = new Dictionary<int, int>
     {
@@ -47,7 +46,7 @@ public class BuyAmmoState : State
         {
             if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
                 || !Main.IsLaunched
-                || CurrentSetting.AutobuyAmmunitionAmount <= 0
+                || PluginSettings.CurrentSetting.AmmoAmount <= 0
                 || !stateTimer.IsReady
                 || Helpers.GetRangedWeaponType() == null
                 || Me.IsOnTaxi)
@@ -100,7 +99,7 @@ public class BuyAmmoState : State
                         Helpers.CloseWindow();
                         return;
                     }
-                    VendorItem vendorItem = CurrentSetting.VendorItems.Find(item => item.Name == AmmoNameToBuy);
+                    PluginSettings.VendorItem vendorItem = PluginSettings.CurrentSetting.VendorItems.Find(item => item.Name == AmmoNameToBuy);
                     Helpers.BuyItem(AmmoNameToBuy, AmmoAmountToBuy, vendorItem.Stack);
                     Helpers.CloseWindow();
                     Thread.Sleep(1000);

@@ -7,7 +7,6 @@ using wManager;
 using wManager.Wow.Bot.Tasks;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
-using static PluginSettings;
 using Timer = robotManager.Helpful.Timer;
 
 public class BuyDrinkState : State
@@ -19,7 +18,7 @@ public class BuyDrinkState : State
     private DatabaseNPC DrinkVendor;
     private int DrinkIdToBuy;
     private string DrinkNameToBuy;
-    private int DrinkAmountToBuy => CurrentSetting.DrinkAmount;
+    private int DrinkAmountToBuy => PluginSettings.CurrentSetting.DrinkNbToBuy;
 
     private static readonly Dictionary<int, HashSet<int>> WaterDictionary = new Dictionary<int, HashSet<int>>
         {
@@ -94,7 +93,7 @@ public class BuyDrinkState : State
                         Helpers.CloseWindow();
                         return;
                     }
-                    VendorItem vendorItem = CurrentSetting.VendorItems.Find(item => item.Name == DrinkNameToBuy);
+                    PluginSettings.VendorItem vendorItem = PluginSettings.CurrentSetting.VendorItems.Find(item => item.Name == DrinkNameToBuy);
                     Helpers.BuyItem(DrinkNameToBuy, DrinkAmountToBuy, vendorItem.Stack);
                     Helpers.CloseWindow();
                     Thread.Sleep(1000);

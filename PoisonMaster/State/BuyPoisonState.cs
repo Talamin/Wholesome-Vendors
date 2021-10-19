@@ -6,7 +6,6 @@ using wManager.Wow.Bot.Tasks;
 using wManager.Wow.Enums;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
-using static PluginSettings;
 using Timer = robotManager.Helpful.Timer;
 
 public class BuyPoisonState : State
@@ -62,7 +61,7 @@ public class BuyPoisonState : State
             if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
                 || !Main.IsLaunched
                 || !stateTimer.IsReady
-                || !CurrentSetting.AllowAutobuyPoison
+                || !PluginSettings.CurrentSetting.BuyPoison
                 || ObjectManager.Me.WowClass != WoWClass.Rogue
                 || ObjectManager.Me.Level < 20
                 || Me.IsOnTaxi)
@@ -113,7 +112,7 @@ public class BuyPoisonState : State
                             Helpers.CloseWindow();
                             break;
                         }
-                        VendorItem vendorItem = CurrentSetting.VendorItems.Find(item => item.Name == InstantPoisonNameToBuy);
+                        PluginSettings.VendorItem vendorItem = PluginSettings.CurrentSetting.VendorItems.Find(item => item.Name == InstantPoisonNameToBuy);
                         Helpers.BuyItem(InstantPoisonNameToBuy, NbInstandPoisonToBuy, vendorItem.Stack);
                         Helpers.CloseWindow();
                         Thread.Sleep(1000);
@@ -129,7 +128,7 @@ public class BuyPoisonState : State
                             Helpers.CloseWindow();
                             break;
                         }
-                        VendorItem vendorItem = CurrentSetting.VendorItems.Find(item => item.Name == DeadlyPoisonNameToBuy);
+                        PluginSettings.VendorItem vendorItem = PluginSettings.CurrentSetting.VendorItems.Find(item => item.Name == DeadlyPoisonNameToBuy);
                         Helpers.BuyItem(DeadlyPoisonNameToBuy, NbDeadlyPoisonToBuy, vendorItem.Stack);
                         Helpers.CloseWindow();
                         Thread.Sleep(1000);

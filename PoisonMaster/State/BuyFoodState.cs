@@ -8,7 +8,6 @@ using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
 using Timer = robotManager.Helpful.Timer;
 using PoisonMaster;
-using static PluginSettings;
 
 public class BuyFoodState : State
 {
@@ -32,7 +31,7 @@ public class BuyFoodState : State
     private DatabaseNPC FoodVendor;
     private int FoodIdToBuy;
     private string FoodNameToBuy;
-    private int FoodAmountToBuy => CurrentSetting.FoodAmount;
+    private int FoodAmountToBuy => PluginSettings.CurrentSetting.FoodNbToBuy;
 
     public override bool NeedToRun
     {
