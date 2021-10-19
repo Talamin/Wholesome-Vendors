@@ -166,10 +166,16 @@ public class PluginSettings : Settings
     public PluginSettings()
     {
         Databasetype = "external";
-        FoodAmount = 0;
-        DrinkAmount = 0;
+        FoodAmount = 20;
+        DrinkAmount = ObjectManager.Me.WowClass == WoWClass.Paladin
+            || ObjectManager.Me.WowClass == WoWClass.Hunter
+            || ObjectManager.Me.WowClass == WoWClass.Priest
+            || ObjectManager.Me.WowClass == WoWClass.Shaman
+            || ObjectManager.Me.WowClass == WoWClass.Mage
+            || ObjectManager.Me.WowClass == WoWClass.Warlock
+            || ObjectManager.Me.WowClass == WoWClass.Druid ? 20 : 0;
         AllowAutobuyPoison = ObjectManager.Me.WowClass == WoWClass.Rogue;
-        AutobuyAmmunitionAmount = 0;
+        AutobuyAmmunitionAmount = ObjectManager.Me.WowClass == WoWClass.Hunter ? 2000 : 0;
         AutoRepair = true;
         AllowAutoSell = true;
         AutoTrain = true;
