@@ -233,15 +233,15 @@ namespace PoisonMaster
         {
             List<WoWItemQuality> listQualitySell = new List<WoWItemQuality>();
 
-            if (wManagerSetting.CurrentSetting.SellGray)
+            if (CurrentSetting.SellGray)
                 listQualitySell.Add(WoWItemQuality.Poor);
-            if (wManagerSetting.CurrentSetting.SellWhite)
+            if (CurrentSetting.SellWhite)
                 listQualitySell.Add(WoWItemQuality.Common);
-            if (wManagerSetting.CurrentSetting.SellGreen)
+            if (CurrentSetting.SellGreen)
                 listQualitySell.Add(WoWItemQuality.Uncommon);
-            if (wManagerSetting.CurrentSetting.SellBlue)
+            if (CurrentSetting.SellBlue)
                 listQualitySell.Add(WoWItemQuality.Rare);
-            if (wManagerSetting.CurrentSetting.SellPurple)
+            if (CurrentSetting.SellPurple)
                 listQualitySell.Add(WoWItemQuality.Epic);
 
             return listQualitySell;
@@ -251,15 +251,15 @@ namespace PoisonMaster
         {
             List<WoWItemQuality> listQualityMail = new List<WoWItemQuality>();
 
-            if (wManagerSetting.CurrentSetting.MailGray)
+            if (CurrentSetting.MailGray)
                 listQualityMail.Add(WoWItemQuality.Poor);
-            if (wManagerSetting.CurrentSetting.MailWhite)
+            if (CurrentSetting.MailWhite)
                 listQualityMail.Add(WoWItemQuality.Common);
-            if (wManagerSetting.CurrentSetting.MailGreen)
+            if (CurrentSetting.MailGreen)
                 listQualityMail.Add(WoWItemQuality.Uncommon);
-            if (wManagerSetting.CurrentSetting.MailBlue)
+            if (CurrentSetting.MailBlue)
                 listQualityMail.Add(WoWItemQuality.Rare);
-            if (wManagerSetting.CurrentSetting.MailPurple)
+            if (CurrentSetting.MailPurple)
                 listQualityMail.Add(WoWItemQuality.Epic);
 
             return listQualityMail;
@@ -397,7 +397,7 @@ namespace PoisonMaster
 
         public static void CheckMailboxNearby(DatabaseNPC vendor)
         {
-            if (!wManagerSetting.CurrentSetting.UseMail)
+            if (!CurrentSetting.AllowMailing)
                 return;
 
             Main.Logger($"Checking for a mailbox nearby {vendor.Name}");
@@ -419,7 +419,7 @@ namespace PoisonMaster
             {
                 GoToTask.ToPositionAndIntecractWithGameObject(mailbox.Position, mailbox.Id);
                 Thread.Sleep(500);
-                Mail.SendMessage(wManagerSetting.CurrentSetting.MailRecipient,
+                Mail.SendMessage(CurrentSetting.MailRecipient,
                     "Post",
                     "Message",
                     wManagerSetting.CurrentSetting.ForceMailList,
@@ -428,7 +428,7 @@ namespace PoisonMaster
                     out needRunAgain);
             }
             if (!needRunAgain)
-                Main.Logger($"Sent Items to {wManagerSetting.CurrentSetting.MailRecipient}");
+                Main.Logger($"Sent Items to {CurrentSetting.MailRecipient}");
 
             Mail.CloseMailFrame();
         }

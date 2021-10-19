@@ -19,7 +19,7 @@ public class BuyDrinkState : State
     private DatabaseNPC DrinkVendor;
     private int DrinkIdToBuy;
     private string DrinkNameToBuy;
-    private int DrinkAmountToBuy => wManagerSetting.CurrentSetting.DrinkAmount;
+    private int DrinkAmountToBuy => CurrentSetting.DrinkAmount;
 
     private static readonly Dictionary<int, HashSet<int>> WaterDictionary = new Dictionary<int, HashSet<int>>
         {
@@ -43,8 +43,7 @@ public class BuyDrinkState : State
                 || !Main.IsLaunched
                 || !stateTimer.IsReady
                 || Me.Level <= 3
-                || !CurrentSetting.AutoBuyWater
-                || wManagerSetting.CurrentSetting.DrinkAmount <= 0
+                || DrinkAmountToBuy <= 0
                 || Me.IsOnTaxi)
                 return false;
 

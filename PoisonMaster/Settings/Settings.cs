@@ -7,64 +7,100 @@ using System.ComponentModel;
 using System.IO;
 using MarsSettingsGUI;
 using System.Collections.Generic;
+using wManager.Wow.Enums;
 
 [Serializable]
 public class PluginSettings : Settings
 {
     [Setting]
-    [DefaultValue(true)]
-    [Category("Buying")]
-    [DisplayName("Buy Food")]
-    [Description("Allow Autobuy Food")]
-    public bool AutobuyFood { get; set; }
+    [DefaultValue(0)]
+    [Category("Buy")]
+    [DisplayName("Food")]
+    [Description("Food amount to buy")]
+    public int FoodAmount { get; set; }
 
     [Setting]
-    [DefaultValue(true)]
-    [Category("Buying")]
-    [DisplayName("Buy Water")]
-    [Description("Allow Autobuy Water")]
-    public bool AutoBuyWater { get; set; }
+    [DefaultValue(0)]
+    [Category("Buy")]
+    [DisplayName("Drink")]
+    [Description("Drink amount to buy")]
+    public int DrinkAmount { get; set; }
 
     [Setting]
-    [DefaultValue(true)]
-    [Category("Buying")]
-    [DisplayName("Buy Poison")]
-    [Description("Allow Autobuy Water")]
+    [DefaultValue(false)]
+    [Category("Buy")]
+    [DisplayName("Poison")]
+    [Description("Allow buying poison")]
     public bool AllowAutobuyPoison { get; set; }
 
     [Setting]
-    [DefaultValue(true)]
-    [Category("Buying")]
-    [DisplayName("Buy Ammunition")]
-    [Description("Allow Autobuy Ammunition")]
-    public bool AutobuyAmmunition { get; set; }
-
-    [Setting]
-    [DefaultValue(2000)]
-    [Category("Buying")]
-    [DisplayName("Buy Ammunition Ammount")]
-    [Description("Set the Amount to Buy")]
+    [DefaultValue(0)]
+    [Category("Buy")]
+    [DisplayName("Ammo")]
+    [Description("Ammunition amount to Buy")]
     public int AutobuyAmmunitionAmount { get; set; }
 
     [Setting]
     [DefaultValue(true)]
-    [Category("SellRepair")]
-    [DisplayName("Sell")]
-    [Description("Allow Autosell")]
-    public bool AllowAutoSell { get; set; }
-
-    [Setting]
-    [DefaultValue(true)]
-    [Category("SellRepair")]
+    [Category("Repair")]
     [DisplayName("Repair")]
-    [Description("Allow Autorepair")]
+    [Description("Allow repair")]
     public bool AutoRepair { get; set; }
 
     [Setting]
     [DefaultValue(true)]
+    [Category("Sell")]
+    [DisplayName("Sell")]
+    [Description("Allow selling")]
+    public bool AllowAutoSell { get; set; }
+
+    [Setting]
+    [DefaultValue(2)]
+    [Category("Sell")]
+    [DisplayName("Min Free Bags Slots")]
+    [Description("Minimum Free Bags Slots")]
+    public int MinFreeBagSlots { get; set; }
+
+    [Setting]
+    [DefaultValue(true)]
+    [Category("Sell")]
+    [DisplayName("Sell Gray")]
+    [Description("Allow selling of gray items")]
+    public bool SellGray { get; set; }
+
+    [Setting]
+    [DefaultValue(true)]
+    [Category("Sell")]
+    [DisplayName("Sell White")]
+    [Description("Allow selling of white items")]
+    public bool SellWhite { get; set; }
+
+    [Setting]
+    [DefaultValue(false)]
+    [Category("Sell")]
+    [DisplayName("Sell Green")]
+    [Description("Allow selling of green items")]
+    public bool SellGreen { get; set; }
+
+    [Setting]
+    [DefaultValue(false)]
+    [Category("Sell")]
+    [DisplayName("Sell Blue")]
+    [Description("Allow selling of blue items")]
+    public bool SellBlue { get; set; }
+
+    [Setting]
+    [DefaultValue(false)]
+    [Category("Sell")]
+    [DisplayName("Sell Purple")]
+    [Description("Allow selling of purple items")]
+    public bool SellPurple { get; set; }
+
+    [Setting]
+    [DefaultValue(true)]
     [Category("Training")]
-    [DisplayName("Training")]
-    [Description("Allow Autotraining")]
+    [DisplayName("Train")]
+    [Description("Allow training")]
     public bool AutoTrain { get; set; }
 
     [Setting]
@@ -73,14 +109,56 @@ public class PluginSettings : Settings
     [Description("Set at which levels you want to train. Leave empty if you want to train every 2 levels.")]
     public List<int> TrainLevels { get; set; }
 
-    //[Setting]
-    //[DefaultValue(false)]
-    //[Category("Database")]
-    //[DisplayName("Database Intern/Extern")]
-    //[Description("You can choose between intern and external Database")]
-    //[DropdownList(new string[] {"internal","external" })]
-    public string Databasetype { get; set; }
+    [Setting]
+    [DefaultValue(false)]
+    [Category("Mailing")]
+    [DisplayName("Mail")]
+    [Description("Allow mailing")]
+    public bool AllowMailing { get; set; }
 
+    [Setting]
+    [DefaultValue("")]
+    [Category("Mailing")]
+    [DisplayName("Mail Recipient")]
+    [Description("Recipient for mailing")]
+    public string MailRecipient { get; set; }
+
+    [Setting]
+    [DefaultValue(false)]
+    [Category("Mailing")]
+    [DisplayName("Mail Gray")]
+    [Description("Allow mailing of gray items")]
+    public bool MailGray { get; set; }
+
+    [Setting]
+    [DefaultValue(false)]
+    [Category("Mailing")]
+    [DisplayName("Mail White")]
+    [Description("Allow mailing of white items")]
+    public bool MailWhite { get; set; }
+
+    [Setting]
+    [DefaultValue(false)]
+    [Category("Mailing")]
+    [DisplayName("Mail Green")]
+    [Description("Allow mailing of green items")]
+    public bool MailGreen { get; set; }
+
+    [Setting]
+    [DefaultValue(false)]
+    [Category("Mailing")]
+    [DisplayName("Mail Blue")]
+    [Description("Allow mailing of blue items")]
+    public bool MailBlue { get; set; }
+
+    [Setting]
+    [DefaultValue(false)]
+    [Category("Mailing")]
+    [DisplayName("Mail Purple")]
+    [Description("Allow mailing of purple items")]
+    public bool MailPurple { get; set; }
+
+    public string Databasetype { get; set; }
     public double LastUpdateDate { get; set; }
     public int LastLevelTrained { get; set; }
     public List<VendorItem> VendorItems { get; set; }
@@ -88,16 +166,31 @@ public class PluginSettings : Settings
     public PluginSettings()
     {
         Databasetype = "external";
-        AutobuyFood = true;
-        AutoBuyWater = true;
-        AllowAutobuyPoison = true;
-        AutobuyAmmunition = true;
-        AutobuyAmmunitionAmount = 2000;
+        FoodAmount = 0;
+        DrinkAmount = 0;
+        AllowAutobuyPoison = ObjectManager.Me.WowClass == WoWClass.Rogue;
+        AutobuyAmmunitionAmount = 0;
         AutoRepair = true;
         AllowAutoSell = true;
         AutoTrain = true;
         LastUpdateDate = 0;
         LastLevelTrained = (int)ObjectManager.Me.Level;
+
+        MinFreeBagSlots = 2;
+        SellGray = true;
+        SellWhite = false;
+        SellGreen = false;
+        SellBlue = false;
+        SellPurple = false;
+
+        AllowMailing = false;
+        MailGray = false;
+        MailWhite = false;
+        MailGreen = false;
+        MailBlue = false;
+        MailPurple = false;
+
+        MailRecipient = "";
 
         TrainLevels = new List<int> {};
 

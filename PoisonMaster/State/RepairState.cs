@@ -2,7 +2,6 @@
 using robotManager.FiniteStateMachine;
 using System.Collections.Generic;
 using System.Threading;
-using wManager;
 using wManager.Wow.Bot.Tasks;
 using wManager.Wow.Enums;
 using wManager.Wow.Helpers;
@@ -16,7 +15,7 @@ public class RepairState : State
     private DatabaseNPC RepairVendor;
     private Timer stateTimer = new Timer();
     private int MinDurability = 35;
-    private int MinFreeSlots => wManagerSetting.CurrentSetting.MinFreeBagSlotsToGoToTown;
+    private int MinFreeSlots => PluginSettings.CurrentSetting.MinFreeBagSlots;
 
     public override bool NeedToRun
     {

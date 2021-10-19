@@ -32,7 +32,7 @@ public class BuyFoodState : State
     private DatabaseNPC FoodVendor;
     private int FoodIdToBuy;
     private string FoodNameToBuy;
-    private int FoodAmountToBuy => wManagerSetting.CurrentSetting.FoodAmount;
+    private int FoodAmountToBuy => CurrentSetting.FoodAmount;
 
     public override bool NeedToRun
     {
@@ -42,7 +42,6 @@ public class BuyFoodState : State
                 || !Main.IsLaunched
                 || !StateTimer.IsReady
                 || Me.Level <= 3
-                || !CurrentSetting.AutobuyFood
                 || FoodAmountToBuy <= 0
                 || Me.IsOnTaxi)
                 return false;
