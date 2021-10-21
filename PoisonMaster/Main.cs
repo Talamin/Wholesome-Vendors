@@ -22,15 +22,7 @@ public class Main : IPlugin
 
     private Timer stateAddTimer;
 
-    // Custom states
-    public static State buyPoisonState = new BuyPoisonState();
-    public static State buyArrowsState = new BuyAmmoState();
-    public static State buyFoodState = new BuyFoodState();
-    public static State buyDrinkState = new BuyDrinkState();
-    public static State repairState = new RepairState();
-    public static State trainingState = new TrainingState();
-
-    public static string version = "1.0.03"; // Must match version in Version.txt
+    public static string version = "1.0.04"; // Must match version in Version.txt
 
     private DB _database;
 
@@ -140,12 +132,12 @@ public class Main : IPlugin
         {
             stateAddTimer = new Timer(3000);
 
-            Helpers.AddState(engine, buyPoisonState, "To Town");
-            Helpers.AddState(engine, buyArrowsState, "To Town");
-            Helpers.AddState(engine, buyFoodState, "To Town");
-            Helpers.AddState(engine, buyDrinkState, "To Town");
-            Helpers.AddState(engine, repairState, "To Town");
-            Helpers.AddState(engine, trainingState, "Trainers");
+            Helpers.AddState(engine, new BuyPoisonState(), "To Town");
+            Helpers.AddState(engine, new BuyAmmoState(), "To Town");
+            Helpers.AddState(engine, new BuyFoodState(), "To Town");
+            Helpers.AddState(engine, new BuyDrinkState(), "To Town");
+            Helpers.AddState(engine, new RepairState(), "To Town");
+            Helpers.AddState(engine, new TrainingState(), "Trainers");
             //engine.RemoveStateByName("To Town");
         }
     }

@@ -69,7 +69,7 @@ public class PluginSettings : Settings
     public bool SellGrayItems { get; set; }
 
     [Setting]
-    [DefaultValue(true)]
+    [DefaultValue(false)]
     [Category("Sell")]
     [DisplayName("Sell White")]
     [Description("Allow selling of white items")]

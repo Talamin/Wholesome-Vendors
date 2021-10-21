@@ -278,6 +278,7 @@ namespace PoisonMaster
             {
                 if (item != null
                     && !wManagerSetting.CurrentSetting.DoNotSellList.Contains(item.Name)
+                    && ShouldSellByQuality(item)
                     && item.GetItemInfo.ItemSellPrice > 0)
                     listItemsToSell.Add(item.Name);
             }
@@ -296,6 +297,16 @@ namespace PoisonMaster
                 if (Bag.GetBagItem().Count < nbItemsInBags)
                     break;
             }
+        }
+
+        private static bool ShouldSellByQuality(WoWItem item)
+        {
+            if (item.GetItemInfo.ItemRarity == 0 && PluginSettings.CurrentSetting.SellGrayItems) return true;
+            if (item.GetItemInfo.ItemRarity == 1 && PluginSettings.CurrentSetting.SellWhiteItems) return true;
+            if (item.GetItemInfo.ItemRarity == 2 && PluginSettings.CurrentSetting.SellGreenItems) return true;
+            if (item.GetItemInfo.ItemRarity == 3 && PluginSettings.CurrentSetting.SellBlueItems) return true;
+            if (item.GetItemInfo.ItemRarity == 4 && PluginSettings.CurrentSetting.SellPurpleItems) return true;
+            return false;
         }
 
         public static void OverrideWRobotUserSettings()
