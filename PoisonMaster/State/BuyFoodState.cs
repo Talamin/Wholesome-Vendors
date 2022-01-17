@@ -16,14 +16,14 @@ public class BuyFoodState : State
     private static readonly Dictionary<int, HashSet<int>> FoodDictionary = new Dictionary<int, HashSet<int>>
     {
         { 75, new HashSet<int>{ 35953 } }, // Mead Basted Caribouhl au
-        { 65, new HashSet<int>{ 29451, 29449, 29450, 29448, 29452, 29453, 33454, 33443 } }, // Clefthoof Ribs
-        { 55, new HashSet<int>{ 27854, 27855, 27856, 27857, 27858, 27859 } }, // Smoked Talbuk Venison 
-        { 45, new HashSet<int>{ 8952, 8950, 8932, 8948, 8957} }, // Roasted Quail
-        { 35, new HashSet<int>{ 4599, 4601, 3927, 4608, 6887 } }, // Cured Ham Steak
-        { 25, new HashSet<int>{ 3771, 4544, 1707, 4607, 4594, 4539 } }, // Wild Hog Shank
-        { 15, new HashSet<int>{ 3770, 4542, 422, 4606, 4593, 4538 } }, // Mutton Chop
-        { 10, new HashSet<int>{ 2287, 4541, 414, 4605, 4592, 4538} }, // Haunch of Meat
-        { 0, new HashSet<int>{ 117, 4540, 2070, 4604, 787 , 4536} }, // Haunch of Meat
+        { 65, new HashSet<int>{ 29451, 29449, 29450, 29448, 29452, 29453, 33454, 33443 } },
+        { 55, new HashSet<int>{ 27854, 27855, 27856, 27857, 27858, 27859 } },
+        { 45, new HashSet<int>{ 8952, 8950, 8932, 8948, 8957} },
+        { 35, new HashSet<int>{ 4599, 4601, 3927, 4608, 6887 } },
+        { 25, new HashSet<int>{ 3771, 4544, 1707, 4607, 4594, 4539 } },
+        { 15, new HashSet<int>{ 3770, 4542, 422, 4606, 4593, 4538 } },
+        { 10, new HashSet<int>{ 2287, 4541, 414, 4605, 4592} },
+        { 0, new HashSet<int>{ 117, 4540, 2070, 4604, 787 , 4536} },
     };
 
     private readonly WoWLocalPlayer Me = ObjectManager.Me;
