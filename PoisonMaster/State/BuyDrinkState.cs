@@ -19,6 +19,7 @@ public class BuyDrinkState : State
     private int DrinkIdToBuy;
     private string DrinkNameToBuy;
     private int DrinkAmountToBuy => PluginSettings.CurrentSetting.DrinkNbToBuy;
+    private int NbDrinksInBag;
 
     private static readonly Dictionary<int, HashSet<int>> WaterDictionary = new Dictionary<int, HashSet<int>>
         {
@@ -49,10 +50,17 @@ public class BuyDrinkState : State
             stateTimer = new Timer(5000);
 
             SetDrinkAndVendor();
+            NbDrinksInBag = GetNbDrinksInBags();
 
-            if (DrinkIdToBuy > 0
-                && GetNbDrinksInBags() <= 3)
+            if (DrinkIdToBuy > 0 
+                && NbDrinksInBag <= DrinkAmountToBuy / 10)
                 return DrinkVendor != null;
+            // Drive-by
+            if (DrinkIdToBuy > 0 
+                && NbDrinksInBag <= DrinkAmountToBuy / 2
+                && DrinkVendor != null
+                && DrinkVendor.Position.DistanceTo(ObjectManager.Me.Position) < PluginSettings.CurrentSetting.DriveByDistance)
+                return true;
 
             return false;
         }
@@ -60,7 +68,7 @@ public class BuyDrinkState : State
 
     public override void Run()
     {
-        Main.Logger($"Buying {DrinkAmountToBuy} x {DrinkNameToBuy} [{DrinkIdToBuy}] at vendor {DrinkVendor.Name}");
+        Main.Logger($"Buying {DrinkAmountToBuy - NbDrinksInBag} x {DrinkNameToBuy} [{DrinkIdToBuy}] at vendor {DrinkVendor.Name}");
 
         Helpers.CheckMailboxNearby(DrinkVendor);
 
@@ -87,14 +95,14 @@ public class BuyDrinkState : State
                 {
                     // Sell first
                     Helpers.SellItems(DrinkVendor);
-                    if (!Helpers.HaveEnoughMoneyFor(DrinkAmountToBuy, DrinkNameToBuy))
+                    if (!Helpers.HaveEnoughMoneyFor(DrinkAmountToBuy - NbDrinksInBag, DrinkNameToBuy))
                     {
                         Main.Logger("Not enough money. Item prices sold by this vendor are now recorded.");
                         Helpers.CloseWindow();
                         return;
                     }
                     PluginSettings.VendorItem vendorItem = PluginSettings.CurrentSetting.VendorItems.Find(item => item.Name == DrinkNameToBuy);
-                    Helpers.BuyItem(DrinkNameToBuy, DrinkAmountToBuy, vendorItem.Stack);
+                    Helpers.BuyItem(DrinkNameToBuy, DrinkAmountToBuy - NbDrinksInBag, vendorItem.Stack);
                     Helpers.CloseWindow();
                     Thread.Sleep(1000);
                     if (ItemsManager.GetItemCountById((uint)DrinkIdToBuy) >= DrinkAmountToBuy)

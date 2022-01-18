@@ -159,6 +159,7 @@ public class PluginSettings : Settings
     public bool MailPurpleItems { get; set; }
 
     public string Databasetype { get; set; }
+    public int DriveByDistance { get; set; }
     public double LastUpdateDate { get; set; }
     public int LastLevelTrained { get; set; }
     public List<VendorItem> VendorItems { get; set; }
@@ -166,6 +167,7 @@ public class PluginSettings : Settings
     public PluginSettings()
     {
         Databasetype = "external";
+        DriveByDistance = 100;
         FoodNbToBuy = 20;
         DrinkNbToBuy = ObjectManager.Me.WowClass == WoWClass.Paladin
             || ObjectManager.Me.WowClass == WoWClass.Hunter

@@ -32,6 +32,7 @@ public class BuyFoodState : State
     private int FoodIdToBuy;
     private string FoodNameToBuy;
     private int FoodAmountToBuy => PluginSettings.CurrentSetting.FoodNbToBuy;
+    private int NbFoodsInBags;
 
     public override bool NeedToRun
     {
@@ -48,10 +49,17 @@ public class BuyFoodState : State
             StateTimer = new Timer(5000);
 
             SetFoodAndVendor();
+            NbFoodsInBags = GetNbOfFoodInBags();
 
             if (FoodIdToBuy > 0
-                && GetNbOfFoodInBags() <= 3)
+                && NbFoodsInBags <= FoodAmountToBuy / 10)
                 return FoodVendor != null;
+            // Drive-by
+            if (FoodIdToBuy > 0
+                && NbFoodsInBags <= FoodAmountToBuy / 2
+                && FoodVendor != null
+                && FoodVendor.Position.DistanceTo(ObjectManager.Me.Position) < PluginSettings.CurrentSetting.DriveByDistance)
+                return true;
 
             return false;
         }
@@ -59,7 +67,7 @@ public class BuyFoodState : State
 
     public override void Run()
     {
-        Main.Logger($"Buying {FoodAmountToBuy} x {FoodNameToBuy} [{FoodIdToBuy}] at vendor {FoodVendor.Name}");
+        Main.Logger($"Buying {FoodAmountToBuy - NbFoodsInBags} x {FoodNameToBuy} [{FoodIdToBuy}] at vendor {FoodVendor.Name}");
 
         Helpers.CheckMailboxNearby(FoodVendor);
 
@@ -86,13 +94,13 @@ public class BuyFoodState : State
                 {
                     // Sell first
                     Helpers.SellItems(FoodVendor);
-                    if (!Helpers.HaveEnoughMoneyFor(FoodAmountToBuy, FoodNameToBuy))
+                    if (!Helpers.HaveEnoughMoneyFor(FoodAmountToBuy - NbFoodsInBags, FoodNameToBuy))
                     {
                         Main.Logger("Not enough money. Item prices sold by this vendor are now recorded.");
                         Helpers.CloseWindow();
                         return;
                     }
-                    Helpers.BuyItem(FoodNameToBuy, FoodAmountToBuy, 5);
+                    Helpers.BuyItem(FoodNameToBuy, FoodAmountToBuy - NbFoodsInBags, 5);
                     Helpers.CloseWindow();
                     Thread.Sleep(1000);
                     if (ItemsManager.GetItemCountById((uint)FoodIdToBuy) >= FoodAmountToBuy)

@@ -17,6 +17,7 @@ public class BuyAmmoState : State
     private int AmmoIdToBuy;
     private string AmmoNameToBuy;
     private int AmmoAmountToBuy => PluginSettings.CurrentSetting.AmmoAmount;
+    private int NbAmmoInBags;
 
     private readonly Dictionary<int, int> ArrowDictionary = new Dictionary<int, int>
     {
@@ -55,10 +56,17 @@ public class BuyAmmoState : State
             stateTimer = new Timer(5000);
 
             SetAmmoAndVendor();
-            
-            if (AmmoIdToBuy > 0
-                && GetNbAmmosInBags() <= 50)
+            NbAmmoInBags = GetNbAmmosInBags();
+
+            if (AmmoIdToBuy > 0 
+                && NbAmmoInBags <= PluginSettings.CurrentSetting.AmmoAmount / 10)
                 return AmmoVendor != null;
+            // Drive-by
+            if (AmmoIdToBuy > 0 
+                && NbAmmoInBags <= PluginSettings.CurrentSetting.AmmoAmount / 2 
+                && AmmoVendor != null
+                && AmmoVendor.Position.DistanceTo(ObjectManager.Me.Position) < PluginSettings.CurrentSetting.DriveByDistance)
+                return true;
 
             return false;
         }
@@ -66,7 +74,7 @@ public class BuyAmmoState : State
 
     public override void Run()
     {
-        Main.Logger($"Buying {AmmoAmountToBuy} x {AmmoNameToBuy} [{AmmoIdToBuy}] at vendor {AmmoVendor.Name}");
+        Main.Logger($"Buying {AmmoAmountToBuy - NbAmmoInBags} x {AmmoNameToBuy} [{AmmoIdToBuy}] at vendor {AmmoVendor.Name}");
 
         Helpers.CheckMailboxNearby(AmmoVendor);
 
@@ -93,14 +101,14 @@ public class BuyAmmoState : State
                 {
                     // Sell first
                     Helpers.SellItems(AmmoVendor);
-                    if (!Helpers.HaveEnoughMoneyFor(AmmoAmountToBuy, AmmoNameToBuy))
+                    if (!Helpers.HaveEnoughMoneyFor(AmmoAmountToBuy - NbAmmoInBags, AmmoNameToBuy))
                     {
                         Main.Logger("Not enough money. Item prices sold by this vendor are now recorded.");
                         Helpers.CloseWindow();
                         return;
                     }
                     PluginSettings.VendorItem vendorItem = PluginSettings.CurrentSetting.VendorItems.Find(item => item.Name == AmmoNameToBuy);
-                    Helpers.BuyItem(AmmoNameToBuy, AmmoAmountToBuy, vendorItem.Stack);
+                    Helpers.BuyItem(AmmoNameToBuy, AmmoAmountToBuy - NbAmmoInBags, vendorItem.Stack);
                     Helpers.CloseWindow();
                     Thread.Sleep(1000);
                     if (ItemsManager.GetItemCountById((uint)AmmoIdToBuy) >= AmmoAmountToBuy)

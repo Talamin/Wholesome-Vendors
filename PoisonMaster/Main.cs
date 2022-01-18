@@ -22,7 +22,7 @@ public class Main : IPlugin
 
     private Timer stateAddTimer;
 
-    public static string version = "1.0.06"; // Must match version in Version.txt
+    public static string version = "1.1.00"; // Must match version in Version.txt
 
     private DB _database;
 

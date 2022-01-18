@@ -29,6 +29,14 @@ public class RepairState : State
 
             stateTimer = new Timer(5000);
 
+            // Drive-by
+            if (PluginSettings.CurrentSetting.AllowRepair && ObjectManager.Me.GetDurabilityPercent < 70)
+            {
+                DatabaseNPC closestNPC = Database.GetRepairVendor();
+                if (closestNPC.Position.DistanceTo(ObjectManager.Me.Position) < PluginSettings.CurrentSetting.DriveByDistance)
+                    RepairVendor = closestNPC;
+                return RepairVendor != null;
+            }
             if (PluginSettings.CurrentSetting.AllowRepair && ObjectManager.Me.GetDurabilityPercent < MinDurability)
             {
                 RepairVendor = Database.GetRepairVendor();
