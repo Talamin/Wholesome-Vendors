@@ -55,6 +55,7 @@ public class BuyDrinkState : State
             if (DrinkIdToBuy > 0 
                 && NbDrinksInBag <= DrinkAmountToBuy / 10)
                 return DrinkVendor != null;
+
             // Drive-by
             if (DrinkIdToBuy > 0 
                 && NbDrinksInBag <= DrinkAmountToBuy / 2

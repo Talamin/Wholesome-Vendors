@@ -61,6 +61,7 @@ public class BuyAmmoState : State
             if (AmmoIdToBuy > 0 
                 && NbAmmoInBags <= PluginSettings.CurrentSetting.AmmoAmount / 10)
                 return AmmoVendor != null;
+
             // Drive-by
             if (AmmoIdToBuy > 0 
                 && NbAmmoInBags <= PluginSettings.CurrentSetting.AmmoAmount / 2 

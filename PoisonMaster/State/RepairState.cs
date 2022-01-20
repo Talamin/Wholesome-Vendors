@@ -28,6 +28,16 @@ public class RepairState : State
                 return false;
 
             stateTimer = new Timer(5000);
+            if (PluginSettings.CurrentSetting.AllowRepair && ObjectManager.Me.GetDurabilityPercent < MinDurability)
+            {
+                RepairVendor = Database.GetRepairVendor();
+                return RepairVendor != null;
+            }
+            if (PluginSettings.CurrentSetting.AllowSell && Bag.GetContainerNumFreeSlotsByType(BagType.Unspecified) <= MinFreeSlots)
+            {
+                RepairVendor = Database.GetSellVendor();
+                return RepairVendor != null;
+            }
 
             // Drive-by
             if (PluginSettings.CurrentSetting.AllowRepair && ObjectManager.Me.GetDurabilityPercent < 70)
@@ -35,16 +45,6 @@ public class RepairState : State
                 DatabaseNPC closestNPC = Database.GetRepairVendor();
                 if (closestNPC.Position.DistanceTo(ObjectManager.Me.Position) < PluginSettings.CurrentSetting.DriveByDistance)
                     RepairVendor = closestNPC;
-                return RepairVendor != null;
-            }
-            if (PluginSettings.CurrentSetting.AllowRepair && ObjectManager.Me.GetDurabilityPercent < MinDurability)
-            {
-                RepairVendor = Database.GetRepairVendor();
-                return RepairVendor != null;
-            }
-            else if (PluginSettings.CurrentSetting.AllowSell && Bag.GetContainerNumFreeSlotsByType(BagType.Unspecified) <= MinFreeSlots)
-            {
-                RepairVendor = Database.GetSellVendor();
                 return RepairVendor != null;
             }
 
