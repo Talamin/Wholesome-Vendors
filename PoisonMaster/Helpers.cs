@@ -388,10 +388,11 @@ namespace PoisonMaster
         {
             if (PluginSettings.CurrentSetting.VendorItems.Exists(i => i.Name == itemName))
             {
-                PluginSettings.VendorItem foodItem = PluginSettings.CurrentSetting.VendorItems.Find(i => i.Name == itemName);
-                if (GetMoney < foodItem.Price / foodItem.Stack * amount)
+                PluginSettings.VendorItem vendorItem = PluginSettings.CurrentSetting.VendorItems.Find(i => i.Name == itemName);
+                //Main.Logger($"We have {GetMoney} Copper on our Bank and we found Item {foodItem.Name} with the price of {foodItem.Price} and with Stacksize of {foodItem.Stack} ");
+                if (GetMoney < vendorItem.Price * amount)
                 {
-                    //Main.Logger($"You need {foodItem.Price / foodItem.Stack * amount} copper to buy {amount} x {itemName} but you only have {GetMoney}");
+                    Main.Logger($"You need {vendorItem.Price * amount / vendorItem.Stack} copper to buy {amount} x {itemName} but you only have {GetMoney}");
                     return false;
                 }
             }
