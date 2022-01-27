@@ -13,7 +13,7 @@ using wManager.Wow.Enums;
 public class PluginSettings : Settings
 {
     [Setting]
-    [DefaultValue(0)]
+    [DefaultValue(20)]
     [Category("Buy")]
     [DisplayName("Food")]
     [Description("Food amount to buy")]
@@ -169,13 +169,14 @@ public class PluginSettings : Settings
         Databasetype = "external";
         DriveByDistance = 100;
         FoodNbToBuy = 20;
-        DrinkNbToBuy = ObjectManager.Me.WowClass == WoWClass.Paladin
-            || ObjectManager.Me.WowClass == WoWClass.Hunter
-            || ObjectManager.Me.WowClass == WoWClass.Priest
-            || ObjectManager.Me.WowClass == WoWClass.Shaman
-            || ObjectManager.Me.WowClass == WoWClass.Mage
-            || ObjectManager.Me.WowClass == WoWClass.Warlock
-            || ObjectManager.Me.WowClass == WoWClass.Druid ? 20 : 0;
+        DrinkNbToBuy = 0;
+        //DrinkNbToBuy = ObjectManager.Me.WowClass == WoWClass.Paladin
+        //    || ObjectManager.Me.WowClass == WoWClass.Hunter
+        //    || ObjectManager.Me.WowClass == WoWClass.Priest
+        //    || ObjectManager.Me.WowClass == WoWClass.Shaman
+        //    || ObjectManager.Me.WowClass == WoWClass.Mage
+        //    || ObjectManager.Me.WowClass == WoWClass.Warlock
+        //    || ObjectManager.Me.WowClass == WoWClass.Druid ? 20 : 0;
         BuyPoison = ObjectManager.Me.WowClass == WoWClass.Rogue;
         AmmoAmount = ObjectManager.Me.WowClass == WoWClass.Hunter ? 2000 : 0;
         AllowRepair = true;
