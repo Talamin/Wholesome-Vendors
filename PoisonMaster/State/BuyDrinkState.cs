@@ -54,14 +54,18 @@ public class BuyDrinkState : State
 
             if (DrinkIdToBuy > 0 
                 && NbDrinksInBag <= DrinkAmountToBuy / 10)
+            {
                 return DrinkVendor != null;
+            }
 
             // Drive-by
             if (DrinkIdToBuy > 0 
                 && NbDrinksInBag <= DrinkAmountToBuy / 2
                 && DrinkVendor != null
                 && DrinkVendor.Position.DistanceTo(ObjectManager.Me.Position) < PluginSettings.CurrentSetting.DriveByDistance)
+            {
                 return true;
+            }
 
             return false;
         }

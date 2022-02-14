@@ -27,6 +27,8 @@ public class RepairState : State
                 || ObjectManager.Me.IsOnTaxi)
                 return false;
 
+            // separate sell and repair
+
             stateTimer = new Timer(5000);
             if (PluginSettings.CurrentSetting.AllowRepair && ObjectManager.Me.GetDurabilityPercent < MinDurability)
             {
@@ -42,10 +44,15 @@ public class RepairState : State
             // Drive-by
             if (PluginSettings.CurrentSetting.AllowRepair && ObjectManager.Me.GetDurabilityPercent < 70)
             {
-                DatabaseNPC closestNPC = Database.GetRepairVendor();
-                if (closestNPC.Position.DistanceTo(ObjectManager.Me.Position) < PluginSettings.CurrentSetting.DriveByDistance)
-                    RepairVendor = closestNPC;
-                return RepairVendor != null;
+                RepairVendor = Database.GetRepairVendor();
+                return RepairVendor != null
+                    && RepairVendor.Position.DistanceTo(ObjectManager.Me.Position) < PluginSettings.CurrentSetting.DriveByDistance;
+            }
+            if (PluginSettings.CurrentSetting.AllowSell && Helpers.GetItemsToSell().Count > 5)
+            {
+                RepairVendor = Database.GetSellVendor();
+                return RepairVendor != null
+                    && RepairVendor.Position.DistanceTo(ObjectManager.Me.Position) < PluginSettings.CurrentSetting.DriveByDistance;
             }
 
             return false;

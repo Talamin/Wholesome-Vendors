@@ -264,6 +264,20 @@ namespace PoisonMaster
             return listQualityMail;
         }
 
+        public static List<string> GetItemsToSell()
+        {
+            List<string> listItemsToSell = new List<string>();
+            foreach (WoWItem item in Bag.GetBagItem())
+            {
+                if (item != null
+                    && !wManagerSetting.CurrentSetting.DoNotSellList.Contains(item.Name)
+                    && ShouldSellByQuality(item)
+                    && item.GetItemInfo.ItemSellPrice > 0)
+                    listItemsToSell.Add(item.Name);
+            }
+            return listItemsToSell;
+        }
+
         public static void SellItems(DatabaseNPC vendor)
         {
             if (!PluginSettings.CurrentSetting.AllowSell)
@@ -273,15 +287,7 @@ namespace PoisonMaster
             List<WoWItem> bagItems = Bag.GetBagItem();
             int nbItemsInBags = bagItems.Count;
 
-            List<string> listItemsToSell = new List<string>();
-            foreach (WoWItem item in bagItems)
-            {
-                if (item != null
-                    && !wManagerSetting.CurrentSetting.DoNotSellList.Contains(item.Name)
-                    && ShouldSellByQuality(item)
-                    && item.GetItemInfo.ItemSellPrice > 0)
-                    listItemsToSell.Add(item.Name);
-            }
+            List<string> listItemsToSell = GetItemsToSell();
 
             if (listItemsToSell.Count <= 0)
                 return;

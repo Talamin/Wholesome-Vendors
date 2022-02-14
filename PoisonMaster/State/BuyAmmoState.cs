@@ -60,14 +60,18 @@ public class BuyAmmoState : State
 
             if (AmmoIdToBuy > 0 
                 && NbAmmoInBags <= PluginSettings.CurrentSetting.AmmoAmount / 10)
+            {
                 return AmmoVendor != null;
+            }
 
             // Drive-by
             if (AmmoIdToBuy > 0 
                 && NbAmmoInBags <= PluginSettings.CurrentSetting.AmmoAmount / 2 
                 && AmmoVendor != null
                 && AmmoVendor.Position.DistanceTo(ObjectManager.Me.Position) < PluginSettings.CurrentSetting.DriveByDistance)
+            {
                 return true;
+            }
 
             return false;
         }
