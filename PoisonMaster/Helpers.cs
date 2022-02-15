@@ -273,7 +273,9 @@ namespace PoisonMaster
                     && !wManagerSetting.CurrentSetting.DoNotSellList.Contains(item.Name)
                     && ShouldSellByQuality(item)
                     && item.GetItemInfo.ItemSellPrice > 0)
+                {
                     listItemsToSell.Add(item.Name);
+                }
             }
             return listItemsToSell;
         }
@@ -301,7 +303,14 @@ namespace PoisonMaster
                 Vendor.SellItems(listItemsToSell, wManagerSetting.CurrentSetting.DoNotSellList, GetListQualityToSell());
                 Thread.Sleep(200);
                 if (Bag.GetBagItem().Count < nbItemsInBags)
+                {
                     break;
+                }
+                if (i >= 5)
+                {
+                    Main.Logger($"Failed to sell items after {i} attempts. Blacklisting vendor.");
+                    NPCBlackList.AddNPCToBlacklist(vendor.Id);
+                }
             }
         }
 
