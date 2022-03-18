@@ -1,45 +1,25 @@
-﻿using robotManager.FiniteStateMachine;
+﻿using PoisonMaster;
+using robotManager.FiniteStateMachine;
+using robotManager.Helpful;
 using System.Collections.Generic;
+using System.Threading;
+using Wholesome_Vendors.Database;
+using Wholesome_Vendors.Database.Models;
 using wManager.Wow.Bot.Tasks;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
 using Timer = robotManager.Helpful.Timer;
-using PoisonMaster;
-using System.Threading;
 
 public class BuyAmmoState : State
 {
-    public override string DisplayName => "WV Buying Ammunition";
+    public override string DisplayName { get; set; } = "WV Buying Ammunition";
 
     private WoWLocalPlayer Me = ObjectManager.Me;
     private Timer stateTimer = new Timer();
-    private DatabaseNPC AmmoVendor;
-    private int AmmoIdToBuy;
-    private string AmmoNameToBuy;
+    private ModelNpcVendor AmmoVendor;
+    private ModelItemTemplate AmmoToBuy;
     private int AmmoAmountToBuy => PluginSettings.CurrentSetting.AmmoAmount;
     private int NbAmmoInBags;
-
-    private readonly Dictionary<int, int> ArrowDictionary = new Dictionary<int, int>
-    {
-        { 75, 41586 },
-        { 65, 28056 },
-        { 55, 28053 },
-        { 40, 11285 },
-        { 25, 3030 },
-        { 10, 2515 },
-        { 1, 2512 },
-    };
-
-    private readonly Dictionary<int, int> BulletsDictionary = new Dictionary<int, int>
-    {
-        {75 ,41584},
-        {65 ,28061},
-        {55, 28060},
-        {40, 11284},
-        {25, 3033},
-        {10, 2519 },
-        {1, 2516 },
-    };
 
     public override bool NeedToRun
     {
@@ -54,22 +34,25 @@ public class BuyAmmoState : State
                 return false;
 
             stateTimer = new Timer(5000);
+            AmmoVendor = null;
+            AmmoToBuy = null;
 
             SetAmmoAndVendor();
             NbAmmoInBags = GetNbAmmosInBags();
 
-            if (AmmoIdToBuy > 0 
+            if (AmmoVendor != null
                 && NbAmmoInBags <= PluginSettings.CurrentSetting.AmmoAmount / 10)
             {
-                return AmmoVendor != null;
+                DisplayName = $"Buying {AmmoAmountToBuy - NbAmmoInBags} x {AmmoToBuy.Name} at vendor {AmmoVendor.CreatureTemplate.name}";
+                return true;
             }
 
             // Drive-by
-            if (AmmoIdToBuy > 0 
-                && NbAmmoInBags <= PluginSettings.CurrentSetting.AmmoAmount / 2 
-                && AmmoVendor != null
-                && AmmoVendor.Position.DistanceTo(ObjectManager.Me.Position) < PluginSettings.CurrentSetting.DriveByDistance)
+            if (AmmoVendor != null
+                && NbAmmoInBags <= PluginSettings.CurrentSetting.AmmoAmount / 2
+                && AmmoVendor.CreatureTemplate.Creature.GetSpawnPosition.DistanceTo(ObjectManager.Me.Position) < PluginSettings.CurrentSetting.DriveByDistance)
             {
+                DisplayName = $"Drive-by buying {AmmoAmountToBuy - NbAmmoInBags} x {AmmoToBuy.Name} at vendor {AmmoVendor.CreatureTemplate.name}";
                 return true;
             }
 
@@ -79,121 +62,80 @@ public class BuyAmmoState : State
 
     public override void Run()
     {
-        Main.Logger($"Buying {AmmoAmountToBuy - NbAmmoInBags} x {AmmoNameToBuy} [{AmmoIdToBuy}] at vendor {AmmoVendor.Name}");
+        Main.Logger(DisplayName);
 
-        Helpers.CheckMailboxNearby(AmmoVendor);
+        Helpers.CheckMailboxNearby(AmmoVendor.CreatureTemplate);
+        Vector3 vendorPos = AmmoVendor.CreatureTemplate.Creature.GetSpawnPosition;
 
-        if (Me.Position.DistanceTo(AmmoVendor.Position) >= 10)
-            GoToTask.ToPositionAndIntecractWithNpc(AmmoVendor.Position, AmmoVendor.Id);
+        if (Me.Position.DistanceTo(vendorPos) >= 10)
+            GoToTask.ToPositionAndIntecractWithNpc(vendorPos, AmmoVendor.entry);
 
-        if (Me.Position.DistanceTo(AmmoVendor.Position) < 10)
+        if (Me.Position.DistanceTo(vendorPos) < 10)
         {
-            if (Helpers.NpcIsAbsentOrDead(AmmoVendor))
+            if (Helpers.NpcIsAbsentOrDead(AmmoVendor.CreatureTemplate))
                 return;
 
-            ClearDoNotSellListFromAmmos();
-            Helpers.AddItemToDoNotSellList(AmmoNameToBuy);
-            Helpers.AddItemToDoNotMailList(AmmoNameToBuy);
- 
-            List<string> allAmmoNames = GetPotentialAmmoNames();
+            ClearObsoleteAmmo();
+            Helpers.AddItemToDoNotSellList(AmmoToBuy.Name);
+            Helpers.AddItemToDoNotMailList(AmmoToBuy.Name);
 
             for (int i = 0; i <= 5; i++)
             {
-                GoToTask.ToPositionAndIntecractWithNpc(AmmoVendor.Position, AmmoVendor.Id, i);
+                GoToTask.ToPositionAndIntecractWithNpc(vendorPos, AmmoVendor.entry, i);
                 Thread.Sleep(500);
                 Lua.LuaDoString($"StaticPopup1Button2:Click()"); // discard hearthstone popup
-                if (Helpers.OpenRecordVendorItems(allAmmoNames)) // also checks if vendor window is open
+                if (Helpers.IsVendorGossipOpen())
                 {
-                    // Sell first
-                    Helpers.SellItems(AmmoVendor);
-                    if (!Helpers.HaveEnoughMoneyFor(AmmoAmountToBuy - NbAmmoInBags, AmmoNameToBuy))
-                    {
-                        Main.Logger("Not enough money. Item prices sold by this vendor are now recorded.");
-                        Helpers.CloseWindow();
-                        return;
-                    }
-                    PluginSettings.VendorItem vendorItem = PluginSettings.CurrentSetting.VendorItems.Find(item => item.Name == AmmoNameToBuy);
-                    Helpers.BuyItem(AmmoNameToBuy, AmmoAmountToBuy - NbAmmoInBags, vendorItem.Stack);
+                    Helpers.SellItems(AmmoVendor.CreatureTemplate);
+                    Helpers.BuyItem(AmmoToBuy.Name, AmmoAmountToBuy - GetNbAmmosInBags(), AmmoToBuy.BuyCount);
                     Helpers.CloseWindow();
                     Thread.Sleep(1000);
-                    if (ItemsManager.GetItemCountById((uint)AmmoIdToBuy) >= AmmoAmountToBuy)
+                    if (GetNbAmmosInBags() >= AmmoAmountToBuy)
                         return;
                 }
             }
-            Main.Logger($"Failed to buy {AmmoIdToBuy}, blacklisting vendor");
-            NPCBlackList.AddNPCToBlacklist(AmmoVendor.Id);
+            Main.Logger($"Failed to buy {AmmoToBuy.Name}, blacklisting vendor");
+            NPCBlackList.AddNPCToBlacklist(AmmoVendor.CreatureTemplate.entry);
         }
     }
 
-    private List<string> GetPotentialAmmoNames()
+    private void ClearObsoleteAmmo()
     {
-        List<string> allAmmos = new List<string>();
-
-        foreach (KeyValuePair<int, int> arrow in ArrowDictionary)
-            allAmmos.Add(Database.GetItemName(arrow.Value));
-        foreach (KeyValuePair<int, int> bullet in BulletsDictionary)
-            allAmmos.Add(Database.GetItemName(bullet.Value));
-
-        return allAmmos;
-    }
-
-    private void ClearDoNotSellListFromAmmos()
-    {
-        foreach (KeyValuePair<int, int> arrow in ArrowDictionary)
-            Helpers.RemoveItemFromDoNotSellList(Database.GetItemName(arrow.Value));
-
-        foreach (KeyValuePair<int, int> bullet in BulletsDictionary)
-            Helpers.RemoveItemFromDoNotSellList(Database.GetItemName(bullet.Value));
+        foreach (ModelItemTemplate ammo in MemoryDB.GetUsableAmmos())
+        {
+            Helpers.RemoveItemFromDoNotSellList(ammo.Name);
+        }
     }
 
     private void SetAmmoAndVendor()
     {
-        AmmoVendor = null;
-        AmmoIdToBuy = 0;
-        foreach (int ammoId in GetListUsableAmmo())
-        {
-            DatabaseNPC vendorWithThisAmmo = Database.GetAmmoVendor(new HashSet<int>() { ammoId });
-            if (vendorWithThisAmmo != null && Helpers.HaveEnoughMoneyFor(AmmoAmountToBuy, Database.GetItemName(ammoId)))
-            {
-                AmmoIdToBuy = ammoId;
-                AmmoVendor = vendorWithThisAmmo;
-                AmmoNameToBuy = Database.GetItemName(ammoId);
-                return;
-            }
-        }
+        ModelItemTemplate ammoToBuy = MemoryDB.GetUsableAmmos()
+            .Find(ammo => Helpers.HaveEnoughMoneyFor(AmmoAmountToBuy, ammo));
 
-        if (AmmoVendor == null)
+        ModelNpcVendor vendor = MemoryDB.GetNearestItemVendor(ammoToBuy);
+
+        if (vendor == null)
+        {
             Main.Logger($"Couldn't find any ammo vendor");
-    }
+            return;
+        }
 
-    private HashSet<int> GetListUsableAmmo()
-    {
-        HashSet<int> listAmmo = new HashSet<int>();
-        if (Helpers.GetRangedWeaponType() == "Bows")
-        {
-            foreach (KeyValuePair<int, int> arrow in ArrowDictionary)
-            {
-                if (arrow.Key <= Me.Level)
-                    listAmmo.Add(arrow.Value);
-            }
-        }
-        else if (Helpers.GetRangedWeaponType() == "Guns")
-        {
-            foreach (KeyValuePair<int, int> bullet in BulletsDictionary)
-            {
-                if (bullet.Key <= Me.Level)
-                    listAmmo.Add(bullet.Value);
-            }
-        }
-        return listAmmo;
+        AmmoToBuy = ammoToBuy;
+        AmmoVendor = vendor;
     }
 
     private int GetNbAmmosInBags()
     {
         int nbAmmosInBags = 0;
-        foreach (int arrow in GetListUsableAmmo())
-            nbAmmosInBags += ItemsManager.GetItemCountById((uint)arrow);
-
+        List<WoWItem> items = Bag.GetBagItem();
+        List<ModelItemTemplate> allAmmos = MemoryDB.GetUsableAmmos();
+        foreach (WoWItem item in items)
+        {
+            if (allAmmos.Exists(ua => ua.Entry == item.Entry))
+            {
+                nbAmmosInBags += ItemsManager.GetItemCountById((uint)item.Entry);
+            }
+        }
         return nbAmmosInBags;
     }
 }

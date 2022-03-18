@@ -1,38 +1,28 @@
-﻿using robotManager.FiniteStateMachine;
+﻿using PoisonMaster;
+using robotManager.FiniteStateMachine;
+using robotManager.Helpful;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Wholesome_Vendors.Database;
+using Wholesome_Vendors.Database.Models;
 using wManager;
 using wManager.Wow.Bot.Tasks;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
 using Timer = robotManager.Helpful.Timer;
-using PoisonMaster;
 
 public class BuyFoodState : State
 {
-    public override string DisplayName => "WV Buying Food";
-
-    private static readonly Dictionary<int, HashSet<int>> FoodDictionary = new Dictionary<int, HashSet<int>>
-    {
-        { 75, new HashSet<int>{ 35953 } }, // Mead Basted Caribouhl au
-        { 65, new HashSet<int>{ 29451, 29449, 29450, 29448, 29452, 29453, 33454, 33443 } },
-        { 55, new HashSet<int>{ 27854, 27855, 27856, 27857, 27858, 27859 } },
-        { 45, new HashSet<int>{ 8952, 8950, 8932, 8948, 8957} },
-        { 35, new HashSet<int>{ 4599, 4601, 3927, 4608, 6887 } },
-        { 25, new HashSet<int>{ 3771, 4544, 1707, 4607, 4594, 4539 } },
-        { 15, new HashSet<int>{ 3770, 4542, 422, 4606, 4593, 4538 } },
-        { 10, new HashSet<int>{ 2287, 4541, 414, 4605, 4592} },
-        { 0, new HashSet<int>{ 117, 4540, 2070, 4604, 787 , 4536} },
-    };
+    public override string DisplayName { get; set; } = "WV Buying Food";
 
     private readonly WoWLocalPlayer Me = ObjectManager.Me;
     private Timer StateTimer = new Timer();
-    private DatabaseNPC FoodVendor;
-    private int FoodIdToBuy;
-    private string FoodNameToBuy;
-    private int FoodAmountToBuy => PluginSettings.CurrentSetting.FoodNbToBuy;
+    private ModelNpcVendor FoodVendor;
+    private ModelItemTemplate FoodToBuy;
+    private int FoodAmountSetting => PluginSettings.CurrentSetting.FoodNbToBuy;
     private int NbFoodsInBags;
+    private int AmountToBuy;
 
     public override bool NeedToRun
     {
@@ -42,28 +32,42 @@ public class BuyFoodState : State
                 || !Main.IsLaunched
                 || !StateTimer.IsReady
                 || Me.Level <= 3
-                || FoodAmountToBuy <= 0
+                || FoodAmountSetting <= 0
                 || Me.IsOnTaxi)
                 return false;
 
             StateTimer = new Timer(5000);
+            FoodToBuy = null;
+            FoodVendor = null;
 
-            SetFoodAndVendor();
             NbFoodsInBags = GetNbOfFoodInBags();
+            AmountToBuy = FoodAmountSetting - NbFoodsInBags;
 
-            if (FoodIdToBuy > 0
-                && NbFoodsInBags <= FoodAmountToBuy / 10)
+            if (NbFoodsInBags <= FoodAmountSetting / 2)
             {
-                return FoodVendor != null;
-            }
+                List<ModelItemTemplate> foods = MemoryDB.GetAllUsableFoods();
+                Dictionary<ModelItemTemplate, ModelNpcVendor> potentialFoodVendors = new Dictionary<ModelItemTemplate, ModelNpcVendor>();
+                foreach (ModelItemTemplate food in foods)
+                {
+                    if (Helpers.HaveEnoughMoneyFor(AmountToBuy, food))
+                    {
+                        ModelNpcVendor vendor = MemoryDB.GetNearestItemVendor(food);
+                        if (vendor != null)
+                        {
+                            potentialFoodVendors.Add(food, vendor);
+                        }
+                    }
+                }
 
-            // Drive-by
-            if (FoodIdToBuy > 0
-                && NbFoodsInBags <= FoodAmountToBuy / 2
-                && FoodVendor != null
-                && FoodVendor.Position.DistanceTo(ObjectManager.Me.Position) < PluginSettings.CurrentSetting.DriveByDistance)
-            {
-                return true;
+                if (potentialFoodVendors.Count > 0)
+                {
+                    Vector3 myPos = ObjectManager.Me.Position;
+                    var sortedDic = potentialFoodVendors.OrderBy(kvp => myPos.DistanceTo(kvp.Value.CreatureTemplate.Creature.GetSpawnPosition));
+                    FoodToBuy = sortedDic.First().Key;
+                    FoodVendor = sortedDic.First().Value;
+                    DisplayName = $"Buying {AmountToBuy} x {FoodToBuy.Name} at vendor {FoodVendor.CreatureTemplate.name}";
+                    return true;
+                }
             }
 
             return false;
@@ -72,142 +76,77 @@ public class BuyFoodState : State
 
     public override void Run()
     {
-        Main.Logger($"Buying {FoodAmountToBuy - NbFoodsInBags} x {FoodNameToBuy} [{FoodIdToBuy}] at vendor {FoodVendor.Name}");
+        Main.Logger(DisplayName);
+        Vector3 vendorPos = FoodVendor.CreatureTemplate.Creature.GetSpawnPosition;
 
-        Helpers.CheckMailboxNearby(FoodVendor);
+        Helpers.CheckMailboxNearby(FoodVendor.CreatureTemplate);
 
-        if (Me.Position.DistanceTo(FoodVendor.Position) >= 10)
-            GoToTask.ToPosition(FoodVendor.Position);
+        if (Me.Position.DistanceTo(vendorPos) >= 10)
+            GoToTask.ToPosition(vendorPos);
 
-        if (Me.Position.DistanceTo(FoodVendor.Position) < 10)
+        if (Me.Position.DistanceTo(vendorPos) < 10)
         {
-            if (Helpers.NpcIsAbsentOrDead(FoodVendor))
+            if (Helpers.NpcIsAbsentOrDead(FoodVendor.CreatureTemplate))
                 return;
 
-            ClearDoNotSellListFromFoods();
-            Helpers.AddItemToDoNotSellList(FoodNameToBuy);
-            Helpers.AddItemToDoNotMailList(FoodNameToBuy);
-
-            List<string> allFoodNames = GetPotentialFoodNames();
+            ClearObsoleteFoods();
+            Helpers.AddItemToDoNotSellList(FoodToBuy.Name);
+            Helpers.AddItemToDoNotMailList(FoodToBuy.Name);
 
             for (int i = 0; i <= 5; i++)
             {
-                GoToTask.ToPositionAndIntecractWithNpc(FoodVendor.Position, FoodVendor.Id, i);
+                GoToTask.ToPositionAndIntecractWithNpc(vendorPos, FoodVendor.entry, i);
                 Thread.Sleep(500);
                 Lua.LuaDoString($"StaticPopup1Button2:Click()"); // discard hearthstone popup
-                if (Helpers.OpenRecordVendorItems(allFoodNames)) // also checks if vendor window is open
+                if (Helpers.IsVendorGossipOpen())
                 {
                     // Sell first
-                    Helpers.SellItems(FoodVendor);
-                    if (!Helpers.HaveEnoughMoneyFor(FoodAmountToBuy - NbFoodsInBags, FoodNameToBuy))
-                    {
-                        Main.Logger("Not enough money. Item prices sold by this vendor are now recorded.");
-                        Helpers.CloseWindow();
-                        return;
-                    }
-                    Helpers.BuyItem(FoodNameToBuy, FoodAmountToBuy - NbFoodsInBags, 5);
+                    Helpers.SellItems(FoodVendor.CreatureTemplate);
+
+                    Helpers.BuyItem(FoodToBuy.Name, AmountToBuy, FoodToBuy.BuyCount);
                     Helpers.CloseWindow();
                     Thread.Sleep(1000);
-                    if (ItemsManager.GetItemCountById((uint)FoodIdToBuy) >= FoodAmountToBuy)
+
+                    if (GetNbOfFoodInBags() >= FoodAmountSetting)
                         return;
                 }
             }
-            Main.Logger($"Failed to buy {FoodNameToBuy}, blacklisting vendor");
-            NPCBlackList.AddNPCToBlacklist(FoodVendor.Id);
+            Main.Logger($"Failed to buy {FoodToBuy.Name}, blacklisting vendor");
+            NPCBlackList.AddNPCToBlacklist(FoodVendor.entry);
         }
     }
 
-    private List<string> GetPotentialFoodNames()
+    private void ClearObsoleteFoods()
     {
-        List<string> allFoods = new List<string>();
-        foreach (KeyValuePair<int, HashSet<int>> foods in FoodDictionary)
-            foreach (int foodToAdd in foods.Value)
-                allFoods.Add(Database.GetItemName(foodToAdd));
-        return allFoods;
-    }
-
-    private void ClearDoNotSellListFromFoods()
-    {
-        foreach (KeyValuePair<int, HashSet<int>> foodList in FoodDictionary)
-            foreach (int food in foodList.Value)
-                Helpers.RemoveItemFromDoNotSellList(Database.GetItemName(food));
-    }
-
-    private void SetFoodAndVendor()
-    {
-        FoodIdToBuy = 0;
-        FoodVendor = null;
-
-        foreach (KeyValuePair<int, HashSet<int>> foodEntry in FoodDictionary.Where(f => f.Key <= Me.Level))
+        foreach (ModelItemTemplate food in MemoryDB.GetAllFoods)
         {
-            foreach (int foodId in foodEntry.Value)
-            {
-                DatabaseNPC vendorWithThisFood = Database.GetFoodVendor(new HashSet<int>() { foodId });
-
-                // Skip to lower tier food if we don't have enough money for this tier
-                if (!Helpers.HaveEnoughMoneyFor(FoodAmountToBuy, Database.GetItemName(foodId)))
-                    break;
-
-                if (vendorWithThisFood != null)
-                {
-                    if (FoodVendor == null || vendorWithThisFood.Position.DistanceTo2D(Me.Position) < FoodVendor.Position.DistanceTo2D(Me.Position))
-                    {
-                        FoodIdToBuy = foodId;
-                        FoodNameToBuy = Database.GetItemName(foodId);
-                        FoodVendor = vendorWithThisFood;
-                    }
-                }
-            }
-            if (FoodVendor != null)
-                break;
+            Helpers.RemoveItemFromDoNotSellList(food.Name);
         }
-
-        if (FoodVendor == null)
-        {
-            Main.Logger($"Couldn't find any food vendor");
-            return;
-        }
-
-        List<int> listFoodInBags = GetListFoodFromBags();
-        if (listFoodInBags.Count > 0)
-        {
-            string foodNameToSet = Database.GetItemName(listFoodInBags.Last());
-            if (foodNameToSet != wManagerSetting.CurrentSetting.FoodName)
-            {
-                Main.Logger($"Setting food to {foodNameToSet}");
-                wManagerSetting.CurrentSetting.FoodName = foodNameToSet;
-                wManagerSetting.CurrentSetting.Save();
-            }
-        }
-    }
-
-    private List<int> GetListUsableFood() // From best to worst
-    {
-        List<int> listFood = new List<int>();
-        foreach (KeyValuePair<int, HashSet<int>> foodSet in FoodDictionary)
-        {
-            if (foodSet.Key <= Me.Level)
-                foreach (int food in foodSet.Value)
-                    listFood.Add(food);
-        }
-        return listFood;
     }
 
     private int GetNbOfFoodInBags()
     {
         int nbFoodsInBags = 0;
-        GetListFoodFromBags().ForEach(f => nbFoodsInBags += ItemsManager.GetItemCountById((uint)f));
+        List<WoWItem> items = Bag.GetBagItem();
+        List<ModelItemTemplate> allFoods = MemoryDB.GetAllUsableFoods();
+        string foodToSet = null;
+        foreach (WoWItem item in items)
+        {
+            if (allFoods.Exists(ua => ua.Entry == item.Entry))
+            {
+                nbFoodsInBags += ItemsManager.GetItemCountById((uint)item.Entry);
+                foodToSet = item.Name;
+            }
+        }
+
+        if (foodToSet != null && wManagerSetting.CurrentSetting.FoodName != foodToSet)
+        {
+            Main.Logger($"Setting food to {foodToSet}");
+            wManagerSetting.CurrentSetting.FoodName = foodToSet;
+            wManagerSetting.CurrentSetting.Save();
+        }
+
         return nbFoodsInBags;
-    }
-
-    private List<int> GetListFoodFromBags() // From best to worst
-    {
-        List<int> foodInBags = new List<int>();
-        foreach (int food in GetListUsableFood())
-            if (ItemsManager.GetItemCountById((uint)food) > 0)
-                foodInBags.Add(food);
-
-        return foodInBags;
     }
 }
 

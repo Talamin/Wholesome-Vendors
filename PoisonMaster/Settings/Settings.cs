@@ -1,28 +1,35 @@
-﻿using robotManager.Helpful;
+﻿using MarsSettingsGUI;
+using robotManager.Helpful;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Configuration;
+using System.IO;
+using wManager.Wow.Enums;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
-using System;
-using System.Configuration;
-using System.ComponentModel;
-using System.IO;
-using MarsSettingsGUI;
-using System.Collections.Generic;
-using wManager.Wow.Enums;
 
 [Serializable]
 public class PluginSettings : Settings
 {
     [Setting]
+    [DropdownList(new string[] { "Any", "Meat", "Fish", "Cheese", "Bread", "Fungus", "Fruit" })]
+    [Category("Buy")]
+    [DisplayName("Food type")]
+    [Description("Food type to buy")]
+    public string FoodType { get; set; }
+
+    [Setting]
     [DefaultValue(20)]
     [Category("Buy")]
-    [DisplayName("Food")]
+    [DisplayName("Food Amount")]
     [Description("Food amount to buy")]
     public int FoodNbToBuy { get; set; }
 
     [Setting]
     [DefaultValue(0)]
     [Category("Buy")]
-    [DisplayName("Drink")]
+    [DisplayName("Drink Amount")]
     [Description("Drink amount to buy")]
     public int DrinkNbToBuy { get; set; }
 
@@ -36,7 +43,7 @@ public class PluginSettings : Settings
     [Setting]
     [DefaultValue(0)]
     [Category("Buy")]
-    [DisplayName("Ammo")]
+    [DisplayName("Ammo Amount")]
     [Description("Ammunition amount to Buy")]
     public int AmmoAmount { get; set; }
 
@@ -162,7 +169,6 @@ public class PluginSettings : Settings
     public int DriveByDistance { get; set; }
     public double LastUpdateDate { get; set; }
     public int LastLevelTrained { get; set; }
-    public List<VendorItem> VendorItems { get; set; }
 
     public PluginSettings()
     {
@@ -170,13 +176,6 @@ public class PluginSettings : Settings
         DriveByDistance = 100;
         FoodNbToBuy = 20;
         DrinkNbToBuy = 0;
-        //DrinkNbToBuy = ObjectManager.Me.WowClass == WoWClass.Paladin
-        //    || ObjectManager.Me.WowClass == WoWClass.Hunter
-        //    || ObjectManager.Me.WowClass == WoWClass.Priest
-        //    || ObjectManager.Me.WowClass == WoWClass.Shaman
-        //    || ObjectManager.Me.WowClass == WoWClass.Mage
-        //    || ObjectManager.Me.WowClass == WoWClass.Warlock
-        //    || ObjectManager.Me.WowClass == WoWClass.Druid ? 20 : 0;
         BuyPoison = ObjectManager.Me.WowClass == WoWClass.Rogue;
         AmmoAmount = ObjectManager.Me.WowClass == WoWClass.Hunter ? 2000 : 0;
         AllowRepair = true;
@@ -201,24 +200,9 @@ public class PluginSettings : Settings
 
         MailingRecipient = "";
 
-        TrainLevels = new List<int> {};
+        FoodType = "Any";
 
-        VendorItems = new List<VendorItem>();
-    }
-
-    [Serializable]
-    public struct VendorItem
-    {
-        public string Name;
-        public int Stack;
-        public int Price;
-
-        public VendorItem(string name, int stack, int price)
-        {
-            Price = price;
-            Name = name;
-            Stack = stack;
-        }
+        TrainLevels = new List<int> { };
     }
 
     public static PluginSettings CurrentSetting { get; set; }

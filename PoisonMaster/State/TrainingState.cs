@@ -2,6 +2,8 @@
 using robotManager.FiniteStateMachine;
 using System.Collections.Generic;
 using System.Threading;
+using Wholesome_Vendors.Database;
+using Wholesome_Vendors.Database.Models;
 using wManager.Wow.Bot.Tasks;
 using wManager.Wow.Enums;
 using wManager.Wow.Helpers;
@@ -12,15 +14,15 @@ public class TrainingState : State
 {
     public override string DisplayName => "WV Training";
 
-    private DatabaseNPC TrainerVendor;
+    private ModelCreatureTemplate TrainerNpc;
     private Timer stateTimer = new Timer();
 
-    private List<int> leveltoTrain => PluginSettings.CurrentSetting.TrainLevels.Count > 0 ? PluginSettings.CurrentSetting.TrainLevels : new List<int>
+    private List<int> levelstoTrain => PluginSettings.CurrentSetting.TrainLevels.Count > 0 ? PluginSettings.CurrentSetting.TrainLevels : new List<int>
         {2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28,
-            30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56,
-            58, 60, 62, 64, 66, 68, 70, 72, 74, 76, 78, 80 };
+        30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56,
+        58, 60, 62, 64, 66, 68, 70, 72, 74, 76, 78, 80 };
 
-    private int LevelToTrain => leveltoTrain.Find(l => (int)ObjectManager.Me.Level >= l && PluginSettings.CurrentSetting.LastLevelTrained < l);
+    private int LevelToTrain => levelstoTrain.Find(l => (int)ObjectManager.Me.Level >= l && PluginSettings.CurrentSetting.LastLevelTrained < l);
 
     public override bool NeedToRun
     {
@@ -41,25 +43,25 @@ public class TrainingState : State
                 || (ContinentId)Usefuls.ContinentId == ContinentId.Azeroth && ObjectManager.Me.WowClass == WoWClass.Druid)
                 return false;
 
-            TrainerVendor = Database.GetTrainer();
+            TrainerNpc = MemoryDB.GetNearestTrainer();
 
-            return TrainerVendor != null;
+            return TrainerNpc != null;
         }
     }
 
     public override void Run()
     {
-        Main.Logger($"Going to trainer {TrainerVendor.Name}");
+        Main.Logger($"Going to {TrainerNpc.subname} {TrainerNpc.name}");
 
-        if (ObjectManager.Me.Position.DistanceTo(TrainerVendor.Position) >= 10)
-            GoToTask.ToPosition(TrainerVendor.Position);
+        if (ObjectManager.Me.Position.DistanceTo(TrainerNpc.Creature.GetSpawnPosition) >= 10)
+            GoToTask.ToPosition(TrainerNpc.Creature.GetSpawnPosition);
 
-        if (ObjectManager.Me.Position.DistanceTo(TrainerVendor.Position) < 10)
+        if (ObjectManager.Me.Position.DistanceTo(TrainerNpc.Creature.GetSpawnPosition) < 30)
         {
-            if (Helpers.NpcIsAbsentOrDead(TrainerVendor))
+            if (Helpers.NpcIsAbsentOrDead(TrainerNpc))
                 return;
 
-            GoToTask.ToPositionAndIntecractWithNpc(TrainerVendor.Position, TrainerVendor.Id);
+            GoToTask.ToPositionAndIntecractWithNpc(TrainerNpc.Creature.GetSpawnPosition, TrainerNpc.entry);
             Trainer.TrainingSpell();
             Thread.Sleep(800 + Usefuls.Latency);
             SpellManager.UpdateSpellBook();

@@ -20,7 +20,6 @@ public static class NPCBlackList
         if (!SessionBlacklist.Contains(npcId))
         {
             SessionBlacklist.Add(npcId);
-            //Main.Logger("Added to NPC blacklist: " + npcId);
         }
     }
 
@@ -43,6 +42,7 @@ public static class NPCBlackList
     private static readonly HashSet<int> allianceBlacklist = new HashSet<int>
     {
         15125, // Kosco Copperpinch
+        2805, // Deneb walker
     };
 
     public static readonly HashSet<int> SessionBlacklist = new HashSet<int>

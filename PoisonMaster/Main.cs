@@ -1,18 +1,19 @@
-﻿using System;
-using System.ComponentModel;
+﻿using PoisonMaster;
 using robotManager.Events;
 using robotManager.FiniteStateMachine;
 using robotManager.Helpful;
+using System;
+using System.ComponentModel;
+using System.Drawing;
+using System.IO;
+using System.Net;
+using System.Threading.Tasks;
+using Wholesome_Vendors.Database;
+using wManager;
 using wManager.Plugin;
 using wManager.Wow.Helpers;
-using PoisonMaster;
-using System.Drawing;
-using Timer = robotManager.Helpful.Timer;
-using wManager;
 using WoWDBUpdater;
-using System.Threading.Tasks;
-using System.Net;
-using System.IO;
+using Timer = robotManager.Helpful.Timer;
 
 public class Main : IPlugin
 {
@@ -23,8 +24,6 @@ public class Main : IPlugin
     private Timer stateAddTimer;
 
     public static string version = "1.1.06"; // Must match version in Version.txt
-
-    private DB _database;
 
     public void Initialize()
     {
@@ -46,8 +45,7 @@ public class Main : IPlugin
             Logger($"Checking for actual Database, maybe download is needed");
             if (File.Exists("Data/WoWDB335"))
             {
-                _database = new DB();
-                var databaseUpdater = new DBUpdater(_database);
+                var databaseUpdater = new DBUpdater();
                 if (databaseUpdater.CheckUpdate())
                 {
                     databaseUpdater.Update();
@@ -74,13 +72,15 @@ public class Main : IPlugin
 
                     Logger($"Extracting Wholesome Database.");
 
-                        System.IO.Compression.ZipFile.ExtractToDirectory("Data/wholesome_db_temp.zip", "Data");
-                        File.Delete("Data/wholesome_db_temp.zip");
+                    System.IO.Compression.ZipFile.ExtractToDirectory("Data/wholesome_db_temp.zip", "Data");
+                    File.Delete("Data/wholesome_db_temp.zip");
 
                     Logger($"Successfully downloaded Wholesome Database");
                     return true;
                 });
             }
+
+            MemoryDB.Populate();
 
             EventsLua.AttachEventLua("PLAYER_EQUIPMENT_CHANGED", m => Helpers.GetRangedWeaponType());
             FiniteStateMachineEvents.OnRunState += StateAddEventHandler;
@@ -102,7 +102,6 @@ public class Main : IPlugin
     public void Dispose()
     {
         IsLaunched = false;
-        _database?.Dispose();
         Helpers.RestoreWRobotUserSettings();
         FiniteStateMachineEvents.OnRunState -= StateAddEventHandler;
         _pulseThread.Dispose();
@@ -136,7 +135,7 @@ public class Main : IPlugin
             Helpers.AddState(engine, new BuyAmmoState(), "To Town");
             Helpers.AddState(engine, new BuyFoodState(), "To Town");
             Helpers.AddState(engine, new BuyDrinkState(), "To Town");
-            Helpers.AddState(engine, new RepairState(), "To Town");
+            Helpers.AddState(engine, new SellRepairState(), "To Town");
             Helpers.AddState(engine, new TrainingState(), "Trainers");
             //engine.RemoveStateByName("To Town");
         }

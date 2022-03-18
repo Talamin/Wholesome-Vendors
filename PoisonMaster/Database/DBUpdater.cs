@@ -1,22 +1,30 @@
-﻿using System.Net;
-using robotManager.Helpful;
+﻿using robotManager.Helpful;
+using System.Data.SQLite;
+using System.Net;
 
 namespace WoWDBUpdater
 {
     public class DBUpdater
     {
-        private readonly DB _db;
+        private static SQLiteConnection _con;
+        private static SQLiteCommand _cmd;
 
-        public DBUpdater(DB database)
+        public DBUpdater()
         {
-            _db = database;
+            string baseDirectory = Others.GetCurrentDirectory + @"Data\WoWDb335;Cache=Shared;";
+            _con = new SQLiteConnection("Data Source=" + baseDirectory);
         }
 
         public bool CheckUpdate()
         {
-            int totalCount = int.Parse(_db.GetQuery("SELECT COUNT(*) FROM creature"));
-            int zeroCount = int.Parse(_db.GetQuery("SELECT COUNT(*) FROM creature WHERE zoneId=0"));
+            _con.Open();
+            _cmd = _con.CreateCommand();
+            _cmd.CommandText = "SELECT COUNT(*) FROM creature";
+            int totalCount = int.Parse(_cmd.ExecuteScalar().ToString());
+            _cmd.CommandText = "SELECT COUNT(*) FROM creature WHERE zoneId=0";
+            int zeroCount = int.Parse(_cmd.ExecuteScalar().ToString());
             float ratio = (float)zeroCount / totalCount * 100;
+            _con.Dispose();
             return ratio >= 50;
         }
 
@@ -43,7 +51,13 @@ namespace WoWDBUpdater
 
             foreach (string line in updateQueries.Replace("\r\n", "\n").Split('\n'))
                 if (line.Length > 0)
-                    _db.ExecuteQuery(line);
+                {
+                    _con.Open();
+                    _cmd = _con.CreateCommand();
+                    _cmd.CommandText = line;
+                    _cmd.ExecuteNonQuery();
+                    _con.Dispose();
+                }
 
             Logging.Write("Updated database.");
             return true;

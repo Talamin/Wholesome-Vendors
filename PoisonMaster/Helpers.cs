@@ -1,16 +1,17 @@
 ﻿using robotManager.FiniteStateMachine;
+using robotManager.Products;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Wholesome_Vendors.Database;
+using Wholesome_Vendors.Database.Models;
 using wManager;
-using wManager.Wow.Enums;
 using wManager.Wow;
+using wManager.Wow.Bot.Tasks;
+using wManager.Wow.Enums;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
-using static PoisonMaster.PMEnums;
-using robotManager.Products;
-using System.Collections.Generic;
-using wManager.Wow.Bot.Tasks;
 
 namespace PoisonMaster
 {
@@ -21,7 +22,7 @@ namespace PoisonMaster
         private static bool saveWRobotSettingTrain;
 
         public static int GetMoney => (int)ObjectManager.Me.GetMoneyCopper;
-        
+
         public static bool IsHorde()
         {
             return ObjectManager.Me.Faction == (uint)PlayerFactions.Orc || ObjectManager.Me.Faction == (uint)PlayerFactions.Tauren
@@ -137,7 +138,7 @@ namespace PoisonMaster
         }
         public static void AddItemToDoNotMailList(string itemName)
         {
-            if(!wManagerSetting.CurrentSetting.DoNotMailList.Contains(itemName))
+            if (!wManagerSetting.CurrentSetting.DoNotMailList.Contains(itemName))
             {
                 wManagerSetting.CurrentSetting.DoNotMailList.Add(itemName);
                 wManagerSetting.CurrentSetting.Save();
@@ -166,31 +167,6 @@ namespace PoisonMaster
             return Lua.LuaDoString<string>("v, b, d, t = GetBuildInfo(); return v");
         }
 
-        public static string GetBestConsumableFromBags(PMConsumableType consumableType)
-        {
-            WoWItem bestConsumable = Bag.GetBagItem()
-                .Where(i => i != null
-                    && !string.IsNullOrWhiteSpace(i.Name)
-                    && ItemsManager.GetItemSpell(i.Name) == SpellListManager.SpellNameInGameByName(consumableType.ToString())
-                    && i.GetItemInfo.ItemMinLevel <= ObjectManager.Me.Level
-                    && i.IsValid)
-                .OrderByDescending(i => i.GetItemInfo.ItemLevel)
-                .ThenBy(i => ItemsManager.GetItemCountById((uint)i.Entry))
-                .FirstOrDefault();
-
-            return bestConsumable == null ? null : bestConsumable.Name;
-        }
-
-        public static List<string> GetVendorItemList()
-        {
-            return Lua.LuaDoString<List<string>>(@"local r = {}
-                                            for i=1,GetMerchantNumItems() do 
-	                                            local n=GetMerchantItemInfo(i);
-	                                            if n then table.insert(r, tostring(n)); end
-                                            end
-                                            return unpack(r);");
-        }
-
         public static void BuyItem(string name, int amount, int stackValue)
         {
             double numberOfStacksToBuy = Math.Ceiling(amount / (double)stackValue);
@@ -206,23 +182,23 @@ namespace PoisonMaster
                     end", name, (int)numberOfStacksToBuy));
         }
 
-        public static bool NpcIsAbsentOrDead(DatabaseNPC npc)
+        public static bool NpcIsAbsentOrDead(ModelCreatureTemplate npc)
         {
-            if (ObjectManager.GetObjectWoWUnit().Count(x => x.IsAlive && x.Name == npc.Name) <= 0)
+            if (ObjectManager.GetObjectWoWUnit().Count(x => x.IsAlive && x.Name == npc.name) <= 0)
             {
-                Main.Logger("Looks like " + npc.Name + " is not here, blacklisting");
-                NPCBlackList.AddNPCToBlacklist(npc.Id);
+                Main.Logger("Looks like " + npc.name + " is not here, blacklisting");
+                NPCBlackList.AddNPCToBlacklist(npc.entry);
                 return true;
             }
             return false;
         }
 
-        public static bool MailboxIsAbsent(GameObjects Object)
+        public static bool MailboxIsAbsent(ModelGameObjectTemplate mailbox)
         {
-            if (ObjectManager.GetObjectWoWGameObject().Count(x => x.Name == Object.Name) <= 0)
+            if (ObjectManager.GetObjectWoWGameObject().Count(x => x.Name == mailbox.name) <= 0)
             {
-                Main.Logger("Looks like " + Object.Name + " is not here, blacklisting");
-                NPCBlackList.AddNPCToBlacklist(Object.Id);
+                Main.Logger("Looks like " + mailbox.name + " is not here, blacklisting");
+                NPCBlackList.AddNPCToBlacklist(mailbox.entry);
                 return true;
             }
             return false;
@@ -280,7 +256,7 @@ namespace PoisonMaster
             return listItemsToSell;
         }
 
-        public static void SellItems(DatabaseNPC vendor)
+        public static void SellItems(ModelCreatureTemplate vendor)
         {
             if (!PluginSettings.CurrentSetting.AllowSell)
                 return;
@@ -299,7 +275,7 @@ namespace PoisonMaster
             for (int i = 1; i <= 5; i++)
             {
                 Main.Logger($"Attempt {i}");
-                GoToTask.ToPositionAndIntecractWithNpc(vendor.Position, vendor.Id, i);
+                GoToTask.ToPositionAndIntecractWithNpc(vendor.Creature.GetSpawnPosition, vendor.entry, i);
                 Vendor.SellItems(listItemsToSell, wManagerSetting.CurrentSetting.DoNotSellList, GetListQualityToSell());
                 Thread.Sleep(200);
                 if (Bag.GetBagItem().Count < nbItemsInBags)
@@ -309,7 +285,7 @@ namespace PoisonMaster
                 if (i >= 5)
                 {
                     Main.Logger($"Failed to sell items after {i} attempts. Blacklisting vendor.");
-                    NPCBlackList.AddNPCToBlacklist(vendor.Id);
+                    NPCBlackList.AddNPCToBlacklist(vendor.entry);
                 }
             }
         }
@@ -368,48 +344,17 @@ namespace PoisonMaster
             return zone == "Azuremyst Isle" || zone == "Bloodmyst Isle" || zone == "The Exodar";
         }
 
-        public static bool OpenRecordVendorItems(List<string> itemsToRecord)
+        public static bool IsVendorGossipOpen()
         {
-            string vendorItems = Lua.LuaDoString<string>($@"local items = """"
-                                for i=1, GetMerchantNumItems() do 
-                                    local name, texture, price, quantity, numAvailable, isPurchasable, isUsable, extendedCost = GetMerchantItemInfo(i);
-                                    if name then 
-                                        items = items .. ""|"" .. name .. ""$"" .. price .. ""£"" .. quantity;
-                                    end
-                                end
-                                return items;");
-
-            if (string.IsNullOrEmpty(vendorItems))
-                return false;
-
-            string[] allItems = vendorItems.Split('|');
-
-            foreach (string item in allItems)
-            {
-                if (string.IsNullOrEmpty(item))
-                    continue;
-                string name = item.Split('$')[0];
-                int stack = Int32.Parse(item.Split('£')[1]);
-                int price = Int32.Parse(item.Substring(0, item.IndexOf('£')).Split('$')[1]);
-
-                if (itemsToRecord.Contains(name) && !PluginSettings.CurrentSetting.VendorItems.Exists(i => i.Name == name))
-                    PluginSettings.CurrentSetting.VendorItems.Add(new PluginSettings.VendorItem(name, stack, price));
-            }
-            PluginSettings.CurrentSetting.Save();
-            return true;
+            return Lua.LuaDoString<int>("return GetMerchantNumItems()") > 0;
         }
 
-        public static bool HaveEnoughMoneyFor(int amount, string itemName)
+        public static bool HaveEnoughMoneyFor(int amount, ModelItemTemplate item)
         {
-            if (PluginSettings.CurrentSetting.VendorItems.Exists(i => i.Name == itemName))
+            if (GetMoney < item.BuyPrice * amount / item.BuyCount)
             {
-                PluginSettings.VendorItem vendorItem = PluginSettings.CurrentSetting.VendorItems.Find(i => i.Name == itemName);
-                //Main.Logger($"We have {GetMoney} Copper on our Bank and we found Item {foodItem.Name} with the price of {foodItem.Price} and with Stacksize of {foodItem.Stack} ");
-                if (GetMoney < vendorItem.Price * amount / vendorItem.Stack)
-                {
-                    Main.Logger($"You need {vendorItem.Price * amount / vendorItem.Stack} copper to buy {amount} x {itemName} but you only have {GetMoney}");
-                    return false;
-                }
+                Main.Logger($"You need {item.BuyPrice * amount / item.BuyCount} copper to buy {amount} x {item.Name} but you only have {GetMoney}");
+                return false;
             }
             return true;
         }
@@ -421,29 +366,29 @@ namespace PoisonMaster
                 && !PlayerInDraneiStartingZone();
         }
 
-        public static void CheckMailboxNearby(DatabaseNPC vendor)
+        public static void CheckMailboxNearby(ModelCreatureTemplate npc)
         {
             if (!PluginSettings.CurrentSetting.AllowMail)
                 return;
 
-            Main.Logger($"Checking for a mailbox nearby {vendor.Name}");
+            Main.Logger($"Checking for a mailbox nearby {npc.name}");
 
-            GameObjects mailbox = Database.GetMailboxNearby(vendor);
+            ModelGameObjectTemplate mailbox = MemoryDB.GetNearestMailBoxFrom(npc);
 
             if (mailbox == null)
                 return;
 
-            if (ObjectManager.Me.Position.DistanceTo(mailbox.Position) >= 10)
-                GoToTask.ToPositionAndIntecractWithGameObject(mailbox.Position, mailbox.Id);
+            if (ObjectManager.Me.Position.DistanceTo(mailbox.GameObject.GetSpawnPosition) >= 10)
+                GoToTask.ToPositionAndIntecractWithGameObject(mailbox.GameObject.GetSpawnPosition, mailbox.entry);
 
-            if (ObjectManager.Me.Position.DistanceTo(mailbox.Position) < 10)
-                if (MailboxIsAbsent(mailbox))
-                    return;
+            if (ObjectManager.Me.Position.DistanceTo(mailbox.GameObject.GetSpawnPosition) < 10
+                && MailboxIsAbsent(mailbox))
+                return;
 
             bool needRunAgain = true;
             for (int i = 7; i > 0 && needRunAgain; i--)
             {
-                GoToTask.ToPositionAndIntecractWithGameObject(mailbox.Position, mailbox.Id);
+                GoToTask.ToPositionAndIntecractWithGameObject(mailbox.GameObject.GetSpawnPosition, mailbox.entry);
                 Thread.Sleep(500);
                 Mail.SendMessage(PluginSettings.CurrentSetting.MailingRecipient,
                     "Post",
