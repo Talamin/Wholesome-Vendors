@@ -353,7 +353,7 @@ namespace PoisonMaster
         {
             if (GetMoney < item.BuyPrice * amount / item.BuyCount)
             {
-                Main.Logger($"You need {item.BuyPrice * amount / item.BuyCount} copper to buy {amount} x {item.Name} but you only have {GetMoney}");
+                //Main.Logger($"You need {item.BuyPrice * amount / item.BuyCount} copper to buy {amount} x {item.Name} but you only have {GetMoney}");
                 return false;
             }
             return true;
