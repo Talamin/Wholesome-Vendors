@@ -18,8 +18,9 @@ public class BuyAmmoState : State
     private Timer stateTimer = new Timer();
     private ModelNpcVendor AmmoVendor;
     private ModelItemTemplate AmmoToBuy;
-    private int AmmoAmountToBuy => PluginSettings.CurrentSetting.AmmoAmount;
+    private int AmmoAmountSetting => PluginSettings.CurrentSetting.AmmoAmount;
     private int NbAmmoInBags;
+    private int AmountToBuy;
 
     public override bool NeedToRun
     {
@@ -37,25 +38,37 @@ public class BuyAmmoState : State
             AmmoVendor = null;
             AmmoToBuy = null;
 
-            SetAmmoAndVendor();
             NbAmmoInBags = GetNbAmmosInBags();
+            AmountToBuy = AmmoAmountSetting - NbAmmoInBags;
 
-            if (AmmoVendor != null
-                && NbAmmoInBags <= PluginSettings.CurrentSetting.AmmoAmount / 10)
+            if (NbAmmoInBags <= AmmoAmountSetting / 2)
             {
-                DisplayName = $"Buying {AmmoAmountToBuy - NbAmmoInBags} x {AmmoToBuy.Name} at vendor {AmmoVendor.CreatureTemplate.name}";
-                return true;
+                foreach (ModelItemTemplate ammo in MemoryDB.GetUsableAmmos())
+                {
+                    if (Helpers.HaveEnoughMoneyFor(AmountToBuy, ammo))
+                    {
+                        ModelNpcVendor vendor = MemoryDB.GetNearestItemVendor(ammo);
+                        if (vendor != null)
+                        {
+                            AmmoToBuy = ammo;
+                            AmmoVendor = vendor;
+                            // Normal
+                            if (NbAmmoInBags <= AmmoAmountSetting / 10)
+                            {
+                                DisplayName = $"Buying {AmountToBuy} x {AmmoToBuy.Name} at vendor {AmmoVendor.CreatureTemplate.name}";
+                                return true;
+                            }
+                            // Drive-by
+                            if (NbAmmoInBags <= AmmoAmountSetting / 2
+                                && ObjectManager.Me.Position.DistanceTo(vendor.CreatureTemplate.Creature.GetSpawnPosition) < PluginSettings.CurrentSetting.DriveByDistance)
+                            {
+                                DisplayName = $"Drive-by buying {AmountToBuy} x {AmmoToBuy.Name} at vendor {AmmoVendor.CreatureTemplate.name}";
+                                return true;
+                            }
+                        }
+                    }
+                }
             }
-
-            // Drive-by
-            if (AmmoVendor != null
-                && NbAmmoInBags <= PluginSettings.CurrentSetting.AmmoAmount / 2
-                && AmmoVendor.CreatureTemplate.Creature.GetSpawnPosition.DistanceTo(ObjectManager.Me.Position) < PluginSettings.CurrentSetting.DriveByDistance)
-            {
-                DisplayName = $"Drive-by buying {AmmoAmountToBuy - NbAmmoInBags} x {AmmoToBuy.Name} at vendor {AmmoVendor.CreatureTemplate.name}";
-                return true;
-            }
-
             return false;
         }
     }
@@ -87,10 +100,10 @@ public class BuyAmmoState : State
                 if (Helpers.IsVendorGossipOpen())
                 {
                     Helpers.SellItems(AmmoVendor.CreatureTemplate);
-                    Helpers.BuyItem(AmmoToBuy.Name, AmmoAmountToBuy - GetNbAmmosInBags(), AmmoToBuy.BuyCount);
+                    Helpers.BuyItem(AmmoToBuy.Name, AmmoAmountSetting - GetNbAmmosInBags(), AmmoToBuy.BuyCount);
                     Helpers.CloseWindow();
                     Thread.Sleep(1000);
-                    if (GetNbAmmosInBags() >= AmmoAmountToBuy)
+                    if (GetNbAmmosInBags() >= AmmoAmountSetting)
                         return;
                 }
             }
@@ -105,23 +118,6 @@ public class BuyAmmoState : State
         {
             Helpers.RemoveItemFromDoNotSellList(ammo.Name);
         }
-    }
-
-    private void SetAmmoAndVendor()
-    {
-        ModelItemTemplate ammoToBuy = MemoryDB.GetUsableAmmos()
-            .Find(ammo => Helpers.HaveEnoughMoneyFor(AmmoAmountToBuy, ammo));
-
-        ModelNpcVendor vendor = MemoryDB.GetNearestItemVendor(ammoToBuy);
-
-        if (vendor == null)
-        {
-            Main.Logger($"Couldn't find any ammo vendor");
-            return;
-        }
-
-        AmmoToBuy = ammoToBuy;
-        AmmoVendor = vendor;
     }
 
     private int GetNbAmmosInBags()

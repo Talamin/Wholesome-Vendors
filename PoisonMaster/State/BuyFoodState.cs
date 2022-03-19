@@ -65,8 +65,19 @@ public class BuyFoodState : State
                     var sortedDic = potentialFoodVendors.OrderBy(kvp => myPos.DistanceTo(kvp.Value.CreatureTemplate.Creature.GetSpawnPosition));
                     FoodToBuy = sortedDic.First().Key;
                     FoodVendor = sortedDic.First().Value;
-                    DisplayName = $"Buying {AmountToBuy} x {FoodToBuy.Name} at vendor {FoodVendor.CreatureTemplate.name}";
-                    return true;
+
+                    if (NbFoodsInBags <= FoodAmountSetting / 10)
+                    {
+                        DisplayName = $"Buying {AmountToBuy} x {FoodToBuy.Name} at vendor {FoodVendor.CreatureTemplate.name}";
+                        return true;
+                    }
+
+                    if (NbFoodsInBags <= FoodAmountSetting / 2
+                        && ObjectManager.Me.Position.DistanceTo(FoodVendor.CreatureTemplate.Creature.GetSpawnPosition) < PluginSettings.CurrentSetting.DriveByDistance)
+                    {
+                        DisplayName = $"Drive-by buying {AmountToBuy} x {FoodToBuy.Name} at vendor {FoodVendor.CreatureTemplate.name}";
+                        return true;
+                    }
                 }
             }
 

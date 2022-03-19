@@ -242,11 +242,12 @@ namespace Wholesome_Vendors.Database
 
         public static List<ModelItemTemplate> GetUsableAmmos()
         {
-            if (Helpers.GetRangedWeaponType() == "Bows")
+            string rangedWeaponType = Helpers.GetRangedWeaponType();
+            if (rangedWeaponType == "Bows" || rangedWeaponType == "Crossbows")
             {
                 return _ammos.FindAll(ammo => ammo.Subclass == 2 && ammo.RequiredLevel <= ObjectManager.Me.Level);
             }
-            if (Helpers.GetRangedWeaponType() == "Guns")
+            if (rangedWeaponType == "Guns")
             {
                 return _ammos.FindAll(ammo => ammo.Subclass == 3 && ammo.RequiredLevel <= ObjectManager.Me.Level);
             }

@@ -46,26 +46,28 @@ public class BuyDrinkState : State
 
             if (NbDrinksInBag <= DrinkAmountSetting / 2)
             {
-                ModelItemTemplate drink = MemoryDB.GetAllUsableDrinks.FirstOrDefault();
-                if (drink != null && Helpers.HaveEnoughMoneyFor(AmountToBuy, drink))
+                foreach (ModelItemTemplate drink in MemoryDB.GetAllUsableDrinks)
                 {
-                    ModelNpcVendor vendor = MemoryDB.GetNearestItemVendor(drink);
-                    if (vendor != null)
+                    if (Helpers.HaveEnoughMoneyFor(AmountToBuy, drink))
                     {
-                        DrinkToBuy = drink;
-                        DrinkVendor = vendor;
-                        // Normal
-                        if (NbDrinksInBag <= DrinkAmountSetting / 10)
+                        ModelNpcVendor vendor = MemoryDB.GetNearestItemVendor(drink);
+                        if (vendor != null)
                         {
-                            DisplayName = $"Buying {AmountToBuy} x {DrinkToBuy.Name} at vendor {DrinkVendor.CreatureTemplate.name}";
-                            return true;
-                        }
-                        // Drive-by
-                        if (NbDrinksInBag <= DrinkAmountSetting / 2
-                            && ObjectManager.Me.Position.DistanceTo(vendor.CreatureTemplate.Creature.GetSpawnPosition) < PluginSettings.CurrentSetting.DriveByDistance)
-                        {
-                            DisplayName = $"Drive-by buying {AmountToBuy} x {DrinkToBuy.Name} at vendor {DrinkVendor.CreatureTemplate.name}";
-                            return true;
+                            DrinkToBuy = drink;
+                            DrinkVendor = vendor;
+                            // Normal
+                            if (NbDrinksInBag <= DrinkAmountSetting / 10)
+                            {
+                                DisplayName = $"Buying {AmountToBuy} x {DrinkToBuy.Name} at vendor {DrinkVendor.CreatureTemplate.name}";
+                                return true;
+                            }
+                            // Drive-by
+                            if (NbDrinksInBag <= DrinkAmountSetting / 2
+                                && ObjectManager.Me.Position.DistanceTo(vendor.CreatureTemplate.Creature.GetSpawnPosition) < PluginSettings.CurrentSetting.DriveByDistance)
+                            {
+                                DisplayName = $"Drive-by buying {AmountToBuy} x {DrinkToBuy.Name} at vendor {DrinkVendor.CreatureTemplate.name}";
+                                return true;
+                            }
                         }
                     }
                 }
@@ -103,7 +105,7 @@ public class BuyDrinkState : State
                 {
                     Helpers.SellItems(DrinkVendor.CreatureTemplate);
 
-                    Helpers.BuyItem(DrinkToBuy.Name, AmountToBuy, DrinkToBuy.BuyCount);
+                    Helpers.BuyItem(DrinkToBuy.Name, DrinkAmountSetting - GetNbDrinksInBags(), DrinkToBuy.BuyCount);
                     Helpers.CloseWindow();
                     Thread.Sleep(1000);
 
