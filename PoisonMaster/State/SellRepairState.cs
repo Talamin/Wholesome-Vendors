@@ -25,14 +25,16 @@ public class SellRepairState : State
         {
             if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
                 || !Main.IsLaunched
+                || !MemoryDB.IsPopulated
                 || !stateTimer.IsReady
                 || ObjectManager.Me.IsOnTaxi)
                 return false;
 
             stateTimer = new Timer(5000);
 
+            double myDurability = ObjectManager.Me.GetDurabilityPercent;
             // Normal
-            if (PluginSettings.CurrentSetting.AllowRepair && ObjectManager.Me.GetDurabilityPercent < MinDurability)
+            if (PluginSettings.CurrentSetting.AllowRepair && myDurability < MinDurability)
             {
                 VendorNpc = MemoryDB.GetNearestRepairer();
                 if (VendorNpc != null)
@@ -52,7 +54,7 @@ public class SellRepairState : State
             }
 
             // Drive-by
-            if (PluginSettings.CurrentSetting.AllowRepair && ObjectManager.Me.GetDurabilityPercent < 70)
+            if (PluginSettings.CurrentSetting.AllowRepair && myDurability < 70)
             {
                 VendorNpc = MemoryDB.GetNearestRepairer();
                 if (VendorNpc != null

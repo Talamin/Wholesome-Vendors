@@ -1,12 +1,9 @@
 ﻿using Dapper;
-using Newtonsoft.Json;
 using PoisonMaster;
 using robotManager.Helpful;
-using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using Wholesome_Vendors.Database.Models;
 using wManager.Wow.Helpers;
@@ -28,8 +25,11 @@ namespace Wholesome_Vendors.Database
         private static List<ModelCreatureTemplate> _trainers;
         private static List<ModelGameObjectTemplate> _mailboxes;
 
-        public static void Populate()
+        public static bool IsPopulated;
+
+        public static void Initialize()
         {
+            IsPopulated = false;
             string baseDirectory = Others.GetCurrentDirectory + @"Data\WoWDb335;Cache=Shared;";
             _con = new SQLiteConnection("Data Source=" + baseDirectory);
             _con.Open();
@@ -211,6 +211,12 @@ namespace Wholesome_Vendors.Database
             }
             Main.Logger($"Process time (JSON) : {jsonsWatch.ElapsedMilliseconds} ms");
             */
+            IsPopulated = true;
+        }
+
+        public static void Dispose()
+        {
+            IsPopulated = false;
         }
 
         public static List<ModelItemTemplate> GetInstantPoisons => _poisons.FindAll(p => p.displayid == 13710);

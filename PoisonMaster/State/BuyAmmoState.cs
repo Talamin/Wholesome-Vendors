@@ -2,6 +2,7 @@
 using robotManager.FiniteStateMachine;
 using robotManager.Helpful;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using Wholesome_Vendors.Database;
 using Wholesome_Vendors.Database.Models;
@@ -20,7 +21,7 @@ public class BuyAmmoState : State
     private ModelItemTemplate AmmoToBuy;
     private int AmmoAmountSetting => PluginSettings.CurrentSetting.AmmoAmount;
     private int NbAmmoInBags;
-    private int AmountToBuy;
+    private int AmountToBuy => AmmoAmountSetting - GetNbAmmosInBags();
 
     public override bool NeedToRun
     {
@@ -28,6 +29,7 @@ public class BuyAmmoState : State
         {
             if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
                 || !Main.IsLaunched
+                || !MemoryDB.IsPopulated
                 || PluginSettings.CurrentSetting.AmmoAmount <= 0
                 || !stateTimer.IsReady
                 || Helpers.GetRangedWeaponType() == null
@@ -39,13 +41,14 @@ public class BuyAmmoState : State
             AmmoToBuy = null;
 
             NbAmmoInBags = GetNbAmmosInBags();
-            AmountToBuy = AmmoAmountSetting - NbAmmoInBags;
 
             if (NbAmmoInBags <= AmmoAmountSetting / 2)
             {
+                int myMoney = (int)ObjectManager.Me.GetMoneyCopper;
+                int amountToBuy = AmountToBuy;
                 foreach (ModelItemTemplate ammo in MemoryDB.GetUsableAmmos())
                 {
-                    if (Helpers.HaveEnoughMoneyFor(AmountToBuy, ammo))
+                    if (Helpers.HaveEnoughMoneyFor(amountToBuy, ammo, myMoney))
                     {
                         ModelNpcVendor vendor = MemoryDB.GetNearestItemVendor(ammo);
                         if (vendor != null)
@@ -55,14 +58,14 @@ public class BuyAmmoState : State
                             // Normal
                             if (NbAmmoInBags <= AmmoAmountSetting / 10)
                             {
-                                DisplayName = $"Buying {AmountToBuy} x {AmmoToBuy.Name} at vendor {AmmoVendor.CreatureTemplate.name}";
+                                DisplayName = $"Buying {amountToBuy} x {AmmoToBuy.Name} at vendor {AmmoVendor.CreatureTemplate.name}";
                                 return true;
                             }
                             // Drive-by
                             if (NbAmmoInBags <= AmmoAmountSetting / 2
                                 && ObjectManager.Me.Position.DistanceTo(vendor.CreatureTemplate.Creature.GetSpawnPosition) < PluginSettings.CurrentSetting.DriveByDistance)
                             {
-                                DisplayName = $"Drive-by buying {AmountToBuy} x {AmmoToBuy.Name} at vendor {AmmoVendor.CreatureTemplate.name}";
+                                DisplayName = $"Drive-by buying {amountToBuy} x {AmmoToBuy.Name} at vendor {AmmoVendor.CreatureTemplate.name}";
                                 return true;
                             }
                         }
@@ -100,7 +103,7 @@ public class BuyAmmoState : State
                 if (Helpers.IsVendorGossipOpen())
                 {
                     Helpers.SellItems(AmmoVendor.CreatureTemplate);
-                    Helpers.BuyItem(AmmoToBuy.Name, AmmoAmountSetting - GetNbAmmosInBags(), AmmoToBuy.BuyCount);
+                    Helpers.BuyItem(AmmoToBuy.Name, AmountToBuy, AmmoToBuy.BuyCount);
                     Helpers.CloseWindow();
                     Thread.Sleep(1000);
                     if (GetNbAmmosInBags() >= AmmoAmountSetting)
@@ -123,13 +126,13 @@ public class BuyAmmoState : State
     private int GetNbAmmosInBags()
     {
         int nbAmmosInBags = 0;
-        List<WoWItem> items = Bag.GetBagItem();
+        List<WoWItem> bagItems = Bag.GetBagItem();
         List<ModelItemTemplate> allAmmos = MemoryDB.GetUsableAmmos();
-        foreach (WoWItem item in items)
+        foreach (WoWItem bagItem in bagItems)
         {
-            if (allAmmos.Exists(ua => ua.Entry == item.Entry))
+            if (allAmmos.Exists(ua => ua.Entry == bagItem.Entry))
             {
-                nbAmmosInBags += ItemsManager.GetItemCountById((uint)item.Entry);
+                nbAmmosInBags += ItemsManager.GetItemCountById((uint)bagItem.Entry);
             }
         }
         return nbAmmosInBags;

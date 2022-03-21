@@ -22,7 +22,7 @@ public class BuyFoodState : State
     private ModelItemTemplate FoodToBuy;
     private int FoodAmountSetting => PluginSettings.CurrentSetting.FoodNbToBuy;
     private int NbFoodsInBags;
-    private int AmountToBuy;
+    private int AmountToBuy => FoodAmountSetting - GetNbOfFoodInBags();
 
     public override bool NeedToRun
     {
@@ -31,6 +31,7 @@ public class BuyFoodState : State
             if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
                 || !Main.IsLaunched
                 || !StateTimer.IsReady
+                || !MemoryDB.IsPopulated
                 || Me.Level <= 3
                 || FoodAmountSetting <= 0
                 || Me.IsOnTaxi)
@@ -41,15 +42,15 @@ public class BuyFoodState : State
             FoodVendor = null;
 
             NbFoodsInBags = GetNbOfFoodInBags();
-            AmountToBuy = FoodAmountSetting - NbFoodsInBags;
 
             if (NbFoodsInBags <= FoodAmountSetting / 2)
             {
-                List<ModelItemTemplate> foods = MemoryDB.GetAllUsableFoods();
+                int myMoney = (int)ObjectManager.Me.GetMoneyCopper;
+                int amountToBuy = AmountToBuy;
                 Dictionary<ModelItemTemplate, ModelNpcVendor> potentialFoodVendors = new Dictionary<ModelItemTemplate, ModelNpcVendor>();
-                foreach (ModelItemTemplate food in foods)
+                foreach (ModelItemTemplate food in MemoryDB.GetAllUsableFoods())
                 {
-                    if (Helpers.HaveEnoughMoneyFor(AmountToBuy, food))
+                    if (Helpers.HaveEnoughMoneyFor(amountToBuy, food, myMoney))
                     {
                         ModelNpcVendor vendor = MemoryDB.GetNearestItemVendor(food);
                         if (vendor != null)
@@ -68,14 +69,14 @@ public class BuyFoodState : State
 
                     if (NbFoodsInBags <= FoodAmountSetting / 10)
                     {
-                        DisplayName = $"Buying {AmountToBuy} x {FoodToBuy.Name} at vendor {FoodVendor.CreatureTemplate.name}";
+                        DisplayName = $"Buying {amountToBuy} x {FoodToBuy.Name} at vendor {FoodVendor.CreatureTemplate.name}";
                         return true;
                     }
 
                     if (NbFoodsInBags <= FoodAmountSetting / 2
                         && ObjectManager.Me.Position.DistanceTo(FoodVendor.CreatureTemplate.Creature.GetSpawnPosition) < PluginSettings.CurrentSetting.DriveByDistance)
                     {
-                        DisplayName = $"Drive-by buying {AmountToBuy} x {FoodToBuy.Name} at vendor {FoodVendor.CreatureTemplate.name}";
+                        DisplayName = $"Drive-by buying {amountToBuy} x {FoodToBuy.Name} at vendor {FoodVendor.CreatureTemplate.name}";
                         return true;
                     }
                 }
@@ -100,7 +101,7 @@ public class BuyFoodState : State
             if (Helpers.NpcIsAbsentOrDead(FoodVendor.CreatureTemplate))
                 return;
 
-            ClearObsoleteFoods();
+            UpdateDoNotSellList();
             Helpers.AddItemToDoNotSellList(FoodToBuy.Name);
             Helpers.AddItemToDoNotMailList(FoodToBuy.Name);
 
@@ -127,11 +128,20 @@ public class BuyFoodState : State
         }
     }
 
-    private void ClearObsoleteFoods()
+    private void UpdateDoNotSellList()
     {
-        foreach (ModelItemTemplate food in MemoryDB.GetAllFoods)
+        List<WoWItem> items = Bag.GetBagItem();
+        foreach (ModelItemTemplate food in MemoryDB.GetAllUsableFoods())
         {
-            Helpers.RemoveItemFromDoNotSellList(food.Name);
+            if (items.Exists(item => item.Entry == food.Entry) && food.RequiredLevel >= FoodToBuy.RequiredLevel)
+            {
+                Helpers.AddItemToDoNotSellList(food.Name);
+                Helpers.AddItemToDoNotMailList(food.Name);
+            }
+            else
+            {
+                Helpers.RemoveItemFromDoNotSellList(food.Name);
+            }
         }
     }
 
@@ -153,6 +163,7 @@ public class BuyFoodState : State
         if (foodToSet != null && wManagerSetting.CurrentSetting.FoodName != foodToSet)
         {
             Main.Logger($"Setting food to {foodToSet}");
+            Helpers.AddItemToDoNotSellList(foodToSet);
             wManagerSetting.CurrentSetting.FoodName = foodToSet;
             wManagerSetting.CurrentSetting.Save();
         }

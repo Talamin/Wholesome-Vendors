@@ -23,7 +23,7 @@ public class BuyDrinkState : State
 
     private int DrinkAmountSetting => PluginSettings.CurrentSetting.DrinkNbToBuy;
     private int NbDrinksInBag;
-    private int AmountToBuy;
+    private int AmountToBuy => DrinkAmountSetting - GetNbDrinksInBags();
 
     public override bool NeedToRun
     {
@@ -31,6 +31,7 @@ public class BuyDrinkState : State
         {
             if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
                 || !Main.IsLaunched
+                || !MemoryDB.IsPopulated
                 || !stateTimer.IsReady
                 || Me.Level <= 3
                 || DrinkAmountSetting <= 0
@@ -42,13 +43,14 @@ public class BuyDrinkState : State
             DrinkToBuy = null;
 
             NbDrinksInBag = GetNbDrinksInBags();
-            AmountToBuy = DrinkAmountSetting - NbDrinksInBag;
 
             if (NbDrinksInBag <= DrinkAmountSetting / 2)
             {
+                int myMoney = (int)ObjectManager.Me.GetMoneyCopper;
+                int amountToBuy = AmountToBuy;
                 foreach (ModelItemTemplate drink in MemoryDB.GetAllUsableDrinks)
                 {
-                    if (Helpers.HaveEnoughMoneyFor(AmountToBuy, drink))
+                    if (Helpers.HaveEnoughMoneyFor(amountToBuy, drink, myMoney))
                     {
                         ModelNpcVendor vendor = MemoryDB.GetNearestItemVendor(drink);
                         if (vendor != null)
@@ -58,14 +60,14 @@ public class BuyDrinkState : State
                             // Normal
                             if (NbDrinksInBag <= DrinkAmountSetting / 10)
                             {
-                                DisplayName = $"Buying {AmountToBuy} x {DrinkToBuy.Name} at vendor {DrinkVendor.CreatureTemplate.name}";
+                                DisplayName = $"Buying {amountToBuy} x {DrinkToBuy.Name} at vendor {DrinkVendor.CreatureTemplate.name}";
                                 return true;
                             }
                             // Drive-by
                             if (NbDrinksInBag <= DrinkAmountSetting / 2
                                 && ObjectManager.Me.Position.DistanceTo(vendor.CreatureTemplate.Creature.GetSpawnPosition) < PluginSettings.CurrentSetting.DriveByDistance)
                             {
-                                DisplayName = $"Drive-by buying {AmountToBuy} x {DrinkToBuy.Name} at vendor {DrinkVendor.CreatureTemplate.name}";
+                                DisplayName = $"Drive-by buying {amountToBuy} x {DrinkToBuy.Name} at vendor {DrinkVendor.CreatureTemplate.name}";
                                 return true;
                             }
                         }
@@ -105,7 +107,7 @@ public class BuyDrinkState : State
                 {
                     Helpers.SellItems(DrinkVendor.CreatureTemplate);
 
-                    Helpers.BuyItem(DrinkToBuy.Name, DrinkAmountSetting - GetNbDrinksInBags(), DrinkToBuy.BuyCount);
+                    Helpers.BuyItem(DrinkToBuy.Name, AmountToBuy, DrinkToBuy.BuyCount);
                     Helpers.CloseWindow();
                     Thread.Sleep(1000);
 
@@ -120,9 +122,18 @@ public class BuyDrinkState : State
 
     private void ClearObsoleteDrinks()
     {
-        foreach (ModelItemTemplate drink in MemoryDB.GetAllDrinks)
+        List<WoWItem> items = Bag.GetBagItem();
+        foreach (ModelItemTemplate drink in MemoryDB.GetAllUsableDrinks)
         {
-            Helpers.RemoveItemFromDoNotSellList(drink.Name);
+            if (items.Exists(item => item.Entry == drink.Entry) && drink.RequiredLevel >= DrinkToBuy.RequiredLevel)
+            {
+                Helpers.AddItemToDoNotSellList(drink.Name);
+                Helpers.AddItemToDoNotMailList(drink.Name);
+            }
+            else
+            {
+                Helpers.RemoveItemFromDoNotSellList(drink.Name);
+            }
         }
     }
 
@@ -144,6 +155,7 @@ public class BuyDrinkState : State
         if (drinkToSet != null && wManagerSetting.CurrentSetting.DrinkName != drinkToSet)
         {
             Main.Logger($"Setting drink to {drinkToSet}");
+            Helpers.AddItemToDoNotSellList(drinkToSet);
             wManagerSetting.CurrentSetting.DrinkName = drinkToSet;
             wManagerSetting.CurrentSetting.Save();
         }

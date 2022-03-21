@@ -349,15 +349,8 @@ namespace PoisonMaster
             return Lua.LuaDoString<int>("return GetMerchantNumItems()") > 0;
         }
 
-        public static bool HaveEnoughMoneyFor(int amount, ModelItemTemplate item)
-        {
-            if (GetMoney < item.BuyPrice * amount / item.BuyCount)
-            {
-                //Main.Logger($"You need {item.BuyPrice * amount / item.BuyCount} copper to buy {amount} x {item.Name} but you only have {GetMoney}");
-                return false;
-            }
-            return true;
-        }
+        public static bool HaveEnoughMoneyFor(int amount, ModelItemTemplate item) => GetMoney >= item.BuyPrice * amount / item.BuyCount;
+        public static bool HaveEnoughMoneyFor(int amount, ModelItemTemplate item, int money) => money >= item.BuyPrice * amount / item.BuyCount;
 
         public static bool PlayerIsInOutland()
         {

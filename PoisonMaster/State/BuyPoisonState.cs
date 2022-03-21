@@ -31,6 +31,7 @@ public class BuyPoisonState : State
             if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
                 || !Main.IsLaunched
                 || !stateTimer.IsReady
+                || !MemoryDB.IsPopulated
                 || !PluginSettings.CurrentSetting.BuyPoison
                 || ObjectManager.Me.WowClass != WoWClass.Rogue
                 || ObjectManager.Me.Level < 20

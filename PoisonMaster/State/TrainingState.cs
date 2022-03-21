@@ -31,6 +31,7 @@ public class TrainingState : State
             if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
                 || !Main.IsLaunched
                 || !stateTimer.IsReady
+                || !MemoryDB.IsPopulated
                 || LevelToTrain <= 0
                 || !PluginSettings.CurrentSetting.AllowTrain
                 || ObjectManager.Me.IsOnTaxi)

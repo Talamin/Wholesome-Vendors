@@ -80,8 +80,6 @@ public class Main : IPlugin
                 });
             }
 
-            MemoryDB.Populate();
-
             EventsLua.AttachEventLua("PLAYER_EQUIPMENT_CHANGED", m => Helpers.GetRangedWeaponType());
             FiniteStateMachineEvents.OnRunState += StateAddEventHandler;
             IsLaunched = true;
@@ -92,6 +90,8 @@ public class Main : IPlugin
                 wManagerSetting.CurrentSetting.TryToUseBestBagFoodDrink = false;
                 wManagerSetting.CurrentSetting.Save();
             }
+
+            MemoryDB.Initialize();
         }
         catch (Exception ex)
         {
@@ -101,6 +101,7 @@ public class Main : IPlugin
 
     public void Dispose()
     {
+        MemoryDB.Dispose();
         IsLaunched = false;
         Helpers.RestoreWRobotUserSettings();
         FiniteStateMachineEvents.OnRunState -= StateAddEventHandler;
