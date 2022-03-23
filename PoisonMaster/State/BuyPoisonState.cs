@@ -32,6 +32,7 @@ public class BuyPoisonState : State
                 || !Main.IsLaunched
                 || !stateTimer.IsReady
                 || !MemoryDB.IsPopulated
+                || !PluginCache.Initialized
                 || !PluginSettings.CurrentSetting.BuyPoison
                 || ObjectManager.Me.WowClass != WoWClass.Rogue
                 || ObjectManager.Me.Level < 20
@@ -168,7 +169,7 @@ public class BuyPoisonState : State
     {
         NbDeadlysInBags = 0;
         NbInstantsInBags = 0;
-        List<WoWItem> bagItems = Bag.GetBagItem();
+        List<WoWItem> bagItems = PluginCache.BagItems;
         foreach (WoWItem item in bagItems)
         {
             if (MemoryDB.GetDeadlyPoisons.Exists(p => p.Entry == item.Entry))

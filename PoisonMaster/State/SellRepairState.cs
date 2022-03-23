@@ -26,6 +26,7 @@ public class SellRepairState : State
             if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
                 || !Main.IsLaunched
                 || !MemoryDB.IsPopulated
+                || !PluginCache.Initialized
                 || !stateTimer.IsReady
                 || ObjectManager.Me.IsOnTaxi)
                 return false;
@@ -43,7 +44,7 @@ public class SellRepairState : State
                     return true;
                 }
             }
-            if (PluginSettings.CurrentSetting.AllowSell && Bag.GetContainerNumFreeSlotsByType(BagType.Unspecified) <= MinFreeSlots)
+            if (PluginSettings.CurrentSetting.AllowSell && PluginCache.NbFreeSlots <= MinFreeSlots)
             {
                 VendorNpc = MemoryDB.GetNearestSeller();
                 if (VendorNpc != null)
@@ -64,7 +65,7 @@ public class SellRepairState : State
                     return true;
                 }
             }
-            if (PluginSettings.CurrentSetting.AllowSell && Helpers.GetItemsToSell().Count > 5)
+            if (PluginSettings.CurrentSetting.AllowSell && PluginCache.ItemsToSell.Count > 5)
             {
                 VendorNpc = MemoryDB.GetNearestSeller();
                 if (VendorNpc != null
@@ -85,7 +86,7 @@ public class SellRepairState : State
 
         Helpers.CheckMailboxNearby(VendorNpc);
 
-        List<WoWItem> bagItems = Bag.GetBagItem();
+        List<WoWItem> bagItems = PluginCache.BagItems;
 
         if (ObjectManager.Me.Position.DistanceTo(VendorNpc.Creature.GetSpawnPosition) >= 10)
             GoToTask.ToPosition(VendorNpc.Creature.GetSpawnPosition);
@@ -112,7 +113,7 @@ public class SellRepairState : State
                     break;
             }
 
-            if (ObjectManager.Me.GetDurabilityPercent < MinDurability || Bag.GetContainerNumFreeSlotsByType(BagType.Unspecified) <= MinFreeSlots)
+            if (ObjectManager.Me.GetDurabilityPercent < MinDurability || PluginCache.NbFreeSlots <= MinFreeSlots)
             {
                 Main.Logger($"Failed to sell/repair, blacklisting {VendorNpc.name}");
                 NPCBlackList.AddNPCToBlacklist(VendorNpc.entry);

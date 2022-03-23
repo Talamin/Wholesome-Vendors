@@ -21,8 +21,6 @@ namespace PoisonMaster
         private static bool saveWRobotSettingSell;
         private static bool saveWRobotSettingTrain;
 
-        public static int GetMoney => (int)ObjectManager.Me.GetMoneyCopper;
-
         public static bool IsHorde()
         {
             return ObjectManager.Me.Faction == (uint)PlayerFactions.Orc || ObjectManager.Me.Faction == (uint)PlayerFactions.Tauren
@@ -96,26 +94,6 @@ namespace PoisonMaster
             finally
             {
                 Memory.WowMemory.UnlockFrame();
-            }
-        }
-
-        public static string GetRangedWeaponType()
-        {
-            uint myRangedWeapon = ObjectManager.Me.GetEquipedItemBySlot(InventorySlot.INVSLOT_RANGED);
-
-            if (myRangedWeapon == 0)
-                return null;
-            else
-            {
-                List<WoWItem> equippedItems = EquippedItems.GetEquippedItems();
-                foreach (WoWItem equippedItem in equippedItems)
-                {
-                    if (equippedItem.GetItemInfo.ItemSubType == "Crossbows" || equippedItem.GetItemInfo.ItemSubType == "Bows")
-                        return "Bows";
-                    if (equippedItem.GetItemInfo.ItemSubType == "Guns")
-                        return "Guns";
-                }
-                return null;
             }
         }
 
@@ -240,32 +218,16 @@ namespace PoisonMaster
             return listQualityMail;
         }
 
-        public static List<string> GetItemsToSell()
-        {
-            List<string> listItemsToSell = new List<string>();
-            foreach (WoWItem item in Bag.GetBagItem())
-            {
-                if (item != null
-                    && !wManagerSetting.CurrentSetting.DoNotSellList.Contains(item.Name)
-                    && ShouldSellByQuality(item)
-                    && item.GetItemInfo.ItemSellPrice > 0)
-                {
-                    listItemsToSell.Add(item.Name);
-                }
-            }
-            return listItemsToSell;
-        }
-
         public static void SellItems(ModelCreatureTemplate vendor)
         {
             if (!PluginSettings.CurrentSetting.AllowSell)
                 return;
 
             Main.Logger("Selling items");
-            List<WoWItem> bagItems = Bag.GetBagItem();
+            List<WoWItem> bagItems = PluginCache.BagItems;
             int nbItemsInBags = bagItems.Count;
 
-            List<string> listItemsToSell = GetItemsToSell();
+            List<string> listItemsToSell = PluginCache.ItemsToSell;
 
             if (listItemsToSell.Count <= 0)
                 return;
@@ -278,7 +240,7 @@ namespace PoisonMaster
                 GoToTask.ToPositionAndIntecractWithNpc(vendor.Creature.GetSpawnPosition, vendor.entry, i);
                 Vendor.SellItems(listItemsToSell, wManagerSetting.CurrentSetting.DoNotSellList, GetListQualityToSell());
                 Thread.Sleep(200);
-                if (Bag.GetBagItem().Count < nbItemsInBags)
+                if (PluginCache.BagItems.Count < nbItemsInBags)
                 {
                     break;
                 }
@@ -288,16 +250,6 @@ namespace PoisonMaster
                     NPCBlackList.AddNPCToBlacklist(vendor.entry);
                 }
             }
-        }
-
-        private static bool ShouldSellByQuality(WoWItem item)
-        {
-            if (item.GetItemInfo.ItemRarity == 0 && PluginSettings.CurrentSetting.SellGrayItems) return true;
-            if (item.GetItemInfo.ItemRarity == 1 && PluginSettings.CurrentSetting.SellWhiteItems) return true;
-            if (item.GetItemInfo.ItemRarity == 2 && PluginSettings.CurrentSetting.SellGreenItems) return true;
-            if (item.GetItemInfo.ItemRarity == 3 && PluginSettings.CurrentSetting.SellBlueItems) return true;
-            if (item.GetItemInfo.ItemRarity == 4 && PluginSettings.CurrentSetting.SellPurpleItems) return true;
-            return false;
         }
 
         public static void OverrideWRobotUserSettings()
@@ -349,8 +301,7 @@ namespace PoisonMaster
             return Lua.LuaDoString<int>("return GetMerchantNumItems()") > 0;
         }
 
-        public static bool HaveEnoughMoneyFor(int amount, ModelItemTemplate item) => GetMoney >= item.BuyPrice * amount / item.BuyCount;
-        public static bool HaveEnoughMoneyFor(int amount, ModelItemTemplate item, int money) => money >= item.BuyPrice * amount / item.BuyCount;
+        public static bool HaveEnoughMoneyFor(int amount, ModelItemTemplate item) => PluginCache.Money >= item.BuyPrice * amount / item.BuyCount;
 
         public static bool PlayerIsInOutland()
         {

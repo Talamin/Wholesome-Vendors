@@ -32,6 +32,7 @@ public class BuyFoodState : State
                 || !Main.IsLaunched
                 || !StateTimer.IsReady
                 || !MemoryDB.IsPopulated
+                || !PluginCache.Initialized
                 || Me.Level <= 3
                 || FoodAmountSetting <= 0
                 || Me.IsOnTaxi)
@@ -45,12 +46,11 @@ public class BuyFoodState : State
 
             if (NbFoodsInBags <= FoodAmountSetting / 2)
             {
-                int myMoney = (int)ObjectManager.Me.GetMoneyCopper;
                 int amountToBuy = AmountToBuy;
                 Dictionary<ModelItemTemplate, ModelNpcVendor> potentialFoodVendors = new Dictionary<ModelItemTemplate, ModelNpcVendor>();
                 foreach (ModelItemTemplate food in MemoryDB.GetAllUsableFoods())
                 {
-                    if (Helpers.HaveEnoughMoneyFor(amountToBuy, food, myMoney))
+                    if (Helpers.HaveEnoughMoneyFor(amountToBuy, food))
                     {
                         ModelNpcVendor vendor = MemoryDB.GetNearestItemVendor(food);
                         if (vendor != null)
@@ -130,7 +130,7 @@ public class BuyFoodState : State
 
     private void UpdateDoNotSellList()
     {
-        List<WoWItem> items = Bag.GetBagItem();
+        List<WoWItem> items = PluginCache.BagItems;
         foreach (ModelItemTemplate food in MemoryDB.GetAllUsableFoods())
         {
             if (items.Exists(item => item.Entry == food.Entry) && food.RequiredLevel >= FoodToBuy.RequiredLevel)
@@ -148,7 +148,7 @@ public class BuyFoodState : State
     private int GetNbOfFoodInBags()
     {
         int nbFoodsInBags = 0;
-        List<WoWItem> items = Bag.GetBagItem();
+        List<WoWItem> items = PluginCache.BagItems;
         List<ModelItemTemplate> allFoods = MemoryDB.GetAllUsableFoods();
         string foodToSet = null;
         foreach (WoWItem item in items)

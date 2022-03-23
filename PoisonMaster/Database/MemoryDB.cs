@@ -248,7 +248,7 @@ namespace Wholesome_Vendors.Database
 
         public static List<ModelItemTemplate> GetUsableAmmos()
         {
-            string rangedWeaponType = Helpers.GetRangedWeaponType();
+            string rangedWeaponType = PluginCache.RangedWeaponType;
             if (rangedWeaponType == "Bows" || rangedWeaponType == "Crossbows")
             {
                 return _ammos.FindAll(ammo => ammo.Subclass == 2 && ammo.RequiredLevel <= ObjectManager.Me.Level);
@@ -259,6 +259,7 @@ namespace Wholesome_Vendors.Database
             }
             return null;
         }
+
         public static ModelNpcVendor GetNearestItemVendor(ModelItemTemplate item)
         {
             if (item == null) return null;

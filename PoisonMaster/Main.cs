@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Wholesome_Vendors.Database;
 using wManager;
 using wManager.Plugin;
-using wManager.Wow.Helpers;
 using WoWDBUpdater;
 using Timer = robotManager.Helpful.Timer;
 
@@ -23,7 +22,7 @@ public class Main : IPlugin
 
     private Timer stateAddTimer;
 
-    public static string version = "1.2.00"; // Must match version in Version.txt
+    public static string version = "1.2.01"; // Must match version in Version.txt
 
     public void Initialize()
     {
@@ -80,9 +79,7 @@ public class Main : IPlugin
                 });
             }
 
-            EventsLua.AttachEventLua("PLAYER_EQUIPMENT_CHANGED", m => Helpers.GetRangedWeaponType());
             FiniteStateMachineEvents.OnRunState += StateAddEventHandler;
-            IsLaunched = true;
             _pulseThread.RunWorkerAsync();
 
             if (PluginSettings.CurrentSetting.DrinkNbToBuy > 0 || PluginSettings.CurrentSetting.FoodNbToBuy > 0)
@@ -91,6 +88,8 @@ public class Main : IPlugin
                 wManagerSetting.CurrentSetting.Save();
             }
 
+            IsLaunched = true;
+            PluginCache.Initialize();
             MemoryDB.Initialize();
         }
         catch (Exception ex)
@@ -101,12 +100,13 @@ public class Main : IPlugin
 
     public void Dispose()
     {
+        PluginCache.Dispose();
         MemoryDB.Dispose();
         IsLaunched = false;
         Helpers.RestoreWRobotUserSettings();
         FiniteStateMachineEvents.OnRunState -= StateAddEventHandler;
         _pulseThread.Dispose();
-        Logger("Plugin was terminated!");
+        Logger("Disposed");
     }
 
     public void Settings()

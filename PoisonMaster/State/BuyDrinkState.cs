@@ -32,6 +32,7 @@ public class BuyDrinkState : State
             if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
                 || !Main.IsLaunched
                 || !MemoryDB.IsPopulated
+                || !PluginCache.Initialized
                 || !stateTimer.IsReady
                 || Me.Level <= 3
                 || DrinkAmountSetting <= 0
@@ -46,11 +47,10 @@ public class BuyDrinkState : State
 
             if (NbDrinksInBag <= DrinkAmountSetting / 2)
             {
-                int myMoney = (int)ObjectManager.Me.GetMoneyCopper;
                 int amountToBuy = AmountToBuy;
                 foreach (ModelItemTemplate drink in MemoryDB.GetAllUsableDrinks)
                 {
-                    if (Helpers.HaveEnoughMoneyFor(amountToBuy, drink, myMoney))
+                    if (Helpers.HaveEnoughMoneyFor(amountToBuy, drink))
                     {
                         ModelNpcVendor vendor = MemoryDB.GetNearestItemVendor(drink);
                         if (vendor != null)
@@ -122,7 +122,7 @@ public class BuyDrinkState : State
 
     private void ClearObsoleteDrinks()
     {
-        List<WoWItem> items = Bag.GetBagItem();
+        List<WoWItem> items = PluginCache.BagItems;
         foreach (ModelItemTemplate drink in MemoryDB.GetAllUsableDrinks)
         {
             if (items.Exists(item => item.Entry == drink.Entry) && drink.RequiredLevel >= DrinkToBuy.RequiredLevel)
@@ -140,7 +140,7 @@ public class BuyDrinkState : State
     private int GetNbDrinksInBags()
     {
         int nbDrinksInBags = 0;
-        List<WoWItem> items = Bag.GetBagItem();
+        List<WoWItem> items = PluginCache.BagItems;
         List<ModelItemTemplate> allDrinks = MemoryDB.GetAllUsableDrinks;
         string drinkToSet = null;
         foreach (WoWItem item in items)

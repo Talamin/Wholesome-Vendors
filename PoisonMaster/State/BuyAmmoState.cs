@@ -30,9 +30,10 @@ public class BuyAmmoState : State
             if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
                 || !Main.IsLaunched
                 || !MemoryDB.IsPopulated
+                || !PluginCache.Initialized
                 || PluginSettings.CurrentSetting.AmmoAmount <= 0
                 || !stateTimer.IsReady
-                || Helpers.GetRangedWeaponType() == null
+                || PluginCache.RangedWeaponType == null
                 || Me.IsOnTaxi)
                 return false;
 
@@ -44,11 +45,10 @@ public class BuyAmmoState : State
 
             if (NbAmmoInBags <= AmmoAmountSetting / 2)
             {
-                int myMoney = (int)ObjectManager.Me.GetMoneyCopper;
                 int amountToBuy = AmountToBuy;
                 foreach (ModelItemTemplate ammo in MemoryDB.GetUsableAmmos())
                 {
-                    if (Helpers.HaveEnoughMoneyFor(amountToBuy, ammo, myMoney))
+                    if (Helpers.HaveEnoughMoneyFor(amountToBuy, ammo))
                     {
                         ModelNpcVendor vendor = MemoryDB.GetNearestItemVendor(ammo);
                         if (vendor != null)
@@ -126,7 +126,7 @@ public class BuyAmmoState : State
     private int GetNbAmmosInBags()
     {
         int nbAmmosInBags = 0;
-        List<WoWItem> bagItems = Bag.GetBagItem();
+        List<WoWItem> bagItems = PluginCache.BagItems;
         List<ModelItemTemplate> allAmmos = MemoryDB.GetUsableAmmos();
         foreach (WoWItem bagItem in bagItems)
         {
