@@ -247,6 +247,7 @@
     <Compile Include="Helpers.cs" />
     <Compile Include="Settings\Settings.cs" />
     <Compile Include="State\BuyAmmoState.cs" />
+    <Compile Include="State\BuyBagsState.cs" />
     <Compile Include="State\BuyDrinkState.cs" />
     <Compile Include="State\BuyFoodState.cs" />
     <Compile Include="State\BuyPoisonState.cs" />

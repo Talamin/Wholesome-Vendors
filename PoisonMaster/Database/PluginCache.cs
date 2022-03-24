@@ -14,12 +14,13 @@ namespace Wholesome_Vendors.Database
         public static bool Initialized { get; private set; }
         public static string RangedWeaponType { get; private set; }
         public static int Money { get; private set; }
+        public static int EmptyContainerSlots { get; private set; }
 
         private static object _cacheLock = new object();
 
         public static void Initialize()
         {
-            lock(_cacheLock)
+            lock (_cacheLock)
             {
                 RecordBags();
                 RecordRangedWeaponType();
@@ -46,7 +47,20 @@ namespace Wholesome_Vendors.Database
                 RecordBagItems();
                 RecordNbFreeSLots();
                 RecordItemsToSell();
+                RecordEmptyContainerSlots();
             }
+        }
+
+        private static void RecordEmptyContainerSlots()
+        {
+            int result = 0;
+            for (int i = 0; i < 5; i++)
+            {
+                string bagName = Lua.LuaDoString<string>($"return GetBagName({i});");
+                if (bagName.Equals(""))
+                    result++;
+            }
+            EmptyContainerSlots = result;
         }
 
         private static void RecordMoney()

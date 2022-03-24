@@ -1,9 +1,11 @@
 ﻿using Dapper;
-using PoisonMaster;
+using Newtonsoft.Json;
 using robotManager.Helpful;
+using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Wholesome_Vendors.Database.Models;
 using wManager.Wow.Helpers;
@@ -20,6 +22,7 @@ namespace Wholesome_Vendors.Database
         private static List<ModelItemTemplate> _foods;
         private static List<ModelItemTemplate> _ammos;
         private static List<ModelItemTemplate> _poisons;
+        private static List<ModelItemTemplate> _bags;
         private static List<ModelCreatureTemplate> _sellers;
         private static List<ModelCreatureTemplate> _repairers;
         private static List<ModelCreatureTemplate> _trainers;
@@ -121,6 +124,31 @@ namespace Wholesome_Vendors.Database
             _poisons = poisons;
             Main.Logger($"Process time (Poison) : {poisonWatch.ElapsedMilliseconds} ms");
 
+            // BAGS
+            Stopwatch bagsWatch = Stopwatch.StartNew();
+            string bagsSql = $@"
+                SELECT * FROM item_template
+                WHERE class = 1
+                    AND subclass = 0
+                    AND ContainerSlots = {PluginSettings.CurrentSetting.BagsCapacity}
+                    AND BuyPrice > 0
+                    AND maxcount  = 0
+                    AND Quality < 4
+                    AND Flags  = 0
+                    AND RequiredLevel = 0
+            ";
+            List<ModelItemTemplate> bags = _con
+                .Query<ModelItemTemplate>(bagsSql)
+                .ToList();
+            foreach (ModelItemTemplate bag in bags)
+            {
+                bag.VendorsSellingThisItem = QueryNpcVendorByItem(bag.Entry);
+                bag.VendorsSellingThisItem.RemoveAll(v => v.CreatureTemplate == null || v.CreatureTemplate.Creature == null);
+            }
+            bags.RemoveAll(b => b.VendorsSellingThisItem.Count <= 0);
+            _bags = bags;
+            Main.Logger($"Process time (Bags) : {bagsWatch.ElapsedMilliseconds} ms");
+
             // SELLERS
             Stopwatch sellersWatch = Stopwatch.StartNew();
             string sellersSql = $@"
@@ -192,7 +220,6 @@ namespace Wholesome_Vendors.Database
             _con.Dispose();
 
             // JSON export
-            /*
             Stopwatch jsonsWatch = Stopwatch.StartNew();
             try
             {
@@ -202,7 +229,7 @@ namespace Wholesome_Vendors.Database
                 using (StreamWriter file = File.CreateText(Others.GetCurrentDirectory + @"\Data\WVM.json"))
                 {
                     var serializer = new JsonSerializer();
-                    serializer.Serialize(file, new JsonExport(_drinks, _foods, _ammos, _poisons, _sellers, _repairers, _trainers, _mailboxes));
+                    serializer.Serialize(file, new JsonExport(_drinks, _foods, _ammos, _poisons, _bags, _sellers, _repairers, _trainers, _mailboxes));
                 }
             }
             catch (Exception e)
@@ -210,7 +237,7 @@ namespace Wholesome_Vendors.Database
                 Logging.WriteError("WriteJSONFromDBResult > " + e.Message);
             }
             Main.Logger($"Process time (JSON) : {jsonsWatch.ElapsedMilliseconds} ms");
-            */
+
             IsPopulated = true;
         }
 
@@ -225,6 +252,8 @@ namespace Wholesome_Vendors.Database
 
         public static List<ModelItemTemplate> GetAllDrinks => _drinks;
         public static List<ModelItemTemplate> GetAllUsableDrinks => _drinks.FindAll(d => d.RequiredLevel <= ObjectManager.Me.Level);
+
+        public static List<ModelItemTemplate> GetBags => _bags;
 
         public static List<ModelItemTemplate> GetAllFoods => _foods;
         public static List<ModelItemTemplate> GetAllUsableFoods()
@@ -506,6 +535,7 @@ namespace Wholesome_Vendors.Database
         public List<ModelItemTemplate> Waters { get; }
         public List<ModelItemTemplate> Foods { get; }
         public List<ModelItemTemplate> Ammos { get; }
+        public List<ModelItemTemplate> Bags { get; }
         public List<ModelItemTemplate> Poisons { get; }
         public List<ModelCreatureTemplate> Sellers { get; }
         public List<ModelCreatureTemplate> Repairers { get; }
@@ -516,6 +546,7 @@ namespace Wholesome_Vendors.Database
             List<ModelItemTemplate> foods,
             List<ModelItemTemplate> ammos,
             List<ModelItemTemplate> poisons,
+            List<ModelItemTemplate> bags,
             List<ModelCreatureTemplate> sellers,
             List<ModelCreatureTemplate> repairers,
             List<ModelCreatureTemplate> trainers,
@@ -529,6 +560,7 @@ namespace Wholesome_Vendors.Database
             Repairers = repairers;
             Trainers = trainers;
             MailBoxes = mailboxes;
+            Bags = bags;
         }
     }
 }

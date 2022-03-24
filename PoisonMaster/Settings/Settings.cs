@@ -165,6 +165,21 @@ public class PluginSettings : Settings
     [Description("Allow mailing of purple items")]
     public bool MailPurpleItems { get; set; }
 
+    [Setting]
+    [DefaultValue(false)]
+    [Category("Bags")]
+    [DisplayName("Buy bags")]
+    [Description("Buy bags of specified capacity. ONLY works if you have empty bag slots.")]
+    public bool BuyBags { get; set; }
+
+    [Setting]
+    [DropdownList(new string[] { "6", "8", "10", "12" })]
+    [DefaultValue("6")]
+    [Category("Bags")]
+    [DisplayName("Capacity")]
+    [Description("Capacity of bags to purchase")]
+    public string BagsCapacity { get; set; }
+
     public string Databasetype { get; set; }
     public int DriveByDistance { get; set; }
     public double LastUpdateDate { get; set; }
@@ -199,6 +214,9 @@ public class PluginSettings : Settings
         MailPurpleItems = false;
 
         MailingRecipient = "";
+
+        BuyBags = false;
+        BagsCapacity = "6";
 
         FoodType = "Any";
 

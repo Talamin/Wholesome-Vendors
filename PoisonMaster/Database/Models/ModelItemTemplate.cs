@@ -12,6 +12,7 @@ namespace Wholesome_Vendors.Database.Models
         public int Subclass { get; }
         public int RequiredLevel { get; }
         public int displayid { get; }
+        public int ContainerSlots { get; }
 
         public List<ModelNpcVendor> VendorsSellingThisItem = new List<ModelNpcVendor>();
     }
