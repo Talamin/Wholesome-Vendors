@@ -9,7 +9,7 @@ namespace Wholesome_Vendors.Database.Models
         public int entry { get; }
         public string name { get; }
         public string subname { get; }
-        private uint faction { get; }
+        public uint faction { get; }
         public int minLevel { get; }
         public int maxLevel { get; }
 

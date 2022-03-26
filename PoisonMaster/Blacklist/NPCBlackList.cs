@@ -1,5 +1,8 @@
 ﻿using PoisonMaster;
 using System.Collections.Generic;
+using Wholesome_Vendors.Database.Models;
+using wManager.Wow.Enums;
+using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
 
 public static class NPCBlackList
@@ -7,9 +10,9 @@ public static class NPCBlackList
     public static void AddNPCListToBlacklist()
     {
         if (Helpers.IsHorde())
-            AddNPCToBlacklist(hordeBlacklist);
+            AddNPCToBlacklist(_hordeBlacklist);
         else
-            AddNPCToBlacklist(allianceBlacklist);
+            AddNPCToBlacklist(_allianceBlacklist);
 
         if (ObjectManager.Me.Level > 10)
             AddNPCToBlacklist(new HashSet<int> { 5871, 8307, 3489 }); // starter zone vendors
@@ -17,9 +20,9 @@ public static class NPCBlackList
 
     public static void AddNPCToBlacklist(int npcId)
     {
-        if (!SessionBlacklist.Contains(npcId))
+        if (!_sessionBlacklist.Contains(npcId))
         {
-            SessionBlacklist.Add(npcId);
+            _sessionBlacklist.Add(npcId);
         }
     }
 
@@ -29,7 +32,30 @@ public static class NPCBlackList
             AddNPCToBlacklist(id);
     }
 
-    private static readonly HashSet<int> hordeBlacklist = new HashSet<int>
+    public static bool IsVendorValid(ModelCreatureTemplate creatureTemplate)
+    {
+        bool isPlayerDK = ObjectManager.Me.WowClass == WoWClass.DeathKnight;
+        return creatureTemplate.Creature != null
+            && !_sessionBlacklist.Contains(creatureTemplate.entry)
+            && creatureTemplate.Creature.map == Usefuls.ContinentId
+            && creatureTemplate.IsFriendly
+            && creatureTemplate.faction != 1555 // Darmoon Faire
+            && (isPlayerDK || creatureTemplate.faction != 2050) // Ebon blade
+            && (isPlayerDK || creatureTemplate.faction != 2082) // Ebon blade
+            && (isPlayerDK || creatureTemplate.faction != 2083) // Ebon blade
+            && GetListUsableZones().Contains(creatureTemplate.Creature.zoneid + 1);
+    }
+
+    public static bool IsGameObjectValid(ModelGameObjectTemplate goTemplate)
+    {
+        return goTemplate.GameObject != null
+            && !_sessionBlacklist.Contains(goTemplate.entry)
+            && goTemplate.GameObject.map == Usefuls.ContinentId
+            && GetListUsableZones().Contains(goTemplate.GameObject.zoneid + 1);
+    }
+
+
+    private static readonly HashSet<int> _hordeBlacklist = new HashSet<int>
     {
         10857, // Neutral in alliance camp
         8305, // Kixxle
@@ -39,13 +65,13 @@ public static class NPCBlackList
         14963, // Gapp Jinglepocket, Neutral in Ashenvale
     };
 
-    private static readonly HashSet<int> allianceBlacklist = new HashSet<int>
+    private static readonly HashSet<int> _allianceBlacklist = new HashSet<int>
     {
         15125, // Kosco Copperpinch
         2805, // Deneb walker
     };
 
-    public static readonly HashSet<int> SessionBlacklist = new HashSet<int>
+    private static readonly HashSet<int> _sessionBlacklist = new HashSet<int>
     {
         14637, // Zorbin Fandazzle
         15898, // Event NPC
@@ -108,13 +134,96 @@ public static class NPCBlackList
         5783,
     };
 
-    public static readonly HashSet<int> OnlyFoodBlacklist = new HashSet<int>
+    private static HashSet<int> GetListUsableZones()
     {
-        3312, //only Meat Vendor
-        3342, // only food Vendor
-        3329, //only Mushrooms
-        3368, //only meat
-        3547, //Mushrooms only
-        3480, // Only Bread   
-    };
+        HashSet<int> listZones = new HashSet<int>();
+        foreach (KeyValuePair<int, int> zones in ZoneLevelDictionary)
+        {
+            if (zones.Value <= ObjectManager.Me.Level)
+            {
+                listZones.Add(zones.Key);
+                //Main.Logger("Added: " + zones.Key + " to safe zones");
+            }
+        }
+        return listZones;
+    }
+
+    private static readonly Dictionary<int, int> ZoneLevelDictionary = new Dictionary<int, int>
+        {
+            {465,1}, //AzuremystIsle
+            {28,1}, //DunMorogh
+            {5,1}, //Durotar
+            {31,1}, //Elwynn
+            {463,1}, //EversongWoods
+            {42,1}, //Teldrassil
+            {21,1}, //Tirisfal
+            {10,1}, //Mulgore
+
+            {481,5}, //SilvermoonCity
+            {342,5}, //Ironforge
+            {322,5}, //Ogrimmar
+            {302,5}, //Stormwind
+            {472,5}, //TheExodar
+            {363,5}, //ThunderBluff
+            {383,5}, //Undercity
+            //{382,5}, //Darnassus
+
+            {14,10}, //Kalimdor
+            {15,10}, //Azeroth
+
+            {22,10}, //Silverpine
+            {36,10}, //LochModan
+            {464,10}, //Ghostlands
+            {11,10}, //Barrens
+            {43,10}, //Darkshore
+            {477,10}, //BloodmystIsle
+            {40,10}, //Westfall
+            {37,15}, //Redridge
+            {82,15}, //StonetalonMountains
+            {44,18}, //Ashenvale
+            {35,18}, //Duskwood
+            {25,20}, //Hilsbrad
+            {41,20}, //Wetlands
+            {62,25}, //ThousandNeedles
+            {16,30}, //Alterac
+            {17,30}, //Arathi
+            {102,30}, //Desolace
+            {142,30}, //Dustwallow
+            {38,30}, //Stranglethorn
+            {18,35}, //Badlands
+            {39,35}, //SwampOfSorrows
+            {27,40}, //Hinterlands
+            {162,40}, //Tanaris
+            {122,42}, //Feralas
+            {182,45}, //Aszhara
+            {20,45}, //BlastedLands
+            {29,45}, //SearingGorge
+            {183,48}, //Felwood
+            {202,48}, //UngoroCrater
+            {30,50}, //BurningSteppes
+            {23,51}, //WesternPlaguelands
+            {24,53}, //EasternPlaguelands
+            {282,53}, //Winterspring
+            {242,55}, //Moonglade
+            {262,55}, //Silithus
+            {466,58}, //Hellfire
+            {467,60}, //Zangarmarsh
+            {479,62}, //TerokkarForest
+            {476,65}, //BladesEdgeMountains
+            {478,65}, //Nagrand
+            {480,67}, //Netherstorm
+            {474,67}, //ShadowmoonValley
+            {482,65}, //ShattrathCity
+            {487,68}, //BoreanTundra
+            {32,68}, //DeadwindPass
+            {492,68}, //HowlingFjord
+            {489,71}, //Dragonblight
+            {491,73}, //GrizzlyHills
+            {497,75}, //ZulDrak
+            {494,76}, //SholazarBasin
+            {511,77}, //CrystalsongForest
+            {542,77}, //HrothgarsLanding
+            {605,77}, //IcecrownCitadel
+            {505,80}, //Dalaran
+        };
 }

@@ -294,10 +294,7 @@ namespace Wholesome_Vendors.Database
             if (item == null) return null;
 
             return item.VendorsSellingThisItem
-                .Where(vendor => vendor.CreatureTemplate.IsFriendly
-                    && !NPCBlackList.SessionBlacklist.Contains(vendor.entry)
-                    && vendor.CreatureTemplate.Creature.map == Usefuls.ContinentId
-                    && GetListUsableZones().Contains(vendor.CreatureTemplate.Creature.zoneid + 1))
+                .Where(vendor => NPCBlackList.IsVendorValid(vendor.CreatureTemplate))
                 .OrderBy(vendor => ObjectManager.Me.Position.DistanceTo(vendor.CreatureTemplate.Creature.GetSpawnPosition))
                 .FirstOrDefault();
         }
@@ -305,11 +302,7 @@ namespace Wholesome_Vendors.Database
         public static ModelCreatureTemplate GetNearestSeller()
         {
             return _sellers
-                .Where(seller => seller.Creature != null
-                    && !NPCBlackList.SessionBlacklist.Contains(seller.entry)
-                    && seller.IsFriendly
-                    && seller.Creature.map == Usefuls.ContinentId
-                    && GetListUsableZones().Contains(seller.Creature.zoneid + 1))
+                .Where(vendor => NPCBlackList.IsVendorValid(vendor))
                 .OrderBy(seller => ObjectManager.Me.Position.DistanceTo(seller.Creature.GetSpawnPosition))
                 .FirstOrDefault();
         }
@@ -317,11 +310,7 @@ namespace Wholesome_Vendors.Database
         public static ModelCreatureTemplate GetNearestRepairer()
         {
             return _repairers
-                .Where(repairer => repairer.Creature != null
-                    && !NPCBlackList.SessionBlacklist.Contains(repairer.entry)
-                    && repairer.IsFriendly
-                    && repairer.Creature.map == Usefuls.ContinentId
-                    && GetListUsableZones().Contains(repairer.Creature.zoneid + 1))
+                .Where(vendor => NPCBlackList.IsVendorValid(vendor))
                 .OrderBy(repairer => ObjectManager.Me.Position.DistanceTo(repairer.Creature.GetSpawnPosition))
                 .FirstOrDefault();
         }
@@ -329,23 +318,17 @@ namespace Wholesome_Vendors.Database
         public static ModelGameObjectTemplate GetNearestMailBoxFrom(ModelCreatureTemplate npc)
         {
             return _mailboxes
-                .Where(mb => mb.GameObject != null
-                    && !NPCBlackList.SessionBlacklist.Contains(mb.entry)
-                    && mb.GameObject.map == Usefuls.ContinentId
-                    && mb.GameObject.GetSpawnPosition.DistanceTo(npc.Creature.GetSpawnPosition) < 300)
-                .OrderBy(mb => ObjectManager.Me.Position.DistanceTo(mb.GameObject.GetSpawnPosition))
+                .Where(mailbox => NPCBlackList.IsGameObjectValid(mailbox)
+                    && mailbox.GameObject.GetSpawnPosition.DistanceTo(npc.Creature.GetSpawnPosition) < 300)
+                .OrderBy(mailbox => ObjectManager.Me.Position.DistanceTo(mailbox.GameObject.GetSpawnPosition))
                 .FirstOrDefault();
         }
 
         public static ModelCreatureTemplate GetNearestTrainer()
         {
             return _trainers
-                .Where(trainer => trainer.Creature != null
-                    && !NPCBlackList.SessionBlacklist.Contains(trainer.entry)
-                    && trainer.IsFriendly
-                    && trainer.Creature.map == Usefuls.ContinentId
-                    && GetListUsableZones().Contains(trainer.Creature.zoneid + 1)
-                    && (ObjectManager.Me.Level < trainer.minLevel || trainer.minLevel > 20))
+                .Where(vendor => NPCBlackList.IsVendorValid(vendor)
+                    && (ObjectManager.Me.Level < vendor.minLevel || vendor.minLevel > 20))
                 .OrderBy(trainer => ObjectManager.Me.Position.DistanceTo(trainer.Creature.GetSpawnPosition))
                 .FirstOrDefault();
         }
@@ -377,18 +360,7 @@ namespace Wholesome_Vendors.Database
             List<ModelCreatureTemplate> result = _con.Query<ModelCreatureTemplate>(cTemplateSql).ToList();
             return result;
         }
-        /*
-        private static ModelCreatureTemplate QueryCreatureTemplateByEntry(int ctEntry)
-        {
-            string cTemplateSql = $@"
-                SELECT * FROM creature_template
-                WHERE entry = {ctEntry}
-            ";
-            ModelCreatureTemplate result = _con.Query<ModelCreatureTemplate>(cTemplateSql).FirstOrDefault();
-            result.Creature = QueryCreatureByEntry(ctEntry);
-            return result;
-        }
-        */
+
         private static List<ModelCreature> QueryCreaturesByEntries(int[] ctEntries)
         {
             string creaSql = $@"
@@ -398,17 +370,7 @@ namespace Wholesome_Vendors.Database
             List<ModelCreature> result = _con.Query<ModelCreature>(creaSql).ToList();
             return result;
         }
-        /*
-        private static ModelCreature QueryCreatureByEntry(int ctEntry)
-        {
-            string creaSql = $@"
-                SELECT * FROM creature
-                WHERE id = {ctEntry}
-            ";
-            ModelCreature result = _con.Query<ModelCreature>(creaSql).FirstOrDefault();
-            return result;
-        }
-        */
+
         private static ModelGameObject QueryGameObjectByEntry(int goEntry)
         {
             string goSql = $@"
@@ -435,99 +397,6 @@ namespace Wholesome_Vendors.Database
             _cmd.CommandText = query;
             _cmd.ExecuteNonQuery();
         }
-
-        private static HashSet<int> GetListUsableZones()
-        {
-            HashSet<int> listZones = new HashSet<int>();
-            foreach (KeyValuePair<int, int> zones in ZoneLevelDictionary)
-            {
-                if (zones.Value <= ObjectManager.Me.Level)
-                {
-                    listZones.Add(zones.Key);
-                    //Main.Logger("Added: " + zones.Key + " to safe zones");
-                }
-            }
-            return listZones;
-        }
-
-        private static readonly Dictionary<int, int> ZoneLevelDictionary = new Dictionary<int, int>
-        {
-            {465,1}, //AzuremystIsle
-            {28,1}, //DunMorogh
-            {5,1}, //Durotar
-            {31,1}, //Elwynn
-            {463,1}, //EversongWoods
-            {42,1}, //Teldrassil
-            {21,1}, //Tirisfal
-            {10,1}, //Mulgore
-
-            {481,5}, //SilvermoonCity
-            {342,5}, //Ironforge
-            {322,5}, //Ogrimmar
-            {302,5}, //Stormwind
-            {472,5}, //TheExodar
-            {363,5}, //ThunderBluff
-            {383,5}, //Undercity
-            //{382,5}, //Darnassus
-
-            {14,10}, //Kalimdor
-            {15,10}, //Azeroth
-
-            {22,10}, //Silverpine
-            {36,10}, //LochModan
-            {464,10}, //Ghostlands
-            {11,10}, //Barrens
-            {43,10}, //Darkshore
-            {477,10}, //BloodmystIsle
-            {40,10}, //Westfall
-            {37,15}, //Redridge
-            {82,15}, //StonetalonMountains
-            {44,18}, //Ashenvale
-            {35,18}, //Duskwood
-            {25,20}, //Hilsbrad
-            {41,20}, //Wetlands
-            {62,25}, //ThousandNeedles
-            {16,30}, //Alterac
-            {17,30}, //Arathi
-            {102,30}, //Desolace
-            {142,30}, //Dustwallow
-            {38,30}, //Stranglethorn
-            {18,35}, //Badlands
-            {39,35}, //SwampOfSorrows
-            {27,40}, //Hinterlands
-            {162,40}, //Tanaris
-            {122,42}, //Feralas
-            {182,45}, //Aszhara
-            {20,45}, //BlastedLands
-            {29,45}, //SearingGorge
-            {183,48}, //Felwood
-            {202,48}, //UngoroCrater
-            {30,50}, //BurningSteppes
-            {23,51}, //WesternPlaguelands
-            {24,53}, //EasternPlaguelands
-            {282,53}, //Winterspring
-            {242,55}, //Moonglade
-            {262,55}, //Silithus
-            {466,58}, //Hellfire
-            {467,60}, //Zangarmarsh
-            {479,62}, //TerokkarForest
-            {476,65}, //BladesEdgeMountains
-            {478,65}, //Nagrand
-            {480,67}, //Netherstorm
-            {474,67}, //ShadowmoonValley
-            {482,65}, //ShattrathCity
-            {487,68}, //BoreanTundra
-            {32,68}, //DeadwindPass
-            {492,68}, //HowlingFjord
-            {489,71}, //Dragonblight
-            {491,73}, //GrizzlyHills
-            {497,75}, //ZulDrak
-            {494,76}, //SholazarBasin
-            {511,77}, //CrystalsongForest
-            {542,77}, //HrothgarsLanding
-            {605,77}, //IcecrownCitadel
-            {505,80}, //Dalaran
-        };
     }
 
     class JsonExport
