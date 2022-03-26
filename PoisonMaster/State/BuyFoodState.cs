@@ -107,6 +107,7 @@ public class BuyFoodState : State
 
             for (int i = 0; i <= 5; i++)
             {
+                Main.Logger($"Attempt {i+1}");
                 GoToTask.ToPositionAndIntecractWithNpc(vendorPos, FoodVendor.entry, i);
                 Thread.Sleep(500);
                 Lua.LuaDoString($"StaticPopup1Button2:Click()"); // discard hearthstone popup
@@ -116,12 +117,12 @@ public class BuyFoodState : State
                     Helpers.SellItems(FoodVendor.CreatureTemplate);
 
                     Helpers.BuyItem(FoodToBuy.Name, AmountToBuy, FoodToBuy.BuyCount);
-                    Helpers.CloseWindow();
                     Thread.Sleep(1000);
 
                     if (GetNbOfFoodInBags() >= FoodAmountSetting)
                         return;
                 }
+                Helpers.CloseWindow();
             }
             Main.Logger($"Failed to buy {FoodToBuy.Name}, blacklisting vendor");
             NPCBlackList.AddNPCToBlacklist(FoodVendor.entry);

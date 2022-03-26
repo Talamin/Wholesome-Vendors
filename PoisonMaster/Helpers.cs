@@ -240,6 +240,7 @@ namespace PoisonMaster
                 GoToTask.ToPositionAndIntecractWithNpc(vendor.Creature.GetSpawnPosition, vendor.entry, i);
                 Vendor.SellItems(listItemsToSell, wManagerSetting.CurrentSetting.DoNotSellList, GetListQualityToSell());
                 Thread.Sleep(200);
+                CloseWindow();
                 if (PluginCache.BagItems.Count < nbItemsInBags)
                 {
                     break;
@@ -301,7 +302,7 @@ namespace PoisonMaster
             return Lua.LuaDoString<int>("return GetMerchantNumItems()") > 0;
         }
 
-        public static bool HaveEnoughMoneyFor(int amount, ModelItemTemplate item) => PluginCache.Money >= item.BuyPrice * amount / item.BuyCount;
+        public static bool HaveEnoughMoneyFor(int amount, ModelItemTemplate item) => PluginCache.Money >= (item.BuyPrice * amount / item.BuyCount);
 
         public static bool PlayerIsInOutland()
         {

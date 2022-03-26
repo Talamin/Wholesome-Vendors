@@ -22,7 +22,7 @@ public class Main : IPlugin
 
     private Timer stateAddTimer;
 
-    public static string version = "1.2.05"; // Must match version in Version.txt
+    public static string version = "1.2.06"; // Must match version in Version.txt
 
     public void Initialize()
     {
@@ -137,8 +137,8 @@ public class Main : IPlugin
             Helpers.AddState(engine, new BuyAmmoState(), "To Town");
             Helpers.AddState(engine, new BuyFoodState(), "To Town");
             Helpers.AddState(engine, new BuyDrinkState(), "To Town");
-            Helpers.AddState(engine, new SellRepairState(), "To Town");
             Helpers.AddState(engine, new TrainingState(), "Trainers");
+            Helpers.AddState(engine, new SellRepairState(), "To Town");
             //engine.RemoveStateByName("To Town");
         }
     }
