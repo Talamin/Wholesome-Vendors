@@ -74,17 +74,8 @@ namespace PoisonMaster
                 Memory.WowMemory.LockFrame();
                 Lua.LuaDoString("CloseQuest()");
                 Lua.LuaDoString("CloseGossip()");
-                Lua.LuaDoString("CloseBankFrame()");
-                Lua.LuaDoString("CloseMail()");
                 Lua.LuaDoString("CloseMerchant()");
-                Lua.LuaDoString("ClosePetStables()");
-                Lua.LuaDoString("CloseTaxiMap()");
-                Lua.LuaDoString("CloseTrainer()");
-                Lua.LuaDoString("CloseAuctionHouse()");
-                Lua.LuaDoString("CloseGuildBankFrame()");
                 Lua.LuaDoString("CloseLoot()");
-                Lua.RunMacroText("/Click QuestFrameCloseButton");
-                Lua.LuaDoString("ClearTarget()");
                 Thread.Sleep(150);
             }
             catch (Exception e)

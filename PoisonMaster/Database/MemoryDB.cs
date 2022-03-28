@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Wholesome_Vendors.Database.Models;
-using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
 
 namespace Wholesome_Vendors.Database
@@ -294,7 +293,8 @@ namespace Wholesome_Vendors.Database
             if (item == null) return null;
 
             return item.VendorsSellingThisItem
-                .Where(vendor => NPCBlackList.IsVendorValid(vendor.CreatureTemplate))
+                .Where(vendor => NPCBlackList.IsVendorValid(vendor.CreatureTemplate)
+                    && (ObjectManager.Me.Level > 10 || vendor.CreatureTemplate.Creature.GetSpawnPosition.DistanceTo(ObjectManager.Me.Position) < 500))
                 .OrderBy(vendor => ObjectManager.Me.Position.DistanceTo(vendor.CreatureTemplate.Creature.GetSpawnPosition))
                 .FirstOrDefault();
         }
