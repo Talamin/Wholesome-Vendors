@@ -33,6 +33,7 @@ public class BuyPoisonState : State
                 || !stateTimer.IsReady
                 || !MemoryDB.IsPopulated
                 || !PluginCache.Initialized
+                || PluginCache.IsInInstance
                 || !PluginSettings.CurrentSetting.BuyPoison
                 || ObjectManager.Me.WowClass != WoWClass.Rogue
                 || ObjectManager.Me.Level < 20

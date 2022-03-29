@@ -32,6 +32,7 @@ public class BuyDrinkState : State
                 || !Main.IsLaunched
                 || !MemoryDB.IsPopulated
                 || !PluginCache.Initialized
+                || PluginCache.IsInInstance
                 || !stateTimer.IsReady
                 || Me.Level <= 3
                 || DrinkAmountSetting <= 0

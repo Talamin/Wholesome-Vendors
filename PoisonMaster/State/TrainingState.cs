@@ -33,6 +33,7 @@ public class TrainingState : State
                 || !stateTimer.IsReady
                 || !MemoryDB.IsPopulated
                 || !PluginCache.Initialized
+                || PluginCache.IsInInstance
                 || LevelToTrain <= 0
                 || !PluginSettings.CurrentSetting.AllowTrain
                 || ObjectManager.Me.IsOnTaxi)

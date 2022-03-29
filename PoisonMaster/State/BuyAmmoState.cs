@@ -31,6 +31,7 @@ public class BuyAmmoState : State
                 || !Main.IsLaunched
                 || !MemoryDB.IsPopulated
                 || !PluginCache.Initialized
+                || PluginCache.IsInInstance
                 || PluginSettings.CurrentSetting.AmmoAmount <= 0
                 || !stateTimer.IsReady
                 || PluginCache.RangedWeaponType == null

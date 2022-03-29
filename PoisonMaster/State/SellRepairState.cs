@@ -27,6 +27,7 @@ public class SellRepairState : State
                 || !Main.IsLaunched
                 || !MemoryDB.IsPopulated
                 || !PluginCache.Initialized
+                || PluginCache.IsInInstance
                 || !stateTimer.IsReady
                 || ObjectManager.Me.IsOnTaxi)
                 return false;

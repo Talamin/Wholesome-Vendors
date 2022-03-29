@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Wholesome_Vendors.Database.Models;
+using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
 
 namespace Wholesome_Vendors.Database
@@ -223,9 +224,19 @@ namespace Wholesome_Vendors.Database
                 SELECT * FROM spell
                 WHERE attributes = 269844752
             ";
-            List<ModelSpell> mountsSpell = _con.Query<ModelSpell>(mountsSql).ToList();
-            _mounts = mountsSpell;
+            List<ModelSpell> mountsSpells = _con.Query<ModelSpell>(mountsSql).ToList();
+            foreach (ModelSpell mountSpell in mountsSpells)
+            {
+                mountSpell.AssociatedItem = QueryItemTemplateBySpell(mountSpell.Id);
+            }
+            _mounts = mountsSpells;
             Main.Logger($"Process time (Mounts) : {mountsWatch.ElapsedMilliseconds} ms");
+
+            foreach (ModelSpell spell in GetNormalMounts)
+            {
+                if (SpellManager.ExistMount((uint)spell.Id) || SpellManager.ExistSpellBook(spell.name_lang_1))
+                    Main.LoggerError($"KNOW {spell.name_lang_1}");
+            }
 
             _con.Dispose();
 
@@ -265,6 +276,11 @@ namespace Wholesome_Vendors.Database
         public static List<ModelItemTemplate> GetAllUsableDrinks => _drinks.FindAll(d => d.RequiredLevel <= ObjectManager.Me.Level);
 
         public static List<ModelItemTemplate> GetBags => _bags;
+
+        public static List<ModelSpell> GetNormalMounts => _mounts.FindAll(m => m.effectBasePoints_2 == 59);
+        public static List<ModelSpell> GetEpicMounts => _mounts.FindAll(m => m.effectBasePoints_2 == 99);
+        public static List<ModelSpell> GetFlyingMounts => _mounts.FindAll(m => m.effectBasePoints_2 == 149);
+        public static List<ModelSpell> GetEpicFlyingMounts => _mounts.FindAll(m => m.effectBasePoints_2 >= 279);
 
         public static List<ModelItemTemplate> GetAllFoods => _foods;
         public static List<ModelItemTemplate> GetAllUsableFoods()
@@ -393,6 +409,21 @@ namespace Wholesome_Vendors.Database
             return result;
         }
 
+        private static ModelItemTemplate QueryItemTemplateBySpell(int spellId)
+        {
+            string itSql = $@"
+                SELECT * FROM item_template
+                WHERE spellid_2 = {spellId}
+                    OR (spellid_2 = 0 AND spellid_1 = {spellId})
+            ";
+            ModelItemTemplate result = _con.Query<ModelItemTemplate>(itSql).FirstOrDefault();
+            if (result != null)
+            {
+                result.VendorsSellingThisItem = QueryNpcVendorByItem(result.Entry);
+            }
+            return result;
+        }
+
         private static void CreateIndices()
         {
             Stopwatch stopwatchIndices = Stopwatch.StartNew();
@@ -400,6 +431,9 @@ namespace Wholesome_Vendors.Database
                 CREATE INDEX IF NOT EXISTS `idx_creature_id` ON `creature` (`id`);
                 CREATE INDEX IF NOT EXISTS `idx_creature_template_entry` ON `creature_template` (`entry`);
                 CREATE INDEX IF NOT EXISTS `idx_npc_vendor_item` ON `npc_vendor` (`item`);
+                CREATE INDEX IF NOT EXISTS `idx_spell_attributes` ON `spell` (`attributes`);
+                CREATE INDEX IF NOT EXISTS `idx_item_template_spellid_2` ON `item_template` (`spellid_2`);
+                CREATE INDEX IF NOT EXISTS `idx_item_template_spellid_1` ON `item_template` (`spellid_1`);
             ");
             Main.Logger($"Process time (Indices) : {stopwatchIndices.ElapsedMilliseconds} ms");
         }

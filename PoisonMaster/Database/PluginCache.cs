@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using PoisonMaster;
+using System.Collections.Generic;
 using wManager;
 using wManager.Wow.Enums;
 using wManager.Wow.Helpers;
@@ -15,6 +16,7 @@ namespace Wholesome_Vendors.Database
         public static string RangedWeaponType { get; private set; }
         public static int Money { get; private set; }
         public static int EmptyContainerSlots { get; private set; }
+        public static bool IsInInstance { get; private set; }
 
         private static object _cacheLock = new object();
 
@@ -25,9 +27,11 @@ namespace Wholesome_Vendors.Database
                 RecordBags();
                 RecordRangedWeaponType();
                 RecordMoney();
+                RecordIsInInstance();
                 EventsLua.AttachEventLua("BAG_UPDATE", m => RecordBags());
                 EventsLua.AttachEventLua("PLAYER_EQUIPMENT_CHANGED", m => RecordRangedWeaponType());
                 EventsLua.AttachEventLua("PLAYER_MONEY", m => RecordMoney());
+                EventsLua.AttachEventLua("WORLD_MAP_UPDATE", m => RecordIsInInstance());
                 Initialized = true;
             }
         }
@@ -61,6 +65,14 @@ namespace Wholesome_Vendors.Database
                     result++;
             }
             EmptyContainerSlots = result;
+        }
+
+        private static void RecordIsInInstance()
+        {
+            IsInInstance = Lua.LuaDoString<bool>($@"
+                    local isInstance, instanceType = IsInInstance();
+                    return instanceType ~= 'none';
+                ");
         }
 
         private static void RecordMoney()

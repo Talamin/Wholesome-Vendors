@@ -32,6 +32,7 @@ public class BuyFoodState : State
                 || !Main.IsLaunched
                 || !StateTimer.IsReady
                 || !MemoryDB.IsPopulated
+                || PluginCache.IsInInstance
                 || !PluginCache.Initialized
                 || Me.Level <= 3
                 || FoodAmountSetting <= 0

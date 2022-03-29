@@ -1,8 +1,12 @@
-﻿namespace Wholesome_Vendors.Database.Models
+﻿using wManager.Wow.Class;
+namespace Wholesome_Vendors.Database.Models
 {
     public class ModelSpell
     {
+        public ModelItemTemplate AssociatedItem;
+
         public int Id { get; }
+        /*
         public int category { get; }
         public int dispelType { get; }
         public int mechanic { get; }
@@ -80,8 +84,9 @@
         public int effectRealPointsPerLevel_1 { get; }
         public int effectRealPointsPerLevel_2 { get; }
         public int effectRealPointsPerLevel_3 { get; }
-        public int effectBasePoints_1 { get; }
+        public int effectBasePoints_1 { get; }*/
         public int effectBasePoints_2 { get; }
+        /*
         public int effectBasePoints_3 { get; }
         public int effectMechanic_1 { get; }
         public int effectMechanic_2 { get; }
@@ -137,7 +142,9 @@
         public int activeIconID { get; }
         public int spellPriority { get; }
         public int name_flag { get; }
+        */
         public string name_lang_1 { get; }
+        /*
         public int nameSubtext_flag { get; }
         public string nameSubtext_lang_1 { get; }
         public int description_flag { get; }
@@ -173,6 +180,6 @@
         public int unk1_2 { get; }
         public int unk1_3 { get; }
         public int spellDescriptionVariableID { get; }
-        public int spellDifficultyID { get; }
+        public int spellDifficultyID { get; }*/
     }
 }
