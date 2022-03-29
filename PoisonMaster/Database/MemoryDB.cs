@@ -231,13 +231,13 @@ namespace Wholesome_Vendors.Database
             }
             _mounts = mountsSpells;
             Main.Logger($"Process time (Mounts) : {mountsWatch.ElapsedMilliseconds} ms");
-
+            /*
             foreach (ModelSpell spell in GetNormalMounts)
             {
                 if (SpellManager.ExistMount((uint)spell.Id) || SpellManager.ExistSpellBook(spell.name_lang_1))
                     Main.LoggerError($"KNOW {spell.name_lang_1}");
             }
-
+            */
             _con.Dispose();
 
 
