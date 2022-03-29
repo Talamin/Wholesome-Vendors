@@ -26,6 +26,7 @@ namespace Wholesome_Vendors.Database
         private static List<ModelCreatureTemplate> _repairers;
         private static List<ModelCreatureTemplate> _trainers;
         private static List<ModelGameObjectTemplate> _mailboxes;
+        private static List<ModelSpell> _mounts;
 
         public static bool IsPopulated;
 
@@ -216,7 +217,18 @@ namespace Wholesome_Vendors.Database
             _mailboxes = mailboxes;
             Main.Logger($"Process time (Mailboxes) : {mailboxesWatch.ElapsedMilliseconds} ms");
 
+            // MOUNTS
+            Stopwatch mountsWatch = Stopwatch.StartNew();
+            string mountsSql = $@"
+                SELECT * FROM spell
+                WHERE attributes = 269844752
+            ";
+            List<ModelSpell> mountsSpell = _con.Query<ModelSpell>(mountsSql).ToList();
+            _mounts = mountsSpell;
+            Main.Logger($"Process time (Mounts) : {mountsWatch.ElapsedMilliseconds} ms");
+
             _con.Dispose();
+
 
             // JSON export
             Stopwatch jsonsWatch = Stopwatch.StartNew();
@@ -228,7 +240,7 @@ namespace Wholesome_Vendors.Database
                 using (StreamWriter file = File.CreateText(Others.GetCurrentDirectory + @"\Data\WVM.json"))
                 {
                     var serializer = new JsonSerializer();
-                    serializer.Serialize(file, new JsonExport(_drinks, _foods, _ammos, _poisons, _bags, _sellers, _repairers, _trainers, _mailboxes));
+                    serializer.Serialize(file, new JsonExport(_drinks, _foods, _ammos, _poisons, _bags, _sellers, _repairers, _trainers, _mailboxes, _mounts));
                 }
             }
             catch (Exception e)
@@ -410,6 +422,7 @@ namespace Wholesome_Vendors.Database
         public List<ModelCreatureTemplate> Repairers { get; }
         public List<ModelCreatureTemplate> Trainers { get; }
         public List<ModelGameObjectTemplate> MailBoxes { get; }
+        public List<ModelSpell> Mounts { get; }
 
         public JsonExport(List<ModelItemTemplate> waters,
             List<ModelItemTemplate> foods,
@@ -419,7 +432,8 @@ namespace Wholesome_Vendors.Database
             List<ModelCreatureTemplate> sellers,
             List<ModelCreatureTemplate> repairers,
             List<ModelCreatureTemplate> trainers,
-            List<ModelGameObjectTemplate> mailboxes)
+            List<ModelGameObjectTemplate> mailboxes,
+            List<ModelSpell> mounts)
         {
             Waters = waters;
             Foods = foods;
@@ -430,6 +444,7 @@ namespace Wholesome_Vendors.Database
             Trainers = trainers;
             MailBoxes = mailboxes;
             Bags = bags;
+            Mounts = mounts;
         }
     }
 }

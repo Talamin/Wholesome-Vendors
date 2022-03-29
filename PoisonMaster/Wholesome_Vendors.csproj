@@ -235,6 +235,7 @@
   <ItemGroup>
     <Compile Include="AutoUpdater.cs" />
     <Compile Include="Blacklist\NPCBlackList.cs" />
+    <Compile Include="Database\Models\ModelSpell.cs" />
     <Compile Include="Database\PluginCache.cs" />
     <Compile Include="Database\DBUpdater.cs" />
     <Compile Include="Database\MemoryDB.cs" />
