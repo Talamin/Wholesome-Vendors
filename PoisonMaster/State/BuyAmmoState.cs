@@ -32,9 +32,9 @@ public class BuyAmmoState : State
                 || !MemoryDB.IsPopulated
                 || !PluginCache.Initialized
                 || PluginCache.IsInInstance
+                || PluginCache.RangedWeaponType == null
                 || PluginSettings.CurrentSetting.AmmoAmount <= 0
                 || !stateTimer.IsReady
-                || PluginCache.RangedWeaponType == null
                 || Me.IsOnTaxi)
                 return false;
 

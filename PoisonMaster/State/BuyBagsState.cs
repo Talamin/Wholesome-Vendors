@@ -27,8 +27,8 @@ public class BuyBagsState : State
                 || !Main.IsLaunched
                 || !PluginSettings.CurrentSetting.BuyBags
                 || !MemoryDB.IsPopulated
-                || PluginCache.IsInInstance
                 || !PluginCache.Initialized
+                || PluginCache.IsInInstance
                 || PluginCache.EmptyContainerSlots <= 0
                 || !stateTimer.IsReady
                 || Me.IsOnTaxi)
