@@ -22,7 +22,7 @@ public class Main : IPlugin
 
     private Timer stateAddTimer;
 
-    public static string version = "1.2.10"; // Must match version in Version.txt
+    public static string version = "1.2.11"; // Must match version in Version.txt
 
     public void Initialize()
     {
@@ -132,6 +132,7 @@ public class Main : IPlugin
         {
             stateAddTimer = new Timer(3000);
 
+            Helpers.AddState(engine, new BuyMountState(), "To Town");
             Helpers.AddState(engine, new BuyBagsState(), "To Town");
             Helpers.AddState(engine, new BuyPoisonState(), "To Town");
             Helpers.AddState(engine, new BuyAmmoState(), "To Town");

@@ -13,6 +13,7 @@ namespace Wholesome_Vendors.Database.Models
         public int RequiredLevel { get; }
         public int displayid { get; }
         public int ContainerSlots { get; }
+        public int AllowableRace { get; }
 
         public List<ModelNpcVendor> VendorsSellingThisItem = new List<ModelNpcVendor>();
     }

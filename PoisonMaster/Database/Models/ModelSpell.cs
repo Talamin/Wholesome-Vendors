@@ -1,9 +1,9 @@
-﻿using wManager.Wow.Class;
-namespace Wholesome_Vendors.Database.Models
+﻿namespace Wholesome_Vendors.Database.Models
 {
     public class ModelSpell
     {
         public ModelItemTemplate AssociatedItem;
+        public ModelNpcTrainer NpcTrainer;
 
         public int Id { get; }
         /*

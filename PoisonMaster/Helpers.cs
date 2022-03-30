@@ -88,6 +88,43 @@ namespace PoisonMaster
             }
         }
 
+        public enum Factions
+        {
+            Unknown = 0,
+            Human = 1,
+            Orc = 2,
+            Dwarf = 4,
+            NightElf = 8,
+            Undead = 16,
+            Tauren = 32,
+            Gnome = 64,
+            Troll = 128,
+            Goblin = 256,
+            BloodElf = 512,
+            Draenei = 1024,
+            Worgen = 2097152
+        }
+
+        public static Factions GetFactions()
+        {
+            switch ((PlayerFactions)ObjectManager.Me.Faction)
+            {
+                case PlayerFactions.Human: return Factions.Human;
+                case PlayerFactions.Orc: return Factions.Orc;
+                case PlayerFactions.Dwarf: return Factions.Dwarf;
+                case PlayerFactions.NightElf: return Factions.NightElf;
+                case PlayerFactions.Undead: return Factions.Undead;
+                case PlayerFactions.Tauren: return Factions.Tauren;
+                case PlayerFactions.Gnome: return Factions.Gnome;
+                case PlayerFactions.Troll: return Factions.Troll;
+                case PlayerFactions.Goblin: return Factions.Goblin;
+                case PlayerFactions.BloodElf: return Factions.BloodElf;
+                case PlayerFactions.Draenei: return Factions.Draenei;
+                case PlayerFactions.Worgen: return Factions.Worgen;
+                default: throw new Exception($"Couldn't get your faction");
+            }
+        }
+
         public static void AddItemToDoNotSellList(string itemName)
         {
             if (!wManagerSetting.CurrentSetting.DoNotSellList.Contains(itemName))
@@ -338,6 +375,19 @@ namespace PoisonMaster
                 Main.Logger($"Sent Items to {PluginSettings.CurrentSetting.MailingRecipient}");
 
             Mail.CloseMailFrame();
+        }
+
+        public static void LearnSpellByName(string spellName)
+        {
+            Main.Logger($"Learning spell {spellName}");
+            Lua.LuaDoString($@"
+                for i=1,GetNumTrainerServices() do
+                    local name = GetTrainerServiceInfo(i)
+                    if (name == '{spellName}') then
+                        BuyTrainerService(i)
+                     end
+                end
+            ");
         }
     }
 }

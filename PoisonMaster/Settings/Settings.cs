@@ -180,6 +180,20 @@ public class PluginSettings : Settings
     [Description("Capacity of bags to purchase")]
     public string BagsCapacity { get; set; }
 
+    [Setting]
+    [DefaultValue(false)]
+    [Category("Mount")]
+    [DisplayName("Ground Mount")]
+    [Description("Buys a random normal mount (+60% speed) if you don't already have one. Only works if you are on the right continent.")]
+    public bool BuyGroundMount { get; set; }
+
+    [Setting]
+    [DefaultValue(false)]
+    [Category("Mount")]
+    [DisplayName("Epic Mount")]
+    [Description("Buys a random epic mount (+100% speed) if you don't already have one. Only works if you are on the right continent.")]
+    public bool BuyEpicMount { get; set; }
+
     public string Databasetype { get; set; }
     public int DriveByDistance { get; set; }
     public double LastUpdateDate { get; set; }
@@ -217,6 +231,9 @@ public class PluginSettings : Settings
 
         BuyBags = false;
         BagsCapacity = "6";
+
+        BuyGroundMount = false;
+        BuyEpicMount = false;
 
         FoodType = "Any";
 

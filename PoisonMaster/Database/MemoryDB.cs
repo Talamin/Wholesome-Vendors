@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Newtonsoft.Json;
+using PoisonMaster;
 using robotManager.Helpful;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Wholesome_Vendors.Database.Models;
-using wManager.Wow.Helpers;
+using wManager.Wow.Enums;
 using wManager.Wow.ObjectManager;
 
 namespace Wholesome_Vendors.Database
@@ -28,6 +29,7 @@ namespace Wholesome_Vendors.Database
         private static List<ModelCreatureTemplate> _trainers;
         private static List<ModelGameObjectTemplate> _mailboxes;
         private static List<ModelSpell> _mounts;
+        private static List<ModelSpell> _ridingSpells;
 
         public static bool IsPopulated;
 
@@ -227,19 +229,32 @@ namespace Wholesome_Vendors.Database
             List<ModelSpell> mountsSpells = _con.Query<ModelSpell>(mountsSql).ToList();
             foreach (ModelSpell mountSpell in mountsSpells)
             {
-                mountSpell.AssociatedItem = QueryItemTemplateBySpell(mountSpell.Id);
+                ModelItemTemplate item = QueryItemTemplateBySpell(mountSpell.Id);
+                if (item != null && (item.AllowableRace & (int)Helpers.GetFactions()) != 0)
+                    mountSpell.AssociatedItem = item;
             }
             _mounts = mountsSpells;
+            PluginCache.RecordKnownMounts();
             Main.Logger($"Process time (Mounts) : {mountsWatch.ElapsedMilliseconds} ms");
-            /*
-            foreach (ModelSpell spell in GetNormalMounts)
-            {
-                if (SpellManager.ExistMount((uint)spell.Id) || SpellManager.ExistSpellBook(spell.name_lang_1))
-                    Main.LoggerError($"KNOW {spell.name_lang_1}");
-            }
-            */
-            _con.Dispose();
 
+            // RIDING SPELLS
+            Stopwatch ridingSpellsWatch = Stopwatch.StartNew();
+            string ridingSql = $@"
+                SELECT * FROM spell
+                WHERE effectMiscValue_2 = 762 
+                    AND effect_2 = 118
+            ";
+            List<ModelSpell> ridingSpells = _con.Query<ModelSpell>(ridingSql).ToList();
+            foreach (ModelSpell ridingSpell in ridingSpells)
+            {
+                ridingSpell.NpcTrainer = QueryNpcTrainerBySpellID(ridingSpell.Id);
+                ridingSpell.NpcTrainer.VendorTemplates.RemoveAll(npc => !npc.IsFriendly);
+            }
+            _ridingSpells = ridingSpells;
+            Main.Logger($"Process time (Riding spells) : {ridingSpellsWatch.ElapsedMilliseconds} ms");
+
+
+            _con.Dispose();
 
             // JSON export
             Stopwatch jsonsWatch = Stopwatch.StartNew();
@@ -251,7 +266,8 @@ namespace Wholesome_Vendors.Database
                 using (StreamWriter file = File.CreateText(Others.GetCurrentDirectory + @"\Data\WVM.json"))
                 {
                     var serializer = new JsonSerializer();
-                    serializer.Serialize(file, new JsonExport(_drinks, _foods, _ammos, _poisons, _bags, _sellers, _repairers, _trainers, _mailboxes, _mounts));
+                    serializer.Serialize(file, new JsonExport(_drinks, _foods, _ammos, _poisons, _bags, _sellers, _repairers, 
+                        _trainers, _mailboxes, _mounts, _ridingSpells));
                 }
             }
             catch (Exception e)
@@ -277,10 +293,20 @@ namespace Wholesome_Vendors.Database
 
         public static List<ModelItemTemplate> GetBags => _bags;
 
+        public static List<ModelSpell> GetAllMounts => _mounts;
         public static List<ModelSpell> GetNormalMounts => _mounts.FindAll(m => m.effectBasePoints_2 == 59);
         public static List<ModelSpell> GetEpicMounts => _mounts.FindAll(m => m.effectBasePoints_2 == 99);
         public static List<ModelSpell> GetFlyingMounts => _mounts.FindAll(m => m.effectBasePoints_2 == 149);
         public static List<ModelSpell> GetEpicFlyingMounts => _mounts.FindAll(m => m.effectBasePoints_2 >= 279);
+
+        public static ModelSpell GetRidingSpellById(int id) => _ridingSpells.Find(rs => rs.Id == id);
+
+        public static List<ModelSpell> GetKnownMounts => _mounts
+            .FindAll(m => PluginCache.KnownMountSpells.Contains(m.Id))
+            .OrderByDescending(m => m.effectBasePoints_2)
+            .ToList();
+
+        public static ModelSpell GetMyBestMount => GetKnownMounts.FirstOrDefault();
 
         public static List<ModelItemTemplate> GetAllFoods => _foods;
         public static List<ModelItemTemplate> GetAllUsableFoods()
@@ -413,13 +439,37 @@ namespace Wholesome_Vendors.Database
         {
             string itSql = $@"
                 SELECT * FROM item_template
-                WHERE spellid_2 = {spellId}
-                    OR (spellid_2 = 0 AND spellid_1 = {spellId})
+                WHERE (spellid_2 = {spellId}
+                    OR (spellid_2 = 0 AND spellid_1 = {spellId}));
             ";
             ModelItemTemplate result = _con.Query<ModelItemTemplate>(itSql).FirstOrDefault();
             if (result != null)
             {
                 result.VendorsSellingThisItem = QueryNpcVendorByItem(result.Entry);
+            }
+            return result;
+        }
+
+        private static ModelNpcTrainer QueryNpcTrainerBySpellID(int spellId)
+        {
+            string sql = $@"
+                SELECT * FROM npc_trainer
+                WHERE SpellID = {spellId};
+            ";
+            ModelNpcTrainer result = _con.Query<ModelNpcTrainer>(sql).FirstOrDefault();
+            if (result != null)
+            {
+                string sqlTrainerIds = $@"
+                    SELECT ID FROM npc_trainer
+                    WHERE SpellID = {-result.ID};
+                ";
+                int[] vendorTemplateIds = _con.Query<int>(sqlTrainerIds).ToArray();
+                result.VendorTemplates = QueryCreatureTemplatesByEntries(vendorTemplateIds);
+                List<ModelCreature> creatures = QueryCreaturesByEntries(vendorTemplateIds);
+                foreach (ModelCreatureTemplate template in result.VendorTemplates)
+                {
+                    template.Creature = creatures.Find(creature => creature.id == template.entry);
+                }
             }
             return result;
         }
@@ -434,6 +484,7 @@ namespace Wholesome_Vendors.Database
                 CREATE INDEX IF NOT EXISTS `idx_spell_attributes` ON `spell` (`attributes`);
                 CREATE INDEX IF NOT EXISTS `idx_item_template_spellid_2` ON `item_template` (`spellid_2`);
                 CREATE INDEX IF NOT EXISTS `idx_item_template_spellid_1` ON `item_template` (`spellid_1`);
+                CREATE INDEX IF NOT EXISTS `idx_npc_trainer_spellid` ON `npc_trainer` (`SpellID`);
             ");
             Main.Logger($"Process time (Indices) : {stopwatchIndices.ElapsedMilliseconds} ms");
         }
@@ -457,6 +508,7 @@ namespace Wholesome_Vendors.Database
         public List<ModelCreatureTemplate> Trainers { get; }
         public List<ModelGameObjectTemplate> MailBoxes { get; }
         public List<ModelSpell> Mounts { get; }
+        public List<ModelSpell> RidingSpells { get; }
 
         public JsonExport(List<ModelItemTemplate> waters,
             List<ModelItemTemplate> foods,
@@ -467,7 +519,8 @@ namespace Wholesome_Vendors.Database
             List<ModelCreatureTemplate> repairers,
             List<ModelCreatureTemplate> trainers,
             List<ModelGameObjectTemplate> mailboxes,
-            List<ModelSpell> mounts)
+            List<ModelSpell> mounts,
+            List<ModelSpell> ridingSpells)
         {
             Waters = waters;
             Foods = foods;
@@ -479,6 +532,7 @@ namespace Wholesome_Vendors.Database
             MailBoxes = mailboxes;
             Bags = bags;
             Mounts = mounts;
+            RidingSpells = ridingSpells;
         }
     }
 }

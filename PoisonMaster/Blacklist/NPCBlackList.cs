@@ -39,7 +39,7 @@ public static class NPCBlackList
             && !_sessionBlacklist.Contains(creatureTemplate.entry)
             && creatureTemplate.Creature.map == Usefuls.ContinentId
             && creatureTemplate.IsNeutralOrFriendly
-            && creatureTemplate.faction != 1555 // Darmoon Faire
+            && creatureTemplate.faction != 1555 // Darkmoon Faire
             && (isPlayerDK || creatureTemplate.faction != 2050) // Ebon blade
             && (isPlayerDK || creatureTemplate.faction != 2082) // Ebon blade
             && (isPlayerDK || creatureTemplate.faction != 2083) // Ebon blade
