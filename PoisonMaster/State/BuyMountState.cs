@@ -43,8 +43,11 @@ public class BuyMountState : State
             _ridingTrainer = null;
             _mountVendor = null;
 
-            // Normal mount
-            if (PluginSettings.CurrentSetting.BuyGroundMount && !PluginCache.Know75Mount && PluginCache.Money > 60000)
+            // Epic mount
+            if (PluginSettings.CurrentSetting.BuyEpicMount 
+                && Me.Level >= 40 
+                && !PluginCache.Know150Mount 
+                && PluginCache.Money > 600000)
             {
                 if (PluginCache.RidingSkill < 75)
                 {
@@ -52,13 +55,19 @@ public class BuyMountState : State
                     _ridingTrainer = GetNearestRidingTrainer(_ridingSkillToLearn);
                     return _ridingTrainer != null && _ridingSkillToLearn != null;
                 }
+                else if (PluginCache.RidingSkill < 150)
+                {
+                    _ridingSkillToLearn = MemoryDB.GetRidingSpellById(33391); // Journeyman
+                    _ridingTrainer = GetNearestRidingTrainer(_ridingSkillToLearn);
+                    return _ridingTrainer != null && _ridingSkillToLearn != null;
+                }
                 else
                 {
-                    List<ModelSpell> availableMounts = MemoryDB.GetNormalMounts
+                    List<ModelSpell> availableMounts = MemoryDB.GetEpicMounts
                         .FindAll(m => m.AssociatedItem != null
                             && m.AssociatedItem.VendorsSellingThisItem.Count > 0
                             && m.AssociatedItem.VendorsSellingThisItem[0].CreatureTemplate.Creature?.map == Usefuls.ContinentId
-                            && GroundMount75SpellsDictionary[(int)ObjectManager.Me.WowRace].Contains((uint)m.Id));
+                            && GroundMount150SpellsDictionary[(int)ObjectManager.Me.WowRace].Contains((uint)m.Id));
 
                     if (availableMounts?.Count <= 0)
                         return false;
@@ -81,8 +90,11 @@ public class BuyMountState : State
                 }
             }
 
-            // Epic mount
-            if (PluginSettings.CurrentSetting.BuyEpicMount && Me.Level >= 40 && !PluginCache.Know150Mount && PluginCache.Money > 600000)
+            // Normal mount
+            if (PluginSettings.CurrentSetting.BuyGroundMount
+                && !PluginCache.Know75Mount 
+                && !PluginCache.Know150Mount 
+                && PluginCache.Money > 60000)
             {
                 if (PluginCache.RidingSkill < 75)
                 {
@@ -90,19 +102,13 @@ public class BuyMountState : State
                     _ridingTrainer = GetNearestRidingTrainer(_ridingSkillToLearn);
                     return _ridingTrainer != null && _ridingSkillToLearn != null;
                 }
-                else if (PluginCache.RidingSkill < 150)
-                {
-                    _ridingSkillToLearn = MemoryDB.GetRidingSpellById(33391); // Journeyman
-                    _ridingTrainer = GetNearestRidingTrainer(_ridingSkillToLearn);
-                    return _ridingTrainer != null && _ridingSkillToLearn != null;
-                }
                 else
                 {
-                    List<ModelSpell> availableMounts = MemoryDB.GetEpicMounts
+                    List<ModelSpell> availableMounts = MemoryDB.GetNormalMounts
                         .FindAll(m => m.AssociatedItem != null
                             && m.AssociatedItem.VendorsSellingThisItem.Count > 0
                             && m.AssociatedItem.VendorsSellingThisItem[0].CreatureTemplate.Creature?.map == Usefuls.ContinentId
-                            && GroundMount150SpellsDictionary[(int)ObjectManager.Me.WowRace].Contains((uint)m.Id));
+                            && GroundMount75SpellsDictionary[(int)ObjectManager.Me.WowRace].Contains((uint)m.Id));
 
                     if (availableMounts?.Count <= 0)
                         return false;
@@ -148,8 +154,8 @@ public class BuyMountState : State
                 if (GoToTask.ToPositionAndIntecractWithNpc(_ridingTrainer.Creature.GetSpawnPosition, _ridingTrainer.entry))
                 {
                     Helpers.LearnSpellByName(_ridingSkillToLearn.name_lang_1);
-                    Thread.Sleep(1000);
-                    
+                    Thread.Sleep(3000);
+
                     if (PluginCache.RidingSkill < _ridingSkillToLearn.NpcTrainer.ReqSkillRank)
                     {
                         Main.Logger($"Failed to learn {_ridingSkillToLearn.name_lang_1}, blacklisting vendor");
@@ -185,12 +191,12 @@ public class BuyMountState : State
 
                         Helpers.BuyItem(_mountSpellToLearn.AssociatedItem.Name, 1, 1);
                         Helpers.CloseWindow();
-                        Thread.Sleep(1000);
+                        Thread.Sleep(3000);
 
                         if (PluginCache.BagItems.Exists(item => item.Entry == _mountSpellToLearn.AssociatedItem.Entry))
                         {
                             ItemsManager.UseItemByNameOrId(_mountSpellToLearn.AssociatedItem.Name);
-                            Thread.Sleep(1000);
+                            Thread.Sleep(3000);
                             if (PluginCache.KnownMountSpells.Contains(_mountSpellToLearn.Id))
                             {
                                 wManager.wManagerSetting.CurrentSetting.GroundMountName = _mountSpellToLearn.name_lang_1;
@@ -209,10 +215,11 @@ public class BuyMountState : State
     private ModelCreatureTemplate GetNearestRidingTrainer(ModelSpell ridingSpell)
     {
         List<ModelCreatureTemplate> allVendors = ridingSpell.NpcTrainer.VendorTemplates;
+
         return allVendors
             .Where(vendor => NPCBlackList.IsVendorValid(vendor))
             .Where(vendor => RidingTrainersDictionary[(int)ObjectManager.Me.WowRace].Contains((uint)vendor.entry))
-            .OrderBy(repairer => ObjectManager.Me.Position.DistanceTo(repairer.Creature.GetSpawnPosition))
+            .OrderBy(vendor => ObjectManager.Me.Position.DistanceTo(vendor.Creature.GetSpawnPosition))
             .FirstOrDefault();
     }
 

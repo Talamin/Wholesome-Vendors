@@ -166,7 +166,7 @@ public static class NPCBlackList
             {472,5}, //TheExodar
             {363,5}, //ThunderBluff
             {383,5}, //Undercity
-            //{382,5}, //Darnassus
+            {382,5}, //Darnassus
 
             {14,10}, //Kalimdor
             {15,10}, //Azeroth
