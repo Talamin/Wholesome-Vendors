@@ -100,20 +100,24 @@ public class BuyDrinkState : State
 
             for (int i = 0; i <= 5; i++)
             {
+                Main.Logger($"Attempt {i + 1}");
                 GoToTask.ToPositionAndIntecractWithNpc(vendorPos, DrinkVendor.entry, i);
-                Thread.Sleep(500);
+                Thread.Sleep(1000);
                 Lua.LuaDoString($"StaticPopup1Button2:Click()"); // discard hearthstone popup
                 if (Helpers.IsVendorGossipOpen())
                 {
                     Helpers.SellItems(DrinkVendor.CreatureTemplate);
 
                     Helpers.BuyItem(DrinkToBuy.Name, AmountToBuy, DrinkToBuy.BuyCount);
-                    Helpers.CloseWindow();
                     Thread.Sleep(1000);
 
                     if (GetNbDrinksInBags() >= DrinkAmountSetting)
+                    {
+                        Helpers.CloseWindow();
                         return;
+                    }
                 }
+                Helpers.CloseWindow();
             }
             Main.Logger($"Failed to buy {DrinkToBuy.Name}, blacklisting vendor");
             NPCBlackList.AddNPCToBlacklist(DrinkVendor.entry);

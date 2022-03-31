@@ -110,7 +110,7 @@ public class BuyFoodState : State
             {
                 Main.Logger($"Attempt {i+1}");
                 GoToTask.ToPositionAndIntecractWithNpc(vendorPos, FoodVendor.entry, i);
-                Thread.Sleep(500);
+                Thread.Sleep(1000);
                 Lua.LuaDoString($"StaticPopup1Button2:Click()"); // discard hearthstone popup
                 if (Helpers.IsVendorGossipOpen())
                 {
@@ -121,7 +121,10 @@ public class BuyFoodState : State
                     Thread.Sleep(1000);
 
                     if (GetNbOfFoodInBags() >= FoodAmountSetting)
+                    {
+                        Helpers.CloseWindow();
                         return;
+                    }
                 }
                 Helpers.CloseWindow();
             }

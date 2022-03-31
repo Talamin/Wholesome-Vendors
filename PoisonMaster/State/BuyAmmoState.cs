@@ -98,17 +98,20 @@ public class BuyAmmoState : State
             for (int i = 0; i <= 5; i++)
             {
                 GoToTask.ToPositionAndIntecractWithNpc(vendorPos, AmmoVendor.entry, i);
-                Thread.Sleep(500);
+                Thread.Sleep(1000);
                 Lua.LuaDoString($"StaticPopup1Button2:Click()"); // discard hearthstone popup
                 if (Helpers.IsVendorGossipOpen())
                 {
                     Helpers.SellItems(AmmoVendor.CreatureTemplate);
                     Helpers.BuyItem(AmmoToBuy.Name, AmountToBuy, AmmoToBuy.BuyCount);
-                    Helpers.CloseWindow();
                     Thread.Sleep(1000);
                     if (GetNbAmmosInBags() >= AmmoAmountSetting)
+                    {
+                        Helpers.CloseWindow();
                         return;
+                    }
                 }
+                Helpers.CloseWindow();
             }
             Main.Logger($"Failed to buy {AmmoToBuy.Name}, blacklisting vendor");
             NPCBlackList.AddNPCToBlacklist(AmmoVendor.CreatureTemplate.entry);

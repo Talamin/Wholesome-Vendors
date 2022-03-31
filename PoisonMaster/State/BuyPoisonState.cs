@@ -132,24 +132,31 @@ public class BuyPoisonState : State
 
             for (int i = 0; i <= 5; i++)
             {
+                Main.Logger($"Attempt {i + 1}");
                 GoToTask.ToPositionAndIntecractWithNpc(vendorPos, PoisonVendor.entry, i);
-                Thread.Sleep(500);
+                Thread.Sleep(1000);
                 Lua.LuaDoString($"StaticPopup1Button2:Click()"); // discard hearthstone popup
                 if (Helpers.IsVendorGossipOpen())
                 {
                     Helpers.SellItems(PoisonVendor.CreatureTemplate);
-
+                    Thread.Sleep(1000);
                     Helpers.BuyItem(PoisonToBuy.Name, AmountToBuy, PoisonToBuy.BuyCount);
-                    Helpers.CloseWindow();
-                    Thread.Sleep(500);
+                    Thread.Sleep(1000);
                     RecordNbPoisonsInBags();
-                    Thread.Sleep(500);
+                    Thread.Sleep(1000);
 
                     if (PoisonToBuy.displayid == 13710 && NbInstantsInBags >= 20) // Instant
+                    {
+                        Helpers.CloseWindow();
                         return;
+                    }
                     if (PoisonToBuy.displayid == 13707 && NbDeadlysInBags >= 20) // Deadly
+                    {
+                        Helpers.CloseWindow();
                         return;
+                    }
                 }
+                Helpers.CloseWindow();
             }
 
             Main.Logger($"Failed to buy poisons, blacklisting vendor");

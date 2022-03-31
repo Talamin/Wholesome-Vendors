@@ -70,6 +70,7 @@ public class TrainingState : State
             SpellManager.UpdateSpellBook();
             PluginSettings.CurrentSetting.LastLevelTrained = (int)ObjectManager.Me.Level;
             PluginSettings.CurrentSetting.Save();
+            Helpers.CloseWindow();
         }
     }
 }

@@ -107,8 +107,8 @@ public class SellRepairState : State
                 Vendor.RepairAllItems();
                 Lua.LuaDoString("MerchantRepairAllButton:Click();", false);
                 Lua.LuaDoString("RepairAllItems();", false);
-                Helpers.CloseWindow();
                 Thread.Sleep(1000);
+                Helpers.CloseWindow();
 
                 if (ObjectManager.Me.GetDurabilityPercent >= MinDurability)
                     break;

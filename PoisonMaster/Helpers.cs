@@ -76,6 +76,8 @@ namespace PoisonMaster
                 Lua.LuaDoString("CloseGossip()");
                 Lua.LuaDoString("CloseMerchant()");
                 Lua.LuaDoString("CloseLoot()");
+                Lua.LuaDoString("CloseQuest()");
+                Lua.LuaDoString("CloseTrainer()");
                 Thread.Sleep(150);
             }
             catch (Exception e)

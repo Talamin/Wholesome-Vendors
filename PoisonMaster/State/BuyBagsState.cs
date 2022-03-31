@@ -87,22 +87,23 @@ public class BuyBagsState : State
             for (int i = 0; i <= 5; i++)
             {
                 GoToTask.ToPositionAndIntecractWithNpc(vendorPos, BagVendor.entry, i);
-                Thread.Sleep(500);
+                Thread.Sleep(1000);
                 Lua.LuaDoString($"StaticPopup1Button2:Click()"); // discard hearthstone popup
                 if (Helpers.IsVendorGossipOpen())
                 {
                     Helpers.BuyItem(BagToBuy.Name, 1, BagToBuy.BuyCount);
-                    Helpers.CloseWindow();
-                    Thread.Sleep(500);
+                    Thread.Sleep(1000);
                     if (ItemsManager.GetItemCountByNameLUA(BagToBuy.Name) > 0)
                     {
                         Main.Logger($"Equipping {BagInBags().Name}");
                         Lua.RunMacroText($"/equip {BagInBags().Name}");
                         Lua.LuaDoString($"EquipPendingItem(0);");
-                        Thread.Sleep(500);
+                        Thread.Sleep(1000);
+                        Helpers.CloseWindow();
                         return;
                     }
                 }
+                Helpers.CloseWindow();
             }
 
             Main.Logger($"Failed to buy {BagToBuy.Name}, blacklisting vendor");

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using PoisonMaster;
+using System.Collections.Generic;
 using wManager;
 using wManager.Wow.Enums;
 using wManager.Wow.Helpers;
@@ -16,6 +17,9 @@ namespace Wholesome_Vendors.Database
         public static int Money { get; private set; }
         public static int EmptyContainerSlots { get; private set; }
         public static bool IsInInstance { get; private set; }
+        public static bool IsInBloodElfStartingZone { get; private set; }
+        public static bool IsInDraeneiStartingZone { get; private set; }
+        public static bool IsInOutlands { get; private set; }
         public static int RidingSkill { get; private set; }
         public static List<int> KnownMountSpells { get; private set; } = new List<int>();
 
@@ -33,12 +37,12 @@ namespace Wholesome_Vendors.Database
                 RecordBags();
                 RecordRangedWeaponType();
                 RecordMoney();
-                RecordIsInInstance();
+                RecordContinentAndInstancee();
                 RecordSkills();
                 EventsLua.AttachEventLua("BAG_UPDATE", m => RecordBags());
                 EventsLua.AttachEventLua("PLAYER_EQUIPMENT_CHANGED", m => RecordRangedWeaponType());
                 EventsLua.AttachEventLua("PLAYER_MONEY", m => RecordMoney());
-                EventsLua.AttachEventLua("WORLD_MAP_UPDATE", m => RecordIsInInstance());
+                EventsLua.AttachEventLua("WORLD_MAP_UPDATE", m => RecordContinentAndInstancee());
                 EventsLua.AttachEventLua("SKILL_LINES_CHANGED", m => RecordSkills());
                 EventsLua.AttachEventLua("COMPANION_LEARNED", m => RecordKnownMounts());
                 EventsLua.AttachEventLua("COMPANION_UNLEARNED", m => RecordKnownMounts());
@@ -100,8 +104,11 @@ namespace Wholesome_Vendors.Database
             EmptyContainerSlots = result;
         }
 
-        private static void RecordIsInInstance()
+        private static void RecordContinentAndInstancee()
         {
+            IsInBloodElfStartingZone = Helpers.PlayerInBloodElfStartingZone();
+            IsInDraeneiStartingZone = Helpers.PlayerInDraneiStartingZone();
+            IsInOutlands = Helpers.PlayerIsInOutland();
             IsInInstance = Lua.LuaDoString<bool>($@"
                     local isInstance, instanceType = IsInInstance();
                     return instanceType ~= 'none';

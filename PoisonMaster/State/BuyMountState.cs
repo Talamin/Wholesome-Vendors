@@ -38,6 +38,7 @@ public class BuyMountState : State
                 || Me.IsOnTaxi)
                 return false;
 
+            stateTimer = new Timer(5000);
             _ridingSkillToLearn = null;
             _mountSpellToLearn = null;
             _ridingTrainer = null;
@@ -51,42 +52,18 @@ public class BuyMountState : State
             {
                 if (PluginCache.RidingSkill < 75)
                 {
-                    _ridingSkillToLearn = MemoryDB.GetRidingSpellById(33388); // Apprentice
-                    _ridingTrainer = GetNearestRidingTrainer(_ridingSkillToLearn);
-                    return _ridingTrainer != null && _ridingSkillToLearn != null;
+                    if (SetRidingTraining(33388)) // Apprentice
+                        return true;
                 }
                 else if (PluginCache.RidingSkill < 150)
                 {
-                    _ridingSkillToLearn = MemoryDB.GetRidingSpellById(33391); // Journeyman
-                    _ridingTrainer = GetNearestRidingTrainer(_ridingSkillToLearn);
-                    return _ridingTrainer != null && _ridingSkillToLearn != null;
+                    if (SetRidingTraining(33391)) // Journeyman
+                        return true;
                 }
                 else
                 {
-                    List<ModelSpell> availableMounts = MemoryDB.GetEpicMounts
-                        .FindAll(m => m.AssociatedItem != null
-                            && m.AssociatedItem.VendorsSellingThisItem.Count > 0
-                            && m.AssociatedItem.VendorsSellingThisItem[0].CreatureTemplate.Creature?.map == Usefuls.ContinentId
-                            && GroundMount150SpellsDictionary[(int)ObjectManager.Me.WowRace].Contains((uint)m.Id));
-
-                    if (availableMounts?.Count <= 0)
-                        return false;
-
-                    WoWItem mountItemInBag = PluginCache.BagItems.Find(bi => availableMounts.Exists(am => am.AssociatedItem.Entry == bi.Entry));
-
-                    if (mountItemInBag != null)
-                    {
-                        ItemsManager.UseItemByNameOrId(mountItemInBag.Name);
-                        return false;
-                    }
-                    else
-                    {
-                        Random random = new Random();
-                        int index = random.Next(availableMounts.Count);
-                        _mountSpellToLearn = availableMounts[index];
-                        _mountVendor = _mountSpellToLearn.AssociatedItem.VendorsSellingThisItem[0].CreatureTemplate;
-                        return _mountSpellToLearn != null && _mountVendor != null;
-                    }
+                    if (SetMountToBuy(MemoryDB.GetEpicMounts, GroundMount150SpellsDictionary))
+                        return true;
                 }
             }
 
@@ -98,40 +75,15 @@ public class BuyMountState : State
             {
                 if (PluginCache.RidingSkill < 75)
                 {
-                    _ridingSkillToLearn = MemoryDB.GetRidingSpellById(33388); // Apprentice
-                    _ridingTrainer = GetNearestRidingTrainer(_ridingSkillToLearn);
-                    return _ridingTrainer != null && _ridingSkillToLearn != null;
+                    if (SetRidingTraining(33388)) // Apprentice
+                        return true;
                 }
                 else
                 {
-                    List<ModelSpell> availableMounts = MemoryDB.GetNormalMounts
-                        .FindAll(m => m.AssociatedItem != null
-                            && m.AssociatedItem.VendorsSellingThisItem.Count > 0
-                            && m.AssociatedItem.VendorsSellingThisItem[0].CreatureTemplate.Creature?.map == Usefuls.ContinentId
-                            && GroundMount75SpellsDictionary[(int)ObjectManager.Me.WowRace].Contains((uint)m.Id));
-
-                    if (availableMounts?.Count <= 0)
-                        return false;
-
-                    WoWItem mountItemInBag = PluginCache.BagItems.Find(bi => availableMounts.Exists(am => am.AssociatedItem.Entry == bi.Entry));
-
-                    if (mountItemInBag != null)
-                    {
-                        ItemsManager.UseItemByNameOrId(mountItemInBag.Name);
-                        return false;
-                    }
-                    else
-                    {
-                        Random random = new Random();
-                        int index = random.Next(availableMounts.Count);
-                        _mountSpellToLearn = availableMounts[index];
-                        _mountVendor = _mountSpellToLearn.AssociatedItem.VendorsSellingThisItem[0].CreatureTemplate;
-                        return _mountSpellToLearn != null && _mountVendor != null;
-                    }
+                    if (SetMountToBuy(MemoryDB.GetNormalMounts, GroundMount75SpellsDictionary))
+                        return true;
                 }
             }
-
-            stateTimer = new Timer(5000);
             return false;
         }
     }
@@ -183,14 +135,13 @@ public class BuyMountState : State
                 for (int i = 0; i <= 5; i++)
                 {
                     GoToTask.ToPositionAndIntecractWithNpc(vendorPos, _mountVendor.entry, i);
-                    Thread.Sleep(500);
+                    Thread.Sleep(1000);
                     Lua.LuaDoString($"StaticPopup1Button2:Click()"); // discard hearthstone popup
                     if (Helpers.IsVendorGossipOpen())
                     {
                         Helpers.SellItems(_mountVendor);
 
                         Helpers.BuyItem(_mountSpellToLearn.AssociatedItem.Name, 1, 1);
-                        Helpers.CloseWindow();
                         Thread.Sleep(3000);
 
                         if (PluginCache.BagItems.Exists(item => item.Entry == _mountSpellToLearn.AssociatedItem.Entry))
@@ -201,15 +152,84 @@ public class BuyMountState : State
                             {
                                 wManager.wManagerSetting.CurrentSetting.GroundMountName = _mountSpellToLearn.name_lang_1;
                                 wManager.wManagerSetting.CurrentSetting.Save();
+                                Helpers.CloseWindow();
                                 return;
                             }
                         }
                     }
+                    Helpers.CloseWindow();
                 }
                 Main.Logger($"Failed to buy {_mountSpellToLearn.AssociatedItem.Name}, blacklisting vendor");
                 NPCBlackList.AddNPCToBlacklist(_mountVendor.entry);
             }
         }
+    }
+
+    private bool SetMountToBuy(List<ModelSpell> mountsList, Dictionary<int, List<uint>> mountDictionary)
+    {
+        // B11/Draenei exceptions
+        if (mountsList[0].effectBasePoints_2 <= 100) // ground mounts
+        {
+            if ((ObjectManager.Me.WowRace == WoWRace.Draenei && !PluginCache.IsInDraeneiStartingZone)
+                || (ObjectManager.Me.WowRace == WoWRace.BloodElf && !PluginCache.IsInBloodElfStartingZone))
+                return false;
+        }
+        else
+        {
+            if (PluginCache.IsInDraeneiStartingZone || PluginCache.IsInBloodElfStartingZone)
+                return false;
+        }
+
+        List<ModelSpell> availableMounts = mountsList
+            .FindAll(m => m.AssociatedItem != null
+                && m.AssociatedItem.VendorsSellingThisItem.Count > 0
+                && m.AssociatedItem.VendorsSellingThisItem[0].CreatureTemplate.Creature?.map == Usefuls.ContinentId
+                && mountDictionary[(int)ObjectManager.Me.WowRace].Contains((uint)m.Id));
+
+        if (availableMounts?.Count <= 0)
+            return false;
+
+        WoWItem mountItemInBag = PluginCache.BagItems.Find(bi => availableMounts.Exists(am => am.AssociatedItem.Entry == bi.Entry));
+
+        if (mountItemInBag != null)
+        {
+            ItemsManager.UseItemByNameOrId(mountItemInBag.Name);
+            return false;
+        }
+        else
+        {
+            Random random = new Random();
+            int index = random.Next(availableMounts.Count);
+            ModelSpell mountSpell = availableMounts[index];
+            ModelCreatureTemplate mountVendor = mountSpell.AssociatedItem.VendorsSellingThisItem[0].CreatureTemplate;
+            if (mountVendor != null && mountSpell != null)
+            {
+                _mountSpellToLearn = mountSpell;
+                _mountVendor = mountVendor;
+                return true;
+            }
+            return false;
+        }
+    }
+
+    private bool SetRidingTraining(int ridingSpellId)
+    {
+        ModelSpell ridingSpell = MemoryDB.GetRidingSpellById(ridingSpellId);
+
+        if (ridingSpell.effectBasePoints_2 <= 1 && PluginCache.IsInOutlands) // 75 / 150
+            return false;
+
+        if (ridingSpell.effectBasePoints_2 > 1 && !PluginCache.IsInOutlands) // 225 / 300
+                return false;
+
+        ModelCreatureTemplate ridingTrainer = GetNearestRidingTrainer(ridingSpell);
+        if (ridingSpell != null && ridingTrainer != null)
+        {
+            _ridingSkillToLearn = ridingSpell;
+            _ridingTrainer = ridingTrainer;
+            return true;
+        }
+        return false;
     }
 
     private ModelCreatureTemplate GetNearestRidingTrainer(ModelSpell ridingSpell)
