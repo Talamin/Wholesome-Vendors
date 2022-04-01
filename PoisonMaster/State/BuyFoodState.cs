@@ -108,10 +108,6 @@ public class BuyFoodState : State
             if (Helpers.NpcIsAbsentOrDead(FoodVendor.CreatureTemplate))
                 return;
 
-            UpdateDoNotSellList();
-            Helpers.AddItemToDoNotSellList(FoodToBuy.Name);
-            Helpers.AddItemToDoNotMailList(FoodToBuy.Name);
-
             for (int i = 0; i <= 5; i++)
             {
                 Main.Logger($"Attempt {i+1}");
@@ -139,23 +135,6 @@ public class BuyFoodState : State
         }
     }
 
-    private void UpdateDoNotSellList()
-    {
-        List<WoWItem> items = PluginCache.BagItems;
-        foreach (ModelItemTemplate food in MemoryDB.GetAllUsableFoods())
-        {
-            if (items.Exists(item => item.Entry == food.Entry) && food.RequiredLevel >= FoodToBuy.RequiredLevel)
-            {
-                Helpers.AddItemToDoNotSellList(food.Name);
-                Helpers.AddItemToDoNotMailList(food.Name);
-            }
-            else
-            {
-                Helpers.RemoveItemFromDoNotSellList(food.Name);
-            }
-        }
-    }
-
     private int GetNbOfFoodInBags()
     {
         int nbFoodsInBags = 0;
@@ -174,7 +153,6 @@ public class BuyFoodState : State
         if (foodToSet != null && wManagerSetting.CurrentSetting.FoodName != foodToSet)
         {
             Main.Logger($"Setting food to {foodToSet}");
-            Helpers.AddItemToDoNotSellList(foodToSet);
             wManagerSetting.CurrentSetting.FoodName = foodToSet;
             wManagerSetting.CurrentSetting.Save();
         }

@@ -94,14 +94,17 @@ namespace Wholesome_Vendors.Database
 
         private static void RecordEmptyContainerSlots()
         {
-            int result = 0;
-            for (int i = 0; i < 5; i++)
+            lock (_cacheLock)
             {
-                string bagName = Lua.LuaDoString<string>($"return GetBagName({i});");
-                if (bagName.Equals(""))
-                    result++;
+                int result = 0;
+                for (int i = 0; i < 5; i++)
+                {
+                    string bagName = Lua.LuaDoString<string>($"return GetBagName({i});");
+                    if (bagName.Equals(""))
+                        result++;
+                }
+                EmptyContainerSlots = result;
             }
-            EmptyContainerSlots = result;
         }
 
         private static void RecordContinentAndInstancee()

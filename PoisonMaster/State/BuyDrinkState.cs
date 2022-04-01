@@ -48,7 +48,7 @@ public class BuyDrinkState : State
             if (NbDrinksInBag <= DrinkAmountSetting / 2)
             {
                 int amountToBuy = AmountToBuy;
-                foreach (ModelItemTemplate drink in MemoryDB.GetAllUsableDrinks)
+                foreach (ModelItemTemplate drink in MemoryDB.GetAllUsableDrinks())
                 {
                     // Filter out low level drinks
                     if (drink.RequiredLevel <= ObjectManager.Me.Level - 20)
@@ -100,10 +100,6 @@ public class BuyDrinkState : State
             if (Helpers.NpcIsAbsentOrDead(DrinkVendor.CreatureTemplate))
                 return;
 
-            ClearObsoleteDrinks();
-            Helpers.AddItemToDoNotSellList(DrinkToBuy.Name);
-            Helpers.AddItemToDoNotMailList(DrinkToBuy.Name);
-
             for (int i = 0; i <= 5; i++)
             {
                 Main.Logger($"Attempt {i + 1}");
@@ -130,28 +126,11 @@ public class BuyDrinkState : State
         }
     }
 
-    private void ClearObsoleteDrinks()
-    {
-        List<WoWItem> items = PluginCache.BagItems;
-        foreach (ModelItemTemplate drink in MemoryDB.GetAllUsableDrinks)
-        {
-            if (items.Exists(item => item.Entry == drink.Entry) && drink.RequiredLevel >= DrinkToBuy.RequiredLevel)
-            {
-                Helpers.AddItemToDoNotSellList(drink.Name);
-                Helpers.AddItemToDoNotMailList(drink.Name);
-            }
-            else
-            {
-                Helpers.RemoveItemFromDoNotSellList(drink.Name);
-            }
-        }
-    }
-
     private int GetNbDrinksInBags()
     {
         int nbDrinksInBags = 0;
         List<WoWItem> items = PluginCache.BagItems;
-        List<ModelItemTemplate> allDrinks = MemoryDB.GetAllUsableDrinks;
+        List<ModelItemTemplate> allDrinks = MemoryDB.GetAllUsableDrinks();
         string drinkToSet = null;
         foreach (WoWItem item in items)
         {
@@ -165,7 +144,6 @@ public class BuyDrinkState : State
         if (drinkToSet != null && wManagerSetting.CurrentSetting.DrinkName != drinkToSet)
         {
             Main.Logger($"Setting drink to {drinkToSet}");
-            Helpers.AddItemToDoNotSellList(drinkToSet);
             wManagerSetting.CurrentSetting.DrinkName = drinkToSet;
             wManagerSetting.CurrentSetting.Save();
         }

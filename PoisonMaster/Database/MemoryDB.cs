@@ -9,6 +9,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Wholesome_Vendors.Database.Models;
+using wManager;
+using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
 
 namespace Wholesome_Vendors.Database
@@ -252,8 +254,9 @@ namespace Wholesome_Vendors.Database
             _ridingSpells = ridingSpells;
             Main.Logger($"Process time (Riding spells) : {ridingSpellsWatch.ElapsedMilliseconds} ms");
 
-
             _con.Dispose();
+            EventsLua.AttachEventLua("PLAYER_LEVEL_UP", m => UpdateDNSList());
+            UpdateDNSList();
 
             // JSON export
             Stopwatch jsonsWatch = Stopwatch.StartNew();
@@ -283,12 +286,37 @@ namespace Wholesome_Vendors.Database
             IsPopulated = false;
         }
 
+        private static void UpdateDNSList()
+        {
+            // food
+            wManagerSetting.CurrentSetting.DoNotSellList.RemoveAll(dns => _foods.Exists(food => food.Name == dns));
+            wManagerSetting.CurrentSetting.DoNotSellList.AddRange(GetAllUsableFoods().Select(food => food.Name));
+            wManagerSetting.CurrentSetting.DoNotMailList.RemoveAll(dns => _foods.Exists(food => food.Name == dns));
+            wManagerSetting.CurrentSetting.DoNotMailList.AddRange(GetAllUsableFoods().Select(food => food.Name));
+
+            // drink
+            wManagerSetting.CurrentSetting.DoNotSellList.RemoveAll(dns => _drinks.Exists(drink => drink.Name == dns));
+            wManagerSetting.CurrentSetting.DoNotSellList.AddRange(GetAllUsableDrinks().Select(drink => drink.Name));
+            wManagerSetting.CurrentSetting.DoNotMailList.RemoveAll(dns => _drinks.Exists(drink => drink.Name == dns));
+            wManagerSetting.CurrentSetting.DoNotMailList.AddRange(GetAllUsableDrinks().Select(drink => drink.Name));
+
+            wManagerSetting.CurrentSetting.Save();
+        }
+
         public static List<ModelItemTemplate> GetInstantPoisons => _poisons.FindAll(p => p.displayid == 13710);
         public static List<ModelItemTemplate> GetDeadlyPoisons => _poisons.FindAll(p => p.displayid == 13707);
         public static List<ModelItemTemplate> GetAllPoisons => _poisons;
 
         public static List<ModelItemTemplate> GetAllDrinks => _drinks;
-        public static List<ModelItemTemplate> GetAllUsableDrinks => _drinks.FindAll(d => d.RequiredLevel <= ObjectManager.Me.Level);
+        public static List<ModelItemTemplate> GetAllUsableDrinks()
+        {
+            int minLevel = PluginSettings.CurrentSetting.BestDrink ? 10 : 20;
+            List<ModelItemTemplate> result = GetAllDrinks.FindAll(drink =>
+                drink.RequiredLevel <= ObjectManager.Me.Level
+                && drink.RequiredLevel > ObjectManager.Me.Level - minLevel);
+
+            return result;
+        }
 
         public static List<ModelItemTemplate> GetBags => _bags;
 
@@ -310,11 +338,15 @@ namespace Wholesome_Vendors.Database
         public static List<ModelItemTemplate> GetAllFoods => _foods;
         public static List<ModelItemTemplate> GetAllUsableFoods()
         {
-            if (PluginSettings.CurrentSetting.FoodType == "Any")
-            {
-                return _foods.FindAll(food => food.RequiredLevel <= ObjectManager.Me.Level);
-            }
-            return _foods.FindAll(food => food.RequiredLevel <= ObjectManager.Me.Level && food.FoodType == FoodTypeCode[PluginSettings.CurrentSetting.FoodType]);
+            int minLevel = PluginSettings.CurrentSetting.BestFood ? 10 : 20;
+            List<ModelItemTemplate> result = GetAllFoods.FindAll(food => 
+                food.RequiredLevel <= ObjectManager.Me.Level 
+                && food.RequiredLevel > ObjectManager.Me.Level - minLevel);
+
+            if (PluginSettings.CurrentSetting.FoodType != "Any")
+                result.RemoveAll(food => food.FoodType != FoodTypeCode[PluginSettings.CurrentSetting.FoodType]);
+
+            return result;
         }
 
         private static readonly Dictionary<string, int> FoodTypeCode = new Dictionary<string, int>()
