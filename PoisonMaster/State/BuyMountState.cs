@@ -45,45 +45,57 @@ public class BuyMountState : State
             _mountVendor = null;
 
             // Epic mount
-            if (PluginSettings.CurrentSetting.BuyEpicMount 
-                && Me.Level >= 40 
-                && !PluginCache.Know150Mount 
-                && PluginCache.Money > 600000)
+            if (PluginSettings.CurrentSetting.BuyEpicMount
+                && Me.Level >= 40
+                && !PluginCache.Know150Mount)
             {
-                if (PluginCache.RidingSkill < 75)
+                int neededMoney = 100000; // mount cost
+                if (PluginCache.RidingSkill < 75) neededMoney += 40000; // training cost 75
+                if (PluginCache.RidingSkill < 150) neededMoney += 500000; // training cost 75
+
+                if (PluginCache.Money >= neededMoney)
                 {
-                    if (SetRidingTraining(33388)) // Apprentice
-                        return true;
-                }
-                else if (PluginCache.RidingSkill < 150)
-                {
-                    if (SetRidingTraining(33391)) // Journeyman
-                        return true;
-                }
-                else
-                {
-                    if (SetMountToBuy(MemoryDB.GetEpicMounts, GroundMount150SpellsDictionary))
-                        return true;
+                    if (PluginCache.RidingSkill < 75)
+                    {
+                        if (SetRidingTraining(33388)) // Apprentice
+                            return true;
+                    }
+                    else if (PluginCache.RidingSkill < 150)
+                    {
+                        if (SetRidingTraining(33391)) // Journeyman
+                            return true;
+                    }
+                    else
+                    {
+                        if (SetMountToBuy(MemoryDB.GetEpicMounts, GroundMount150SpellsDictionary))
+                            return true;
+                    }
                 }
             }
 
             // Normal mount
             if (PluginSettings.CurrentSetting.BuyGroundMount
-                && !PluginCache.Know75Mount 
-                && !PluginCache.Know150Mount 
-                && PluginCache.Money > 60000)
+                && !PluginCache.Know75Mount
+                && !PluginCache.Know150Mount)
             {
-                if (PluginCache.RidingSkill < 75)
+                int neededMoney = 10000; // mount cost
+                if (PluginCache.RidingSkill < 75) neededMoney += 40000; // training cost
+
+                if (PluginCache.Money >= neededMoney)
                 {
-                    if (SetRidingTraining(33388)) // Apprentice
-                        return true;
-                }
-                else
-                {
-                    if (SetMountToBuy(MemoryDB.GetNormalMounts, GroundMount75SpellsDictionary))
-                        return true;
+                    if (PluginCache.RidingSkill < 75)
+                    {
+                        if (SetRidingTraining(33388)) // Apprentice
+                            return true;
+                    }
+                    else
+                    {
+                        if (SetMountToBuy(MemoryDB.GetNormalMounts, GroundMount75SpellsDictionary))
+                            return true;
+                    }
                 }
             }
+
             return false;
         }
     }
@@ -220,7 +232,7 @@ public class BuyMountState : State
             return false;
 
         if (ridingSpell.effectBasePoints_2 > 1 && !PluginCache.IsInOutlands) // 225 / 300
-                return false;
+            return false;
 
         ModelCreatureTemplate ridingTrainer = GetNearestRidingTrainer(ridingSpell);
         if (ridingSpell != null && ridingTrainer != null)

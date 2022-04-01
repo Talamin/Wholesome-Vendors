@@ -50,6 +50,12 @@ public class BuyDrinkState : State
                 int amountToBuy = AmountToBuy;
                 foreach (ModelItemTemplate drink in MemoryDB.GetAllUsableDrinks)
                 {
+                    // Filter out low level drinks
+                    if (drink.RequiredLevel <= ObjectManager.Me.Level - 20)
+                        continue;
+                    if (PluginSettings.CurrentSetting.BestDrink && drink.RequiredLevel <= ObjectManager.Me.Level - 10)
+                        continue;
+
                     if (Helpers.HaveEnoughMoneyFor(amountToBuy, drink))
                     {
                         ModelNpcVendor vendor = MemoryDB.GetNearestItemVendor(drink);

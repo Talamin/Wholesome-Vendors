@@ -27,11 +27,25 @@ public class PluginSettings : Settings
     public int FoodNbToBuy { get; set; }
 
     [Setting]
+    [DefaultValue(false)]
+    [Category("Buy")]
+    [DisplayName("Best food")]
+    [Description("Will only buy the best possible food")]
+    public bool BestFood { get; set; }
+
+    [Setting]
     [DefaultValue(0)]
     [Category("Buy")]
     [DisplayName("Drink Amount")]
     [Description("Drink amount to buy")]
     public int DrinkNbToBuy { get; set; }
+
+    [Setting]
+    [DefaultValue(false)]
+    [Category("Buy")]
+    [DisplayName("Best drink")]
+    [Description("Will only buy the best possible drinks")]
+    public bool BestDrink { get; set; }
 
     [Setting]
     [DefaultValue(false)]
@@ -204,7 +218,9 @@ public class PluginSettings : Settings
         Databasetype = "external";
         DriveByDistance = 100;
         FoodNbToBuy = 20;
+        BestFood = false;
         DrinkNbToBuy = 0;
+        BestDrink = false;
         BuyPoison = ObjectManager.Me.WowClass == WoWClass.Rogue;
         AmmoAmount = ObjectManager.Me.WowClass == WoWClass.Hunter ? 2000 : 0;
         AllowRepair = true;

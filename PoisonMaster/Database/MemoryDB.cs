@@ -9,7 +9,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Wholesome_Vendors.Database.Models;
-using wManager.Wow.Enums;
 using wManager.Wow.ObjectManager;
 
 namespace Wholesome_Vendors.Database
@@ -266,7 +265,7 @@ namespace Wholesome_Vendors.Database
                 using (StreamWriter file = File.CreateText(Others.GetCurrentDirectory + @"\Data\WVM.json"))
                 {
                     var serializer = new JsonSerializer();
-                    serializer.Serialize(file, new JsonExport(_drinks, _foods, _ammos, _poisons, _bags, _sellers, _repairers, 
+                    serializer.Serialize(file, new JsonExport(_drinks, _foods, _ammos, _poisons, _bags, _sellers, _repairers,
                         _trainers, _mailboxes, _mounts, _ridingSpells));
                 }
             }

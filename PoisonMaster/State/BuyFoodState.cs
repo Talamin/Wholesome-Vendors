@@ -51,6 +51,12 @@ public class BuyFoodState : State
                 Dictionary<ModelItemTemplate, ModelNpcVendor> potentialFoodVendors = new Dictionary<ModelItemTemplate, ModelNpcVendor>();
                 foreach (ModelItemTemplate food in MemoryDB.GetAllUsableFoods())
                 {
+                    // Filter out low level drinks
+                    if (food.RequiredLevel <= ObjectManager.Me.Level - 20)
+                        continue;
+                    if (PluginSettings.CurrentSetting.BestFood && food.RequiredLevel <= ObjectManager.Me.Level - 10)
+                        continue;
+
                     if (Helpers.HaveEnoughMoneyFor(amountToBuy, food))
                     {
                         ModelNpcVendor vendor = MemoryDB.GetNearestItemVendor(food);
