@@ -332,6 +332,11 @@ namespace PoisonMaster
             return Lua.LuaDoString<int>("return GetMerchantNumItems()") > 0;
         }
 
+        public static bool IsTrainerGossipOpen()
+        {
+            return Lua.LuaDoString<int>("return GetNumTrainerServices()") > 0;
+        }
+
         public static bool HaveEnoughMoneyFor(int amount, ModelItemTemplate item) => PluginCache.Money >= (item.BuyPrice * amount / item.BuyCount);
 
         public static bool PlayerIsInOutland()

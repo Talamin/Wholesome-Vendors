@@ -115,17 +115,30 @@ public class BuyMountState : State
                 if (Helpers.NpcIsAbsentOrDead(_ridingTrainer))
                     return;
 
-                if (GoToTask.ToPositionAndIntecractWithNpc(_ridingTrainer.Creature.GetSpawnPosition, _ridingTrainer.entry))
+                for (int i = 0; i <= 5; i++)
                 {
-                    Helpers.LearnSpellByName(_ridingSkillToLearn.name_lang_1);
-                    Thread.Sleep(3000);
-
-                    if (PluginCache.RidingSkill < _ridingSkillToLearn.NpcTrainer.ReqSkillRank)
+                    Main.Logger($"Attempt {i + 1}");
+                    GoToTask.ToPositionAndIntecractWithNpc(_ridingTrainer.Creature.GetSpawnPosition, _ridingTrainer.entry, i);
+                    Thread.Sleep(1000);
+                    Lua.LuaDoString($"SetTrainerServiceTypeFilter('available', 1)");
+                    Lua.LuaDoString($"ExpandTrainerSkillLine(0)");
+                    Thread.Sleep(500);
+                    if (Helpers.IsTrainerGossipOpen())
                     {
-                        Main.Logger($"Failed to learn {_ridingSkillToLearn.name_lang_1}, blacklisting vendor");
-                        NPCBlackList.AddNPCToBlacklist(_ridingTrainer.entry);
+                        Main.Logger("OPEN");
+                        Helpers.LearnSpellByName(_ridingSkillToLearn.name_lang_1);
+                        Thread.Sleep(2000);
+                        Helpers.CloseWindow();
+                        if (PluginCache.RidingSkill > _ridingSkillToLearn.NpcTrainer.ReqSkillRank)
+                        {
+                            Helpers.CloseWindow();
+                            return;
+                        }
                     }
                 }
+
+                Main.Logger($"Failed to learn {_ridingSkillToLearn.name_lang_1}, blacklisting vendor");
+                NPCBlackList.AddNPCToBlacklist(_ridingTrainer.entry);
             }
         }
 
@@ -146,6 +159,7 @@ public class BuyMountState : State
 
                 for (int i = 0; i <= 5; i++)
                 {
+                    Main.Logger($"Attempt {i + 1}");
                     GoToTask.ToPositionAndIntecractWithNpc(vendorPos, _mountVendor.entry, i);
                     Thread.Sleep(1000);
                     Lua.LuaDoString($"StaticPopup1Button2:Click()"); // discard hearthstone popup

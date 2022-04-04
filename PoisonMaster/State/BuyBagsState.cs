@@ -29,12 +29,20 @@ public class BuyBagsState : State
                 || !MemoryDB.IsPopulated
                 || !PluginCache.Initialized
                 || PluginCache.IsInInstance
-                || PluginCache.EmptyContainerSlots <= 0
                 || !stateTimer.IsReady
                 || Me.IsOnTaxi)
                 return false;
 
             stateTimer = new Timer(5000);
+
+            if (PluginCache.EmptyContainerSlots <= 0)
+            {
+                foreach (ModelItemTemplate bag in MemoryDB.GetBags)
+                {
+                    Helpers.RemoveItemFromDoNotSellList(bag.Name);
+                }
+                return false;
+            }
 
             if (BagInBags() != null)
             {
@@ -86,6 +94,7 @@ public class BuyBagsState : State
 
             for (int i = 0; i <= 5; i++)
             {
+                Main.Logger($"Attempt {i + 1}");
                 GoToTask.ToPositionAndIntecractWithNpc(vendorPos, BagVendor.entry, i);
                 Thread.Sleep(1000);
                 Lua.LuaDoString($"StaticPopup1Button2:Click()"); // discard hearthstone popup
