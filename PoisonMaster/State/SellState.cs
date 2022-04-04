@@ -16,6 +16,7 @@ public class SellState : State
     private ModelCreatureTemplate VendorNpc;
     private Timer stateTimer = new Timer();
     private int MinFreeSlots => PluginSettings.CurrentSetting.MinFreeSlots;
+    private int nbFreeSlotsOnNeedToRun;
 
     public override bool NeedToRun
     {
@@ -32,9 +33,10 @@ public class SellState : State
                 return false;
 
             stateTimer = new Timer(5000);
+            nbFreeSlotsOnNeedToRun = PluginCache.NbFreeSlots;
 
             // Normal
-            if (PluginSettings.CurrentSetting.AllowSell && PluginCache.NbFreeSlots <= MinFreeSlots)
+            if (PluginSettings.CurrentSetting.AllowSell && nbFreeSlotsOnNeedToRun <= MinFreeSlots)
             {
                 VendorNpc = MemoryDB.GetNearestSeller();
                 if (VendorNpc != null)
@@ -86,7 +88,7 @@ public class SellState : State
                 {
                     Helpers.SellItems(VendorNpc);
                     Thread.Sleep(1000);
-                    if (PluginCache.NbFreeSlots > MinFreeSlots)
+                    if (PluginCache.NbFreeSlots > nbFreeSlotsOnNeedToRun)
                     {
                         Helpers.CloseWindow();
                         return;

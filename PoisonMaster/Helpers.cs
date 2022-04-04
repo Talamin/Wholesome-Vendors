@@ -250,26 +250,27 @@ namespace PoisonMaster
 
         public static void SellItems(ModelCreatureTemplate vendor)
         {
-            if (!PluginSettings.CurrentSetting.AllowSell)
+            if (!PluginSettings.CurrentSetting.AllowSell || PluginCache.ItemsToSell.Count <= 0)
                 return;
 
-            Main.Logger("Selling items");
-            List<WoWItem> bagItems = PluginCache.BagItems;
-            int nbItemsInBags = bagItems.Count;
+           // Main.Logger("Selling items");
+            //List<WoWItem> bagItems = PluginCache.BagItems;
+            //int nbItemsInBags = bagItems.Count;
 
-            List<string> listItemsToSell = PluginCache.ItemsToSell;
+            //List<string> listItemsToSell = PluginCache.ItemsToSell;
 
-            if (listItemsToSell.Count <= 0)
-                return;
+            //if (PluginCache.ItemsToSell.Count <= 0)
+              //  return;
 
-            Main.Logger($"Found {listItemsToSell.Count} items to sell");
+            Main.Logger($"Found {PluginCache.ItemsToSell.Count} items to sell");
 
-            for (int i = 1; i <= 5; i++)
-            {
-                Main.Logger($"Attempt {i}");
-                GoToTask.ToPositionAndIntecractWithNpc(vendor.Creature.GetSpawnPosition, vendor.entry, i);
-                Vendor.SellItems(listItemsToSell, wManagerSetting.CurrentSetting.DoNotSellList, GetListQualityToSell());
-                Thread.Sleep(200);
+            //for (int i = 1; i <= 5; i++)
+            //{
+                //Main.Logger($"Attempt {i}");
+                //GoToTask.ToPositionAndIntecractWithNpc(vendor.Creature.GetSpawnPosition, vendor.entry, i);
+                Vendor.SellItems(PluginCache.ItemsToSell, wManagerSetting.CurrentSetting.DoNotSellList, GetListQualityToSell());
+                Thread.Sleep(1000);
+            /*
                 if (PluginCache.BagItems.Count < nbItemsInBags)
                 {
                     break;
@@ -279,7 +280,7 @@ namespace PoisonMaster
                     Main.Logger($"Failed to sell items after {i} attempts. Blacklisting vendor.");
                     NPCBlackList.AddNPCToBlacklist(vendor.entry);
                 }
-            }
+            //}*/
         }
 
         public static void OverrideWRobotUserSettings()
