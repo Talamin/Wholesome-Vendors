@@ -25,7 +25,7 @@ public class RepairState : State
                 || !Main.IsLaunched
                 || !MemoryDB.IsPopulated
                 || !PluginCache.Initialized
-                || PluginSettings.CurrentSetting.AllowRepair
+                || !PluginSettings.CurrentSetting.AllowRepair
                 || PluginCache.IsInInstance
                 || !stateTimer.IsReady
                 || ObjectManager.Me.IsOnTaxi)
