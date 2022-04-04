@@ -51,12 +51,6 @@ public class BuyFoodState : State
                 Dictionary<ModelItemTemplate, ModelNpcVendor> potentialFoodVendors = new Dictionary<ModelItemTemplate, ModelNpcVendor>();
                 foreach (ModelItemTemplate food in MemoryDB.GetAllUsableFoods())
                 {
-                    // Filter out low level drinks
-                    if (food.RequiredLevel <= ObjectManager.Me.Level - 20)
-                        continue;
-                    if (PluginSettings.CurrentSetting.BestFood && food.RequiredLevel <= ObjectManager.Me.Level - 10)
-                        continue;
-
                     if (Helpers.HaveEnoughMoneyFor(amountToBuy, food))
                     {
                         ModelNpcVendor vendor = MemoryDB.GetNearestItemVendor(food);
@@ -116,9 +110,8 @@ public class BuyFoodState : State
                 Lua.LuaDoString($"StaticPopup1Button2:Click()"); // discard hearthstone popup
                 if (Helpers.IsVendorGossipOpen())
                 {
-                    // Sell first
                     Helpers.SellItems(FoodVendor.CreatureTemplate);
-
+                    Thread.Sleep(1000);
                     Helpers.BuyItem(FoodToBuy.Name, AmountToBuy, FoodToBuy.BuyCount);
                     Thread.Sleep(1000);
 

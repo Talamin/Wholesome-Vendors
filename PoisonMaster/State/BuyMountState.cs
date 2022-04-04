@@ -152,7 +152,7 @@ public class BuyMountState : State
                     if (Helpers.IsVendorGossipOpen())
                     {
                         Helpers.SellItems(_mountVendor);
-
+                        Thread.Sleep(1000);
                         Helpers.BuyItem(_mountSpellToLearn.AssociatedItem.Name, 1, 1);
                         Thread.Sleep(3000);
 

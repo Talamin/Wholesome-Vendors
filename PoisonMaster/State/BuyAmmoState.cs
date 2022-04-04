@@ -97,14 +97,17 @@ public class BuyAmmoState : State
 
             for (int i = 0; i <= 5; i++)
             {
+                Main.Logger($"Attempt {i + 1}");
                 GoToTask.ToPositionAndIntecractWithNpc(vendorPos, AmmoVendor.entry, i);
                 Thread.Sleep(1000);
                 Lua.LuaDoString($"StaticPopup1Button2:Click()"); // discard hearthstone popup
                 if (Helpers.IsVendorGossipOpen())
                 {
                     Helpers.SellItems(AmmoVendor.CreatureTemplate);
+                    Thread.Sleep(1000);
                     Helpers.BuyItem(AmmoToBuy.Name, AmountToBuy, AmmoToBuy.BuyCount);
                     Thread.Sleep(1000);
+
                     if (GetNbAmmosInBags() >= AmmoAmountSetting)
                     {
                         Helpers.CloseWindow();

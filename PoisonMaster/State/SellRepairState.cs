@@ -5,7 +5,6 @@ using System.Threading;
 using Wholesome_Vendors.Database;
 using Wholesome_Vendors.Database.Models;
 using wManager.Wow.Bot.Tasks;
-using wManager.Wow.Enums;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
 using Timer = robotManager.Helpful.Timer;
@@ -97,17 +96,23 @@ public class SellRepairState : State
             if (Helpers.NpcIsAbsentOrDead(VendorNpc))
                 return;
 
-            // Sell first
-            Helpers.SellItems(VendorNpc);
-
-            // Then repair
             for (int i = 0; i <= 5; i++)
             {
+                Main.Logger($"Attempt {i + 1}");
                 GoToTask.ToPositionAndIntecractWithNpc(VendorNpc.Creature.GetSpawnPosition, VendorNpc.entry, i);
-                Vendor.RepairAllItems();
-                Lua.LuaDoString("MerchantRepairAllButton:Click();", false);
-                Lua.LuaDoString("RepairAllItems();", false);
                 Thread.Sleep(1000);
+                Lua.LuaDoString($"StaticPopup1Button2:Click()"); // discard hearthstone popup
+                if (Helpers.IsVendorGossipOpen())
+                {
+                    Helpers.SellItems(VendorNpc);
+                    Thread.Sleep(1000);
+                    Vendor.RepairAllItems();
+                    Thread.Sleep(1000);
+                    Lua.LuaDoString("MerchantRepairAllButton:Click();", false);
+                    Lua.LuaDoString("RepairAllItems();", false);
+                    Thread.Sleep(1000);
+                }
+
                 Helpers.CloseWindow();
 
                 if (ObjectManager.Me.GetDurabilityPercent >= MinDurability)

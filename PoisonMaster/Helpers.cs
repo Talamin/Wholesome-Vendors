@@ -270,7 +270,6 @@ namespace PoisonMaster
                 GoToTask.ToPositionAndIntecractWithNpc(vendor.Creature.GetSpawnPosition, vendor.entry, i);
                 Vendor.SellItems(listItemsToSell, wManagerSetting.CurrentSetting.DoNotSellList, GetListQualityToSell());
                 Thread.Sleep(200);
-                CloseWindow();
                 if (PluginCache.BagItems.Count < nbItemsInBags)
                 {
                     break;
