@@ -256,7 +256,8 @@
     <Compile Include="State\BuyPoisonState.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="State\SellRepairState.cs" />
+    <Compile Include="State\RepairState.cs" />
+    <Compile Include="State\SellState.cs" />
     <Compile Include="State\TrainingState.cs" />
   </ItemGroup>
   <ItemGroup>
