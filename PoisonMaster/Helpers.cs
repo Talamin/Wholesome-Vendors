@@ -1,4 +1,5 @@
 ﻿using robotManager.FiniteStateMachine;
+using robotManager.Helpful;
 using robotManager.Products;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,7 @@ using wManager.Wow.Bot.Tasks;
 using wManager.Wow.Enums;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
+using static wManager.Wow.Helpers.PathFinder;
 
 namespace PoisonMaster
 {
@@ -177,7 +179,7 @@ namespace PoisonMaster
 
         public static void BuyItem(string name, int amount, int stackValue)
         {
-            double numberOfStacksToBuy = Math.Ceiling(amount / (double)stackValue);
+            double numberOfStacksToBuy = System.Math.Ceiling(amount / (double)stackValue);
             Main.Logger($"Buying {amount} x {name}");
             Lua.LuaDoString(string.Format(@"
                     local itemName = ""{0}""
@@ -303,7 +305,15 @@ namespace PoisonMaster
                 wManagerSetting.CurrentSetting.TrainNewSkills = false; // disable user setting
             }
 
+            // Ratchet northern house
+            OffMeshConnections.Add(new OffMeshConnection(new List<Vector3>()
+            {
+                new Vector3(-859.9623, -3757.758, 19.88704, "None"),
+                new Vector3(-847.8208, -3740.918, 22.26572, "None")
+            }, (int)ContinentId.Kalimdor, OffMeshConnectionType.Bidirectional, true));
+
             wManagerSetting.CurrentSetting.Save();
+            OffMeshConnections.Save();
         }
 
         public static void RestoreWRobotUserSettings()

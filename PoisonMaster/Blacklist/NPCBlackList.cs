@@ -69,6 +69,7 @@ public static class NPCBlackList
     {
         15125, // Kosco Copperpinch
         2805, // Deneb walker
+        3537, // Merchant Supreme Zixil
     };
 
     private static readonly HashSet<int> _sessionBlacklist = new HashSet<int>
