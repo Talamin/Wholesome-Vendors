@@ -39,10 +39,10 @@ namespace WholesomeVendors
                 PluginSettings.CurrentSetting.LastUpdateDate = elapsedTicks;
                 PluginSettings.CurrentSetting.Save();
 
-                string onlineFile = "https://github.com/Talamin/PoisonMaster/raw/master/PoisonMaster/Compiled/Wholesome_Vendors.dll";
+                string onlineFile = "https://github.com/Talamin/PoisonMaster/raw/master/Wholesome_Vendors/Compiled/Wholesome_Vendors.dll";
 
                 // Version check
-                string onlineVersion = "https://raw.githubusercontent.com/Talamin/PoisonMaster/master/PoisonMaster/Compiled/Version.txt";
+                string onlineVersion = "https://raw.githubusercontent.com/Talamin/PoisonMaster/master/Wholesome_Vendors/Compiled/Version.txt";
                 var onlineVersionContent = new WebClient { Encoding = Encoding.UTF8 }.DownloadString(onlineVersion);
                 if (onlineVersionContent == null || onlineVersionContent.Length > 10 || onlineVersionContent == MyCurrentVersion)
                 {
