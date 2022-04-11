@@ -285,12 +285,7 @@
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Wholesome-Toolbox\WholesomeToolbox.csproj">
-      <Project>{1b874988-69fe-43b5-939a-ed25b855e147}</Project>
-      <Name>WholesomeToolbox</Name>
-    </ProjectReference>
-  </ItemGroup>
+  <Import Project="..\Wholesome-Toolbox\Wholesome_Toolbox.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy /Y "$(TargetDir)\$(ProjectName).dll" "$(SolutionDir)\Wholesome_Vendors\Compiled\Wholesome_Vendors.dll"
