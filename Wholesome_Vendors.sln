@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29905.134
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.1525
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wholesome_Vendors", "Wholesome_Vendors\Wholesome_Vendors.csproj", "{7A726A5B-7BB2-4204-9555-0C19984A9377}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WholesomeToolbox", "Wholesome-Toolbox\WholesomeToolbox.csproj", "{1B874988-69FE-43B5-939A-ED25B855E147}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,6 +20,12 @@ Global
 		{7A726A5B-7BB2-4204-9555-0C19984A9377}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7A726A5B-7BB2-4204-9555-0C19984A9377}.Zero_conf|Any CPU.ActiveCfg = Zero_conf|Any CPU
 		{7A726A5B-7BB2-4204-9555-0C19984A9377}.Zero_conf|Any CPU.Build.0 = Zero_conf|Any CPU
+		{1B874988-69FE-43B5-939A-ED25B855E147}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B874988-69FE-43B5-939A-ED25B855E147}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B874988-69FE-43B5-939A-ED25B855E147}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B874988-69FE-43B5-939A-ED25B855E147}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B874988-69FE-43B5-939A-ED25B855E147}.Zero_conf|Any CPU.ActiveCfg = Release|Any CPU
+		{1B874988-69FE-43B5-939A-ED25B855E147}.Zero_conf|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
