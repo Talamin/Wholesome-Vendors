@@ -71,6 +71,9 @@
     <Reference Include="MarsSettingsGUI">
       <HintPath>..\Special_Deps\MarsSettingsGUI.dll</HintPath>
     </Reference>
+    <Reference Include="MemoryRobot">
+      <HintPath>..\Dependencies\MemoryRobot.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Win32.Primitives, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Win32.Primitives.4.3.0\lib\net46\Microsoft.Win32.Primitives.dll</HintPath>
       <Private>True</Private>
@@ -83,8 +86,7 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="RDManaged">
-      <HintPath>..\..\WRobot\Bin\RDManaged.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\Dependencies\RDManaged.dll</HintPath>
     </Reference>
     <Reference Include="robotManager">
       <HintPath>..\Dependencies\robotManager.dll</HintPath>
