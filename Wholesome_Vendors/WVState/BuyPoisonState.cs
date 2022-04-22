@@ -138,7 +138,7 @@ namespace WholesomeVendors.WVState
                     Main.Logger($"Attempt {i + 1}");
                     GoToTask.ToPositionAndIntecractWithNpc(vendorPos, _poisonVendor.entry, i);
                     Thread.Sleep(1000);
-                    WTLua.ClickOnFrameButton("StaticPopup1Button2"); // discard hearthstone popup
+                    WTGossip.ClickOnFrameButton("StaticPopup1Button2"); // discard hearthstone popup
                     if (WTGossip.IsVendorGossipOpen)
                     {
                         Helpers.SellItems();

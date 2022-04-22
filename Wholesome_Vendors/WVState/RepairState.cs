@@ -85,7 +85,7 @@ namespace WholesomeVendors.WVState
                     Main.Logger($"Attempt {i + 1}");
                     GoToTask.ToPositionAndIntecractWithNpc(_vendorNpc.Creature.GetSpawnPosition, _vendorNpc.entry, i);
                     Thread.Sleep(1000);
-                    WTLua.ClickOnFrameButton("StaticPopup1Button2"); // discard hearthstone popup
+                    WTGossip.ClickOnFrameButton("StaticPopup1Button2"); // discard hearthstone popup
                     if (WTGossip.IsVendorGossipOpen)
                     {
                         Vendor.RepairAllItems();
@@ -101,11 +101,8 @@ namespace WholesomeVendors.WVState
                     Helpers.CloseWindow();
                 }
 
-                if (ObjectManager.Me.GetDurabilityPercent < MIN_DURABILITY)
-                {
-                    Main.Logger($"Failed to repair, blacklisting {_vendorNpc.name}");
-                    NPCBlackList.AddNPCToBlacklist(_vendorNpc.entry);
-                }
+                Main.Logger($"Failed to repair, blacklisting {_vendorNpc.name}");
+                NPCBlackList.AddNPCToBlacklist(_vendorNpc.entry);
             }
         }
 

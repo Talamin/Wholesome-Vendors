@@ -103,7 +103,7 @@ namespace WholesomeVendors.WVState
                     Main.Logger($"Attempt {i + 1}");
                     GoToTask.ToPositionAndIntecractWithNpc(vendorPos, _drinkVendor.entry, i);
                     Thread.Sleep(1000);
-                    WTLua.ClickOnFrameButton("StaticPopup1Button2"); // discard hearthstone popup
+                    WTGossip.ClickOnFrameButton("StaticPopup1Button2"); // discard hearthstone popup
                     if (WTGossip.IsVendorGossipOpen)
                     {
                         Helpers.SellItems();
@@ -119,6 +119,7 @@ namespace WholesomeVendors.WVState
                     }
                     Helpers.CloseWindow();
                 }
+
                 Main.Logger($"Failed to buy {_drinkToBuy.Name}, blacklisting vendor");
                 NPCBlackList.AddNPCToBlacklist(_drinkVendor.entry);
             }

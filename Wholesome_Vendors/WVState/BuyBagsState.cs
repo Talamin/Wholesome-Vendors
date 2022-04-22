@@ -95,7 +95,7 @@ public class BuyBagsState : State
                 Main.Logger($"Attempt {i + 1}");
                 GoToTask.ToPositionAndIntecractWithNpc(vendorPos, _bagVendor.entry, i);
                 Thread.Sleep(1000);
-                WTLua.ClickOnFrameButton("StaticPopup1Button2"); // discard hearthstone popup
+                WTGossip.ClickOnFrameButton("StaticPopup1Button2"); // discard hearthstone popup
                 if (WTGossip.IsVendorGossipOpen)
                 {
                     WTGossip.BuyItem(_bagToBuy.Name, 1, _bagToBuy.BuyCount);
