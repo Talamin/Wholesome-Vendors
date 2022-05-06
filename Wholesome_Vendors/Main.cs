@@ -6,7 +6,6 @@ using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Net;
-using System.Threading.Tasks;
 using WholesomeToolbox;
 using WholesomeVendors;
 using WholesomeVendors.Blacklist;
@@ -25,7 +24,7 @@ public class Main : IPlugin
 
     private Timer stateAddTimer;
 
-    public static string version = "1.3.07"; // Must match version in Version.txt
+    public static string version = "1.3.08"; // Must match version in Version.txt
 
     public void Initialize()
     {
@@ -58,31 +57,27 @@ public class Main : IPlugin
             }
             else
             {
-                Logger($"Downloading Wholesome DB");
-                Task.Factory.StartNew(() =>
+                Logger($"Downloading the Wholesome Database, please wait...");
+
+                using (var client = new WebClient())
                 {
-                    using (var client = new WebClient())
+                    try
                     {
-                        try
-                        {
-                            client.DownloadFile("https://s3-eu-west-1.amazonaws.com/wholesome.team/WoWDb335.zip",
-                            "Data/wholesome_db_temp.zip");
-                        }
-                        catch (WebException e)
-                        {
-                            LoggerError($"Failed to download/write Wholesome Database!\n" + e.Message);
-                            return false;
-                        }
+                        client.DownloadFile("https://s3-eu-west-1.amazonaws.com/wholesome.team/WoWDb335.zip",
+                        "Data/wholesome_db_temp.zip");
                     }
+                    catch (WebException e)
+                    {
+                        throw new Exception($"Failed to download/write the Wholesome Database!\n" + e.Message);
+                    }
+                }
 
-                    Logger($"Extracting Wholesome Database.");
+                Logger($"Extracting the Wholesome Database.");
 
-                    System.IO.Compression.ZipFile.ExtractToDirectory("Data/wholesome_db_temp.zip", "Data");
-                    File.Delete("Data/wholesome_db_temp.zip");
+                System.IO.Compression.ZipFile.ExtractToDirectory("Data/wholesome_db_temp.zip", "Data");
+                File.Delete("Data/wholesome_db_temp.zip");
 
-                    Logger($"Successfully downloaded Wholesome Database");
-                    return true;
-                });
+                Logger($"Successfully downloaded the Wholesome Database");
             }
 
             FiniteStateMachineEvents.OnRunState += StateAddEventHandler;
@@ -100,7 +95,7 @@ public class Main : IPlugin
         }
         catch (Exception ex)
         {
-            LoggerError("Something gone wrong!" + ex);
+            LoggerError("Something gone wrong!\n" + ex);
         }
     }
 
