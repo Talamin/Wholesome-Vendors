@@ -40,13 +40,7 @@ namespace WholesomeVendors.Database
                 RecordMoney();
                 RecordContinentAndInstancee();
                 RecordSkills();
-                EventsLua.AttachEventLua("BAG_UPDATE", m => RecordBags());
-                EventsLua.AttachEventLua("PLAYER_EQUIPMENT_CHANGED", m => RecordRangedWeaponType());
-                EventsLua.AttachEventLua("PLAYER_MONEY", m => RecordMoney());
-                EventsLua.AttachEventLua("WORLD_MAP_UPDATE", m => RecordContinentAndInstancee());
-                EventsLua.AttachEventLua("SKILL_LINES_CHANGED", m => RecordSkills());
-                EventsLua.AttachEventLua("COMPANION_LEARNED", m => RecordKnownMounts());
-                EventsLua.AttachEventLua("COMPANION_UNLEARNED", m => RecordKnownMounts());
+                EventsLuaWithArgs.OnEventsLuaStringWithArgs += OnEventsLuaWithArgs;
                 Initialized = true;
             }
         }
@@ -55,7 +49,36 @@ namespace WholesomeVendors.Database
         {
             lock (_cacheLock)
             {
+                EventsLuaWithArgs.OnEventsLuaStringWithArgs -= OnEventsLuaWithArgs;
                 Initialized = false;
+            }
+        }
+
+        private static void OnEventsLuaWithArgs(string id, List<string> args)
+        {
+            switch (id)
+            {
+                case "BAG_UPDATE":
+                    RecordBags();
+                    break;
+                case "PLAYER_EQUIPMENT_CHANGED":
+                    RecordRangedWeaponType();
+                    break;
+                case "PLAYER_MONEY":
+                    RecordMoney();
+                    break;
+                case "WORLD_MAP_UPDATE":
+                    RecordContinentAndInstancee();
+                    break;
+                case "SKILL_LINES_CHANGED":
+                    RecordSkills();
+                    break;
+                case "COMPANION_LEARNED":
+                    RecordKnownMounts();
+                    break;
+                case "COMPANION_UNLEARNED":
+                    RecordKnownMounts();
+                    break;
             }
         }
 
@@ -87,17 +110,17 @@ namespace WholesomeVendors.Database
 
         private static void RecordEmptyContainerSlots()
         {
-            lock (_cacheLock)
-            {
-                int result = 0;
-                for (int i = 0; i < 5; i++)
-                {
-                    string bagName = Lua.LuaDoString<string>($"return GetBagName({i});");
-                    if (bagName.Equals(""))
-                        result++;
-                }
-                EmptyContainerSlots = result;
-            }
+            EmptyContainerSlots = Lua.LuaDoString<int>($@"
+                    local result = 0;
+                    for i=0,3,1
+                    do
+                        local bagLink = GetContainerItemLink(0, 0-i);
+                        if (bagLink == nil) then
+                            result = result + 1
+                        end
+                    end
+                    return result;
+                ");
         }
 
         private static void RecordContinentAndInstancee()
@@ -144,10 +167,16 @@ namespace WholesomeVendors.Database
 
         private static void RecordNbFreeSLots()
         {
-            lock (_cacheLock)
-            {
-                NbFreeSlots = Bag.GetContainerNumFreeSlotsByType(BagType.Unspecified);
-            }
+            NbFreeSlots = Lua.LuaDoString<int>($@"
+                local result = 0;
+                for i = 0, 5, 1 do
+                    local numberOfFreeSlots, BagType = GetContainerNumFreeSlots(i);
+                    if BagType == 0 then
+                        result = result + numberOfFreeSlots;
+                    end
+                end
+                return result;
+            ");
         }
 
         private static void RecordBagItems()

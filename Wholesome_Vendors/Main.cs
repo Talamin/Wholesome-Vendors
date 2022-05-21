@@ -24,7 +24,7 @@ public class Main : IPlugin
 
     private Timer stateAddTimer;
 
-    public static string version = "1.3.08"; // Must match version in Version.txt
+    public static string version = "1.3.09"; // Must match version in Version.txt
 
     public void Initialize()
     {
