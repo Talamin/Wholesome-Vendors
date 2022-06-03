@@ -64,7 +64,7 @@ namespace WholesomeVendors.Database
                 drink.VendorsSellingThisItem.RemoveAll(v => v.CreatureTemplate == null || v.CreatureTemplate.Creature == null);
             }
             _drinks = drinks;
-            Main.Logger($"Process time (Water) : {drinksWatch.ElapsedMilliseconds} ms");
+            //Main.Logger($"Process time (Water) : {drinksWatch.ElapsedMilliseconds} ms");
 
             // FOODS
             Stopwatch foodWatch = Stopwatch.StartNew();
@@ -87,7 +87,7 @@ namespace WholesomeVendors.Database
                 food.VendorsSellingThisItem.RemoveAll(v => v.CreatureTemplate == null || v.CreatureTemplate.Creature == null);
             }
             _foods = foods;
-            Main.Logger($"Process time (Food) : {foodWatch.ElapsedMilliseconds} ms");
+            //Main.Logger($"Process time (Food) : {foodWatch.ElapsedMilliseconds} ms");
 
             // AMMOS
             Stopwatch ammoWatch = Stopwatch.StartNew();
@@ -108,7 +108,7 @@ namespace WholesomeVendors.Database
                 ammo.VendorsSellingThisItem.RemoveAll(v => v.CreatureTemplate == null || v.CreatureTemplate.Creature == null);
             }
             _ammos = ammos;
-            Main.Logger($"Process time (Ammo) : {ammoWatch.ElapsedMilliseconds} ms");
+            //Main.Logger($"Process time (Ammo) : {ammoWatch.ElapsedMilliseconds} ms");
 
             // POISONS
             Stopwatch poisonWatch = Stopwatch.StartNew();
@@ -127,7 +127,7 @@ namespace WholesomeVendors.Database
                 poison.VendorsSellingThisItem.RemoveAll(v => v.CreatureTemplate == null || v.CreatureTemplate.Creature == null);
             }
             _poisons = poisons;
-            Main.Logger($"Process time (Poison) : {poisonWatch.ElapsedMilliseconds} ms");
+            //Main.Logger($"Process time (Poison) : {poisonWatch.ElapsedMilliseconds} ms");
 
             // BAGS
             Stopwatch bagsWatch = Stopwatch.StartNew();
@@ -152,7 +152,7 @@ namespace WholesomeVendors.Database
             }
             bags.RemoveAll(b => b.VendorsSellingThisItem.Count <= 0);
             _bags = bags;
-            Main.Logger($"Process time (Bags) : {bagsWatch.ElapsedMilliseconds} ms");
+            //Main.Logger($"Process time (Bags) : {bagsWatch.ElapsedMilliseconds} ms");
 
             // SELLERS
             Stopwatch sellersWatch = Stopwatch.StartNew();
@@ -169,7 +169,7 @@ namespace WholesomeVendors.Database
             }
             sellers.RemoveAll(v => v.Creature == null);
             _sellers = sellers;
-            Main.Logger($"Process time (Sellers) : {sellersWatch.ElapsedMilliseconds} ms");
+            //Main.Logger($"Process time (Sellers) : {sellersWatch.ElapsedMilliseconds} ms");
 
             // REPAIRERS
             Stopwatch repairersWatch = Stopwatch.StartNew();
@@ -186,7 +186,7 @@ namespace WholesomeVendors.Database
             }
             repairers.RemoveAll(v => v.Creature == null);
             _repairers = repairers;
-            Main.Logger($"Process time (Repairers) : {repairersWatch.ElapsedMilliseconds} ms");
+            //Main.Logger($"Process time (Repairers) : {repairersWatch.ElapsedMilliseconds} ms");
 
             // TRAINERS
             Stopwatch trainersWatch = Stopwatch.StartNew();
@@ -205,7 +205,7 @@ namespace WholesomeVendors.Database
             }
             trainers.RemoveAll(v => v.Creature == null);
             _trainers = trainers;
-            Main.Logger($"Process time (Trainers) : {trainersWatch.ElapsedMilliseconds} ms");
+            //Main.Logger($"Process time (Trainers) : {trainersWatch.ElapsedMilliseconds} ms");
 
             // MAILBOXES
             Stopwatch mailboxesWatch = Stopwatch.StartNew();
@@ -220,7 +220,7 @@ namespace WholesomeVendors.Database
             }
             mailboxes.RemoveAll(v => v.GameObject == null);
             _mailboxes = mailboxes;
-            Main.Logger($"Process time (Mailboxes) : {mailboxesWatch.ElapsedMilliseconds} ms");
+            //Main.Logger($"Process time (Mailboxes) : {mailboxesWatch.ElapsedMilliseconds} ms");
 
             // MOUNTS
             Stopwatch mountsWatch = Stopwatch.StartNew();
@@ -237,7 +237,7 @@ namespace WholesomeVendors.Database
             }
             _mounts = mountsSpells;
             PluginCache.RecordKnownMounts();
-            Main.Logger($"Process time (Mounts) : {mountsWatch.ElapsedMilliseconds} ms");
+            //Main.Logger($"Process time (Mounts) : {mountsWatch.ElapsedMilliseconds} ms");
 
             // RIDING SPELLS
             Stopwatch ridingSpellsWatch = Stopwatch.StartNew();
@@ -253,7 +253,7 @@ namespace WholesomeVendors.Database
                 ridingSpell.NpcTrainer.VendorTemplates.RemoveAll(npc => !npc.IsFriendly);
             }
             _ridingSpells = ridingSpells;
-            Main.Logger($"Process time (Riding spells) : {ridingSpellsWatch.ElapsedMilliseconds} ms");
+            //Main.Logger($"Process time (Riding spells) : {ridingSpellsWatch.ElapsedMilliseconds} ms");
 
             _con.Dispose();
             EventsLua.AttachEventLua("PLAYER_LEVEL_UP", m => UpdateDNSList());
@@ -277,7 +277,7 @@ namespace WholesomeVendors.Database
             {
                 Logging.WriteError("WriteJSONFromDBResult > " + e.Message);
             }
-            Main.Logger($"Process time (JSON) : {jsonsWatch.ElapsedMilliseconds} ms");
+            //Main.Logger($"Process time (JSON) : {jsonsWatch.ElapsedMilliseconds} ms");
 
             IsPopulated = true;
         }
@@ -522,7 +522,7 @@ namespace WholesomeVendors.Database
                 CREATE INDEX IF NOT EXISTS `idx_item_template_spellid_1` ON `item_template` (`spellid_1`);
                 CREATE INDEX IF NOT EXISTS `idx_npc_trainer_spellid` ON `npc_trainer` (`SpellID`);
             ");
-            Main.Logger($"Process time (Indices) : {stopwatchIndices.ElapsedMilliseconds} ms");
+            //Main.Logger($"Process time (Indices) : {stopwatchIndices.ElapsedMilliseconds} ms");
         }
 
         private static void ExecuteQuery(string query)

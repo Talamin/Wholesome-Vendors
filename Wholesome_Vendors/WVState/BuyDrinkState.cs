@@ -36,7 +36,6 @@ namespace WholesomeVendors.WVState
                     || !Main.IsLaunched
                     || !MemoryDB.IsPopulated
                     || !PluginCache.Initialized
-                    || PluginCache.IsInInstance
                     || !_stateTimer.IsReady
                     || _me.Level <= 3
                     || DrinkAmountSetting <= 0
@@ -48,6 +47,11 @@ namespace WholesomeVendors.WVState
                 _drinkToBuy = null;
 
                 _nbDrinksInBag = GetNbDrinksInBags();
+
+                if (PluginCache.IsInInstance)
+                {
+                    return false;
+                }
 
                 if (_nbDrinksInBag <= DrinkAmountSetting / 2)
                 {

@@ -37,7 +37,6 @@ namespace WholesomeVendors.WVState
                     || !Main.IsLaunched
                     || !_stateTimer.IsReady
                     || !MemoryDB.IsPopulated
-                    || PluginCache.IsInInstance
                     || !PluginCache.Initialized
                     || _me.Level <= 3
                     || FoodAmountSetting <= 0
@@ -49,6 +48,11 @@ namespace WholesomeVendors.WVState
                 _foodVendor = null;
 
                 _nbFoodsInBags = GetNbOfFoodInBags();
+
+                if (PluginCache.IsInInstance)
+                {
+                    return false;
+                }
 
                 if (_nbFoodsInBags <= FoodAmountSetting / 2)
                 {
