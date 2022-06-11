@@ -3,6 +3,7 @@ using robotManager.FiniteStateMachine;
 using robotManager.Helpful;
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Net;
@@ -21,10 +22,8 @@ public class Main : IPlugin
     private readonly BackgroundWorker _pulseThread = new BackgroundWorker();
     private static string Name = "Wholesome Vendors";
     public static bool IsLaunched;
-
     private Timer stateAddTimer;
-
-    public static string version = "1.3.10"; // Must match version in Version.txt
+    public static string version = FileVersionInfo.GetVersionInfo(Others.GetCurrentDirectory + @"\Plugins\Wholesome_Vendors.dll").FileVersion;
 
     public void Initialize()
     {
@@ -46,7 +45,7 @@ public class Main : IPlugin
 
             Logger($"Launching version {version} on client {WTLua.GetWoWVersion}");
 
-            Logger($"Checking for actual Database, maybe download is needed");
+            Logger($"Checking for current database");
             if (File.Exists("Data/WoWDB335"))
             {
                 var databaseUpdater = new DBUpdater();
