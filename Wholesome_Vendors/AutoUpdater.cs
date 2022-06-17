@@ -41,7 +41,7 @@ namespace WholesomeVendors
                 PluginSettings.CurrentSetting.LastUpdateDate = elapsedTicks;
                 PluginSettings.CurrentSetting.Save();
                 string onlineDllLink = "https://github.com/Talamin/Wholesome-Vendors/raw/master/Wholesome_Vendors/Compiled/Wholesome_Vendors.dll";
-                string onlineVersionLink = "https://raw.githubusercontent.com/Talamin/PoisonMaster/master/Wholesome_Vendors/Compiled/Version.txt";
+                string onlineVersionLink = "https://raw.githubusercontent.com/Talamin/PoisonMaster/master/Wholesome_Vendors/Compiled/Auto_Version.txt";
 
                 var onlineVersionTxt = new WebClient { Encoding = Encoding.UTF8 }.DownloadString(onlineVersionLink);
                 Version onlineVersion = new Version(onlineVersionTxt);
