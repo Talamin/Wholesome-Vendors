@@ -35,18 +35,24 @@ namespace WholesomeVendors.WVState
                     || !Main.IsLaunched
                     || !MemoryDB.IsPopulated
                     || !PluginCache.Initialized
-                    || PluginCache.IsInInstance
+                    || Fight.InFight
                     || PluginCache.RangedWeaponType == null
                     || PluginSettings.CurrentSetting.AmmoAmount <= 0
                     || !_stateTimer.IsReady
                     || _me.IsOnTaxi)
                     return false;
 
-                _stateTimer = new Timer(5000);
                 _ammoVendor = null;
                 _ammoToBuy = null;
 
                 _nbAmmoInBags = GetNbAmmosInBags();
+
+                if (PluginCache.IsInInstance)
+                {
+                    return false;
+                }
+
+                _stateTimer = new Timer(5000);
 
                 if (_nbAmmoInBags <= AmmoAmountSetting / 2)
                 {

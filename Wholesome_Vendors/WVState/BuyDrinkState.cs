@@ -36,13 +36,13 @@ namespace WholesomeVendors.WVState
                     || !Main.IsLaunched
                     || !MemoryDB.IsPopulated
                     || !PluginCache.Initialized
+                    || Fight.InFight
                     || !_stateTimer.IsReady
                     || _me.Level <= 3
                     || DrinkAmountSetting <= 0
                     || _me.IsOnTaxi)
                     return false;
 
-                _stateTimer = new Timer(5000);
                 _drinkVendor = null;
                 _drinkToBuy = null;
 
@@ -52,6 +52,8 @@ namespace WholesomeVendors.WVState
                 {
                     return false;
                 }
+
+                _stateTimer = new Timer(5000);
 
                 if (_nbDrinksInBag <= DrinkAmountSetting / 2)
                 {

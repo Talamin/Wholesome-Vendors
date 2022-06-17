@@ -37,16 +37,21 @@ namespace WholesomeVendors.WVState
                     || Me.Level < 20
                     || !MemoryDB.IsPopulated
                     || !PluginCache.Initialized
-                    || PluginCache.IsInInstance
                     || !stateTimer.IsReady
                     || Me.IsOnTaxi)
                     return false;
 
-                stateTimer = new Timer(5000);
                 _ridingSkillToLearn = null;
                 _mountSpellToLearn = null;
                 _ridingTrainer = null;
                 _mountVendor = null;
+
+                if (PluginCache.IsInInstance)
+                {
+                    return false;
+                }
+
+                stateTimer = new Timer(5000);
 
                 // Epic mount
                 if (PluginSettings.CurrentSetting.BuyEpicMount

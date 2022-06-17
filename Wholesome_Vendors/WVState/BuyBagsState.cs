@@ -31,12 +31,10 @@ public class BuyBagsState : State
                 || !PluginSettings.CurrentSetting.BuyBags
                 || !MemoryDB.IsPopulated
                 || !PluginCache.Initialized
-                || PluginCache.IsInInstance
+                || Fight.InFight
                 || !_stateTimer.IsReady
                 || _me.IsOnTaxi)
                 return false;
-
-            _stateTimer = new Timer(5000);
 
             if (PluginCache.EmptyContainerSlots <= 0)
             {
@@ -54,6 +52,13 @@ public class BuyBagsState : State
 
             _bagVendor = null;
             _bagToBuy = null;
+
+            if (PluginCache.IsInInstance)
+            {
+                return false;
+            }
+
+            _stateTimer = new Timer(5000);
 
             foreach (ModelItemTemplate bag in MemoryDB.GetBags)
             {

@@ -36,20 +36,26 @@ namespace WholesomeVendors.WVState
                     || !_stateTimer.IsReady
                     || !MemoryDB.IsPopulated
                     || !PluginCache.Initialized
-                    || PluginCache.IsInInstance
                     || LevelToTrain <= 0
                     || !PluginSettings.CurrentSetting.AllowTrain
                     || ObjectManager.Me.IsOnTaxi)
                     return false;
 
-                _stateTimer = new Timer(5000);
-
                 if ((ContinentId)Usefuls.ContinentId == ContinentId.Northrend
                     || WTLocation.PlayerInOutlands()
                     || (ContinentId)Usefuls.ContinentId == ContinentId.Azeroth && ObjectManager.Me.WowClass == WoWClass.Druid)
+                {
                     return false;
+                }
 
                 _trainerNpc = MemoryDB.GetNearestTrainer();
+
+                if (PluginCache.IsInInstance)
+                {
+                    return false;
+                }
+
+                _stateTimer = new Timer(5000);
 
                 return _trainerNpc != null;
             }

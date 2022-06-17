@@ -37,19 +37,25 @@ namespace WholesomeVendors.WVState
                     || !_stateTimer.IsReady
                     || !MemoryDB.IsPopulated
                     || !PluginCache.Initialized
-                    || PluginCache.IsInInstance
+                    || Fight.InFight
                     || !PluginSettings.CurrentSetting.BuyPoison
                     || ObjectManager.Me.WowClass != WoWClass.Rogue
                     || ObjectManager.Me.Level < 20
                     || _me.IsOnTaxi)
                     return false;
 
-                _stateTimer = new Timer(5000);
                 _poisonToBuy = null;
                 _poisonVendor = null;
                 _amountToBuy = 0;
 
                 RecordNbPoisonsInBags();
+
+                if (PluginCache.IsInInstance)
+                {
+                    return false;
+                }
+
+                _stateTimer = new Timer(5000);
 
                 // Deadly Poison
                 if (_nbDeadlysInBags <= 15)
