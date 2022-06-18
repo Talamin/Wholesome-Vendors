@@ -34,6 +34,7 @@ namespace WholesomeVendors.WVState
                 if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
                     || !Main.IsLaunched
                     || !_stateTimer.IsReady
+                    || Fight.InFight
                     || !MemoryDB.IsPopulated
                     || !PluginCache.Initialized
                     || LevelToTrain <= 0

@@ -48,12 +48,12 @@ namespace WholesomeVendors.Blacklist
                 && GetListUsableZones().Contains(creatureTemplate.Creature.zoneid + 1);
         }
 
-        public static bool IsGameObjectValid(ModelGameObjectTemplate goTemplate)
+        public static bool IsMailBoxValid(ModelGameObjectTemplate goTemplate)
         {
             return goTemplate.GameObject != null
                 && !_sessionBlacklist.Contains(goTemplate.entry)
                 && goTemplate.GameObject.map == Usefuls.ContinentId
-                && GetListUsableZones().Contains(goTemplate.GameObject.zoneid + 1);
+                /*&& GetListUsableZones().Contains(goTemplate.GameObject.zoneid + 1)*/;
         }
 
 

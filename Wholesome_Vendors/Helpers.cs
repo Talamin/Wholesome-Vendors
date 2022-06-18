@@ -253,10 +253,19 @@ namespace WholesomeVendors
             ModelGameObjectTemplate mailbox = MemoryDB.GetNearestMailBoxFrom(npc);
 
             if (mailbox == null)
-                return;
+            {
+                Main.Logger($"Couldn't find a mailbox nearby {npc.name}");
+                return; 
+            }
+            else
+            {
+                Main.Logger($"Sending mail to {PluginSettings.CurrentSetting.MailingRecipient}");
+            }
 
             if (ObjectManager.Me.Position.DistanceTo(mailbox.GameObject.GetSpawnPosition) >= 10)
+            {
                 GoToTask.ToPositionAndIntecractWithGameObject(mailbox.GameObject.GetSpawnPosition, mailbox.entry);
+            }
 
             if (ObjectManager.Me.Position.DistanceTo(mailbox.GameObject.GetSpawnPosition) < 10
                 && MailboxIsAbsent(mailbox))
@@ -275,6 +284,7 @@ namespace WholesomeVendors
                     GetListQualityToMail(),
                     out needRunAgain);
             }
+
             if (!needRunAgain)
                 Main.Logger($"Sent Items to {PluginSettings.CurrentSetting.MailingRecipient}");
 

@@ -408,7 +408,7 @@ namespace WholesomeVendors.Database
         public static ModelGameObjectTemplate GetNearestMailBoxFrom(ModelCreatureTemplate npc)
         {
             return _mailboxes
-                .Where(mailbox => NPCBlackList.IsGameObjectValid(mailbox)
+                .Where(mailbox => NPCBlackList.IsMailBoxValid(mailbox)
                     && mailbox.GameObject.GetSpawnPosition.DistanceTo(npc.Creature.GetSpawnPosition) < 300)
                 .OrderBy(mailbox => ObjectManager.Me.Position.DistanceTo(mailbox.GameObject.GetSpawnPosition))
                 .FirstOrDefault();

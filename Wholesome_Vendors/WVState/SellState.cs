@@ -31,6 +31,7 @@ namespace WholesomeVendors.WVState
                     || !Main.IsLaunched
                     || !MemoryDB.IsPopulated
                     || !PluginCache.Initialized
+                    || Fight.InFight
                     || !PluginSettings.CurrentSetting.AllowSell
                     || PluginCache.IsInInstance
                     || !_stateTimer.IsReady

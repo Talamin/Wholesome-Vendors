@@ -36,6 +36,7 @@ namespace WholesomeVendors.WVState
                     || !Main.IsLaunched
                     || Me.Level < 20
                     || !MemoryDB.IsPopulated
+                    || Fight.InFight
                     || !PluginCache.Initialized
                     || !stateTimer.IsReady
                     || Me.IsOnTaxi)

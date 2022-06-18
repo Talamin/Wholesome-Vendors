@@ -28,6 +28,7 @@ namespace WholesomeVendors.WVState
                 if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
                     || !Main.IsLaunched
                     || !MemoryDB.IsPopulated
+                    || Fight.InFight
                     || !PluginCache.Initialized
                     || !PluginSettings.CurrentSetting.AllowRepair
                     || PluginCache.IsInInstance
