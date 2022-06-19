@@ -67,7 +67,7 @@ public class Main : IPlugin
                     }
                     catch (WebException e)
                     {
-                        throw new Exception($"Failed to download/write the Wholesome Database!\n" + e.Message);
+                        throw new Exception($"Failed to download/write the Wholesome Database!\n" + e.Message + "\n" + e.StackTrace);
                     }
                 }
 
@@ -94,7 +94,7 @@ public class Main : IPlugin
         }
         catch (Exception ex)
         {
-            LoggerError("Something gone wrong!\n" + ex);
+            LoggerError("Something gone wrong!\n" + ex.Message + "\n" + ex.StackTrace);
         }
     }
 
