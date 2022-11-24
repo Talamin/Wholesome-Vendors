@@ -1,5 +1,6 @@
 ﻿using robotManager.FiniteStateMachine;
 using robotManager.Helpful;
+using robotManager.Products;
 using System.Collections.Generic;
 using System.Threading;
 using WholesomeToolbox;
@@ -23,9 +24,15 @@ namespace WholesomeVendors.WVState
         private ModelNpcVendor _ammoVendor;
         private ModelItemTemplate _ammoToBuy;
         private int _nbAmmoInBags;
+        private bool _usingDungeonProduct;
 
         private int AmmoAmountSetting => PluginSettings.CurrentSetting.AmmoAmount;
         private int AmountToBuy => AmmoAmountSetting - GetNbAmmosInBags();
+
+        public BuyAmmoState()
+        {
+            _usingDungeonProduct = Helpers.UsingDungeonProduct();
+        }
 
         public override bool NeedToRun
         {
@@ -54,7 +61,7 @@ namespace WholesomeVendors.WVState
 
                 _stateTimer = new Timer(5000);
 
-                if (_nbAmmoInBags <= AmmoAmountSetting / 2)
+                if (_nbAmmoInBags <= AmmoAmountSetting / 2 || _usingDungeonProduct)
                 {
                     int amountToBuy = AmountToBuy;
                     foreach (ModelItemTemplate ammo in MemoryDB.GetUsableAmmos())
@@ -67,7 +74,8 @@ namespace WholesomeVendors.WVState
                                 _ammoToBuy = ammo;
                                 _ammoVendor = vendor;
                                 // Normal
-                                if (_nbAmmoInBags <= AmmoAmountSetting / 10)
+                                if (_nbAmmoInBags <= AmmoAmountSetting / 10
+                                    || _usingDungeonProduct && _nbAmmoInBags <= AmmoAmountSetting)
                                 {
                                     DisplayName = $"Buying {amountToBuy} x {_ammoToBuy.Name} at vendor {_ammoVendor.CreatureTemplate.name}";
                                     return true;

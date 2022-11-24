@@ -22,6 +22,12 @@ namespace WholesomeVendors
         private static bool saveWRobotSettingSell;
         private static bool saveWRobotSettingTrain;
 
+        public static bool UsingDungeonProduct()
+        {
+            return Products.ProductName.ToLower().Trim().Replace(" ", "")
+                == "Wholesome Dungeon Crawler".ToLower().Trim().Replace(" ", "");
+        }
+
         public static void CloseWindow()
         {
             try

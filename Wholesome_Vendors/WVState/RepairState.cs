@@ -20,6 +20,12 @@ namespace WholesomeVendors.WVState
         private Timer _stateTimer = new Timer();
         private readonly int MIN_DURABILITY = 35;
         private double _durabilityOnNeedToRun;
+        private bool _usingDungeonProduct;
+
+        public RepairState()
+        {
+            _usingDungeonProduct = Helpers.UsingDungeonProduct();
+        }
 
         public override bool NeedToRun
         {
@@ -41,7 +47,8 @@ namespace WholesomeVendors.WVState
                 _durabilityOnNeedToRun = ObjectManager.Me.GetDurabilityPercent;
 
                 // Normal
-                if (_durabilityOnNeedToRun < MIN_DURABILITY)
+                if (_durabilityOnNeedToRun < MIN_DURABILITY
+                    || _usingDungeonProduct && _durabilityOnNeedToRun < 90)
                 {
                     _vendorNpc = MemoryDB.GetNearestRepairer();
                     if (_vendorNpc != null)

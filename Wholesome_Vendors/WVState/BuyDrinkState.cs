@@ -1,5 +1,6 @@
 ﻿using robotManager.FiniteStateMachine;
 using robotManager.Helpful;
+using robotManager.Products;
 using System.Collections.Generic;
 using System.Threading;
 using WholesomeToolbox;
@@ -24,9 +25,15 @@ namespace WholesomeVendors.WVState
         private ModelNpcVendor _drinkVendor;
         private ModelItemTemplate _drinkToBuy;
         private int _nbDrinksInBag;
+        private bool _usingDungeonProduct;
 
         private int DrinkAmountSetting => PluginSettings.CurrentSetting.DrinkNbToBuy;
         private int AmountToBuy => DrinkAmountSetting - GetNbDrinksInBags();
+
+        public BuyDrinkState()
+        {
+            _usingDungeonProduct = Helpers.UsingDungeonProduct();
+        }
 
         public override bool NeedToRun
         {
@@ -55,7 +62,7 @@ namespace WholesomeVendors.WVState
 
                 _stateTimer = new Timer(5000);
 
-                if (_nbDrinksInBag <= DrinkAmountSetting / 2)
+                if (_nbDrinksInBag <= DrinkAmountSetting / 2 || _usingDungeonProduct)
                 {
                     int amountToBuy = AmountToBuy;
                     foreach (ModelItemTemplate drink in MemoryDB.GetAllUsableDrinks())
@@ -68,7 +75,8 @@ namespace WholesomeVendors.WVState
                                 _drinkToBuy = drink;
                                 _drinkVendor = vendor;
                                 // Normal
-                                if (_nbDrinksInBag <= DrinkAmountSetting / 10)
+                                if (_nbDrinksInBag <= DrinkAmountSetting / 10
+                                    || _usingDungeonProduct && _nbDrinksInBag <= DrinkAmountSetting)
                                 {
                                     DisplayName = $"Buying {amountToBuy} x {_drinkToBuy.Name} at vendor {_drinkVendor.CreatureTemplate.name}";
                                     return true;

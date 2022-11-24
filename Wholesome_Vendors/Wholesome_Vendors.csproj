@@ -37,7 +37,7 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Zero_conf|AnyCPU'">
-    <OutputPath>F:\WoW\WoW Wotlk\WRobot WOTLK\Plugins\</OutputPath>
+    <OutputPath>..\..\..\WoW Wotlk\WRobot WOTLK\Plugins\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>

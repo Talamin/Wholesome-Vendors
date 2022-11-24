@@ -27,6 +27,12 @@ namespace WholesomeVendors.WVState
         private int _nbDeadlysInBags;
         private int _amountToBuy;
         private Timer _stateTimer = new Timer();
+        private bool _usingDungeonProduct;
+
+        public BuyPoisonState()
+        {
+            _usingDungeonProduct = Helpers.UsingDungeonProduct();
+        }
 
         public override bool NeedToRun
         {
@@ -70,7 +76,8 @@ namespace WholesomeVendors.WVState
                             _poisonToBuy = deadlyP;
                             _poisonVendor = vendor;
                             // Normal
-                            if (_nbDeadlysInBags <= 1)
+                            if (_nbDeadlysInBags <= 1
+                                || _usingDungeonProduct && _nbDeadlysInBags <= 15)
                             {
                                 DisplayName = $"Buying {_amountToBuy} x {_poisonToBuy.Name} at vendor {_poisonVendor.CreatureTemplate.name}";
                                 return true;
@@ -97,7 +104,8 @@ namespace WholesomeVendors.WVState
                         if (vendor != null)
                         {
                             // Normal
-                            if (_nbInstantsInBags <= 1)
+                            if (_nbInstantsInBags <= 1
+                                || _usingDungeonProduct && _nbInstantsInBags <= 15)
                             {
                                 _poisonToBuy = instantP;
                                 _poisonVendor = vendor;

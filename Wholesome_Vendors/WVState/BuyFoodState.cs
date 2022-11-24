@@ -25,9 +25,15 @@ namespace WholesomeVendors.WVState
         private ModelNpcVendor _foodVendor;
         private ModelItemTemplate _foodToBuy;
         private int _nbFoodsInBags;
+        private bool _usingDungeonProduct;
 
         private int FoodAmountSetting => PluginSettings.CurrentSetting.FoodNbToBuy;
         private int AmountToBuy => FoodAmountSetting - GetNbOfFoodInBags();
+
+        public BuyFoodState()
+        {
+            _usingDungeonProduct = Helpers.UsingDungeonProduct();
+        }
 
         public override bool NeedToRun
         {
@@ -56,7 +62,7 @@ namespace WholesomeVendors.WVState
 
                 _stateTimer = new Timer(5000);
 
-                if (_nbFoodsInBags <= FoodAmountSetting / 2)
+                if (_nbFoodsInBags <= FoodAmountSetting / 2 || _usingDungeonProduct)
                 {
                     int amountToBuy = AmountToBuy;
                     Dictionary<ModelItemTemplate, ModelNpcVendor> potentialFoodVendors = new Dictionary<ModelItemTemplate, ModelNpcVendor>();
@@ -79,7 +85,8 @@ namespace WholesomeVendors.WVState
                         _foodToBuy = sortedDic.First().Key;
                         _foodVendor = sortedDic.First().Value;
 
-                        if (_nbFoodsInBags <= FoodAmountSetting / 10)
+                        if (_nbFoodsInBags <= FoodAmountSetting / 10
+                            || _usingDungeonProduct && _nbFoodsInBags <= FoodAmountSetting)
                         {
                             DisplayName = $"Buying {amountToBuy} x {_foodToBuy.Name} at vendor {_foodVendor.CreatureTemplate.name}";
                             return true;

@@ -20,8 +20,14 @@ namespace WholesomeVendors.WVState
         private ModelCreatureTemplate _vendorNpc;
         private Timer _stateTimer = new Timer();
         private int _nbFreeSlotsOnNeedToRun;
+        private bool _usingDungeonProduct;
 
         private int MinFreeSlots => PluginSettings.CurrentSetting.MinFreeSlots;
+
+        public SellState()
+        {
+            _usingDungeonProduct = Helpers.UsingDungeonProduct();
+        }
 
         public override bool NeedToRun
         {
@@ -42,7 +48,8 @@ namespace WholesomeVendors.WVState
                 _nbFreeSlotsOnNeedToRun = PluginCache.NbFreeSlots;
 
                 // Normal
-                if (PluginSettings.CurrentSetting.AllowSell && _nbFreeSlotsOnNeedToRun <= MinFreeSlots)
+                if (_nbFreeSlotsOnNeedToRun <= MinFreeSlots
+                    || _usingDungeonProduct && PluginCache.ItemsToSell.Count > 5)
                 {
                     _vendorNpc = MemoryDB.GetNearestSeller();
                     if (_vendorNpc != null)
@@ -53,7 +60,7 @@ namespace WholesomeVendors.WVState
                 }
 
                 // Drive-by
-                if (PluginSettings.CurrentSetting.AllowSell && PluginCache.ItemsToSell.Count > 5)
+                if (PluginCache.ItemsToSell.Count > 5)
                 {
                     _vendorNpc = MemoryDB.GetNearestSeller();
                     if (_vendorNpc != null
