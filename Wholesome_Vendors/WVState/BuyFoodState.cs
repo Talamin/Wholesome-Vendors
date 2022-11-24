@@ -86,7 +86,7 @@ namespace WholesomeVendors.WVState
                         _foodVendor = sortedDic.First().Value;
 
                         if (_nbFoodsInBags <= FoodAmountSetting / 10
-                            || _usingDungeonProduct && _nbFoodsInBags <= FoodAmountSetting)
+                            || _usingDungeonProduct && _nbFoodsInBags < FoodAmountSetting)
                         {
                             DisplayName = $"Buying {amountToBuy} x {_foodToBuy.Name} at vendor {_foodVendor.CreatureTemplate.name}";
                             return true;

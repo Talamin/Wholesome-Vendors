@@ -75,7 +75,7 @@ namespace WholesomeVendors.WVState
                                 _ammoVendor = vendor;
                                 // Normal
                                 if (_nbAmmoInBags <= AmmoAmountSetting / 10
-                                    || _usingDungeonProduct && _nbAmmoInBags <= AmmoAmountSetting)
+                                    || _usingDungeonProduct && _nbAmmoInBags < AmmoAmountSetting)
                                 {
                                     DisplayName = $"Buying {amountToBuy} x {_ammoToBuy.Name} at vendor {_ammoVendor.CreatureTemplate.name}";
                                     return true;

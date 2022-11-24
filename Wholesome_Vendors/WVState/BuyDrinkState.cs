@@ -76,7 +76,7 @@ namespace WholesomeVendors.WVState
                                 _drinkVendor = vendor;
                                 // Normal
                                 if (_nbDrinksInBag <= DrinkAmountSetting / 10
-                                    || _usingDungeonProduct && _nbDrinksInBag <= DrinkAmountSetting)
+                                    || _usingDungeonProduct && _nbDrinksInBag < DrinkAmountSetting)
                                 {
                                     DisplayName = $"Buying {amountToBuy} x {_drinkToBuy.Name} at vendor {_drinkVendor.CreatureTemplate.name}";
                                     return true;
