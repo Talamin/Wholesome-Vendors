@@ -418,7 +418,7 @@ namespace WholesomeVendors.Database
         {
             return _trainers
                 .Where(vendor => NPCBlackList.IsVendorValid(vendor)
-                    && (ObjectManager.Me.Level <= vendor.minLevel || vendor.minLevel > 15))
+                    && (ObjectManager.Me.Level <= vendor.minLevel || vendor.minLevel > 15 || vendor.entry == 328)) // Allow Zaldimar Wefhellt (goldshire mage trainer)
                 .OrderBy(trainer => ObjectManager.Me.Position.DistanceTo(trainer.Creature.GetSpawnPosition))
                 .FirstOrDefault();
         }

@@ -58,84 +58,87 @@ namespace WholesomeVendors.Blacklist
 
 
         private static readonly HashSet<int> _hordeBlacklist = new HashSet<int>
-    {
-        10857, // Neutral in alliance camp
-        8305, // Kixxle
-        14961, // Neutral vendor in Alliance camp
-        15124, // Vendor in Refuge Pointe, unreachable for Horde
-        3771, // Vendor inside Alliance, but it´s Horde
-        14963, // Gapp Jinglepocket, Neutral in Ashenvale
-    };
+        {
+            10857, // Neutral in alliance camp
+            8305, // Kixxle
+            14961, // Neutral vendor in Alliance camp
+            15124, // Vendor in Refuge Pointe, unreachable for Horde
+            3771, // Vendor inside Alliance, but it´s Horde
+            14963, // Gapp Jinglepocket, Neutral in Ashenvale
+        };
 
         private static readonly HashSet<int> _allianceBlacklist = new HashSet<int>
-    {
-        15125, // Kosco Copperpinch
-        2805, // Deneb walker
-        3537, // Merchant Supreme Zixil
-    };
+        {
+            15125, // Kosco Copperpinch
+            2805, // Deneb walker
+            3537, // Merchant Supreme Zixil
+            5498, // Elsharin (mage tower)
+            331, // Maginor Dumas (mage tower)
+            5497, // Jennea Cannon (mage tower)
+        };
 
         private static readonly HashSet<int> _sessionBlacklist = new HashSet<int>
-    {
-        14637, // Zorbin Fandazzle
-        15898, // Event NPC
-        23511, // Event NPC
-        23605, // Event NPC
-        23606, // Event NPC
-        24510, // Event NPC
-        35342, // Event NPC
-        15012, // Event NPC
-        36382, // Event NPC
-        22264, // Ogri'la Steelshaper
-        3180, // Dark Iron Entrepreneur in Wetlands
-        34685, // event NPC
-        3093, // Grod from TB, detected in Tirisfal Glades
-        4085, // Nizzik in StoneTalon, hard to reach
-        5134, // NPC died
-        543,  // unable to generate path
-        198,   // starter trainer without all spells or use minLevel in filter for this
-        7952,
-        7772, // bugged Vendor
-        23533,
-        23603,
-        23604,
-        24494,
-        24495,
-        24501,
-        26309,
-        26328, // not prefered           
-        26325, // bugged Hunter Trainer
-        26332,
-        26724,
-        26758, // bugged warlocktrainer
-        26738,
-        26739,
-        26740,
-        26741,
-        26742,
-        26743,
-        26744,
-        26745,
-        26746,
-        26747,
-        26748,
-        26765,
-        26749,
-        26751,
-        26752,
-        26753,
-        26754,
-        26755,
-        26756,
-        26757,
-        26759,
-        5958, // Portal trainer
-        5957, // Portal Trainer
-        2492, // Portal Trainer
-        2485, // Portal Trainer
-        2489, // Portal Trainer
-        4165, // Portal Trainer
-        5783,
-    };
+        {
+            14637, // Zorbin Fandazzle
+            15898, // Event NPC
+            23511, // Event NPC
+            23605, // Event NPC
+            23606, // Event NPC
+            24510, // Event NPC
+            35342, // Event NPC
+            15012, // Event NPC
+            36382, // Event NPC
+            22264, // Ogri'la Steelshaper
+            3180, // Dark Iron Entrepreneur in Wetlands
+            34685, // event NPC
+            3093, // Grod from TB, detected in Tirisfal Glades
+            4085, // Nizzik in StoneTalon, hard to reach
+            5134, // NPC died
+            543,  // unable to generate path
+            198,   // starter trainer without all spells or use minLevel in filter for this
+            7952,
+            7772, // bugged Vendor
+            23533,
+            23603,
+            23604,
+            24494,
+            24495,
+            24501,
+            26309,
+            26328, // not prefered           
+            26325, // bugged Hunter Trainer
+            26332,
+            26724,
+            26758, // bugged warlocktrainer
+            26738,
+            26739,
+            26740,
+            26741,
+            26742,
+            26743,
+            26744,
+            26745,
+            26746,
+            26747,
+            26748,
+            26765,
+            26749,
+            26751,
+            26752,
+            26753,
+            26754,
+            26755,
+            26756,
+            26757,
+            26759,
+            5958, // Portal trainer
+            5957, // Portal Trainer
+            2492, // Portal Trainer
+            2485, // Portal Trainer
+            2489, // Portal Trainer
+            4165, // Portal Trainer
+            5783,
+        };
 
         private static HashSet<int> GetListUsableZones()
         {
