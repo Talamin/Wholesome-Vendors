@@ -289,6 +289,8 @@ namespace WholesomeVendors.Database
 
         private static void UpdateDNSList()
         {
+            if (PluginCache.IsInInstance) return;
+
             // food
             wManagerSetting.CurrentSetting.DoNotSellList.RemoveAll(dns => _foods.Exists(food => food.Name == dns));
             if (PluginSettings.CurrentSetting.FoodNbToBuy > 0)
