@@ -257,6 +257,8 @@ namespace WholesomeVendors.Database
 
             _con.Dispose();
             EventsLua.AttachEventLua("PLAYER_LEVEL_UP", m => UpdateDNSList());
+            EventsLua.AttachEventLua("PLAYER_ENTERING_WORLD", m => UpdateDNSList());
+            EventsLua.AttachEventLua("PLAYER_LEAVING_WORLD", m => UpdateDNSList());
             UpdateDNSList();
 
             // JSON export
