@@ -96,6 +96,8 @@ namespace WholesomeVendors.WVState
                     WTGossip.ClickOnFrameButton("StaticPopup1Button2"); // discard hearthstone popup
                     if (WTGossip.IsVendorGossipOpen)
                     {
+                        Helpers.SellItems();
+                        Thread.Sleep(1000);
                         Vendor.RepairAllItems();
                         Thread.Sleep(1000);
                         WTGossip.RepairAll();

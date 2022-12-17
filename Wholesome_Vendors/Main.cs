@@ -132,15 +132,16 @@ public class Main : IPlugin
         {
             stateAddTimer = new Timer(3000);
 
-            WTState.AddState(engine, new SellState(), "To Town");
+            WTState.AddState(engine, new BuyPoisonState(), "To Town");
+            WTState.AddState(engine, new BuyBagsState(), "To Town");
+            WTState.AddState(engine, new BuyMountState(), "To Town");
             WTState.AddState(engine, new TrainingState(), "To Town");
             WTState.AddState(engine, new BuyFoodState(), "To Town");
             WTState.AddState(engine, new BuyDrinkState(), "To Town");
             WTState.AddState(engine, new BuyAmmoState(), "To Town");
             WTState.AddState(engine, new RepairState(), "To Town");
-            WTState.AddState(engine, new BuyMountState(), "To Town");
-            WTState.AddState(engine, new BuyBagsState(), "To Town");
-            WTState.AddState(engine, new BuyPoisonState(), "To Town");
+            WTState.AddState(engine, new SellState(), "To Town");
+
             engine.RemoveStateByName("Trainers");
         }
     }

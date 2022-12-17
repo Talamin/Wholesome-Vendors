@@ -103,6 +103,8 @@ public class BuyBagsState : State
                 WTGossip.ClickOnFrameButton("StaticPopup1Button2"); // discard hearthstone popup
                 if (WTGossip.IsVendorGossipOpen)
                 {
+                    Helpers.SellItems();
+                    Thread.Sleep(1000);
                     WTGossip.BuyItem(_bagToBuy.Name, 1, _bagToBuy.BuyCount);
                     Thread.Sleep(1000);
                     if (ItemsManager.GetItemCountByNameLUA(_bagToBuy.Name) > 0)
