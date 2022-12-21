@@ -27,21 +27,21 @@ public class BuyBagsState : State
         get
         {
             if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
+                || !_stateTimer.IsReady
                 || !Main.IsLaunched
                 || !PluginSettings.CurrentSetting.BuyBags
                 || !MemoryDB.IsPopulated
                 || !PluginCache.Initialized
                 || Fight.InFight
-                || !_stateTimer.IsReady
                 || _me.IsOnTaxi)
                 return false;
-
+            
             if (PluginCache.EmptyContainerSlots <= 0)
             {
                 Helpers.RemoveItemFromDoNotSellAndMailList(MemoryDB.GetBags);
                 return false;
             }
-
+            
             if (BagInBags() != null)
             {
                 Main.Logger($"Equipping {BagInBags().Name}");
@@ -74,7 +74,7 @@ public class BuyBagsState : State
                     }
                 }
             }
-
+            
             return false;
         }
     }

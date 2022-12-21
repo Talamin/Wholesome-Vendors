@@ -19,11 +19,12 @@ using Timer = robotManager.Helpful.Timer;
 
 public class Main : IPlugin
 {
-    private readonly BackgroundWorker _pulseThread = new BackgroundWorker();
+    //private readonly BackgroundWorker _pulseThread = new BackgroundWorker();
     private static string Name = "Wholesome Vendors";
     public static bool IsLaunched;
     private Timer stateAddTimer;
     public static string version = FileVersionInfo.GetVersionInfo(Others.GetCurrentDirectory + @"\Plugins\Wholesome_Vendors.dll").FileVersion;
+    private bool _statesAdded;
 
     public void Initialize()
     {
@@ -45,7 +46,6 @@ public class Main : IPlugin
 
             Logger($"Launching version {version} on client {WTLua.GetWoWVersion}");
 
-            Logger($"Checking for current database");
             if (File.Exists("Data/WoWDB335"))
             {
                 var databaseUpdater = new DBUpdater();
@@ -80,7 +80,7 @@ public class Main : IPlugin
             }
 
             FiniteStateMachineEvents.OnRunState += StateAddEventHandler;
-            _pulseThread.RunWorkerAsync();
+            //_pulseThread.RunWorkerAsync();
 
             if (PluginSettings.CurrentSetting.DrinkNbToBuy > 0 || PluginSettings.CurrentSetting.FoodNbToBuy > 0)
             {
@@ -105,7 +105,7 @@ public class Main : IPlugin
         IsLaunched = false;
         Helpers.RestoreWRobotUserSettings();
         FiniteStateMachineEvents.OnRunState -= StateAddEventHandler;
-        _pulseThread.Dispose();
+        //_pulseThread.Dispose();
         Logger("Disposed");
     }
 
@@ -118,10 +118,26 @@ public class Main : IPlugin
 
     private void StateAddEventHandler(Engine engine, State state, CancelEventArgs canc)
     {
+        if (_statesAdded)
+        {
+            Logger($"States added");
+            FiniteStateMachineEvents.OnRunState -= StateAddEventHandler;
+            return;
+        }
+        
         if (engine.States.Count <= 5)
         {
             if (stateAddTimer == null)
+            {
                 Helpers.SoftRestart(); // hack to wait for correct engine to trigger
+            }
+            return;
+        }
+        
+        if (!engine.States.Exists(eng => eng.DisplayName == "To Town"))
+        {
+            LoggerError("The product you're currently using doesn't have a To Town state. Can't start.");
+            Dispose();
             return;
         }
 
@@ -131,27 +147,28 @@ public class Main : IPlugin
         if (stateAddTimer.IsReady && engine != null)
         {
             stateAddTimer = new Timer(3000);
-
+            
             WTState.AddState(engine, new BuyPoisonState(), "To Town");
             WTState.AddState(engine, new BuyBagsState(), "To Town");
-            WTState.AddState(engine, new BuyMountState(), "To Town");
+            /*WTState.AddState(engine, new BuyMountState(), "To Town");
             WTState.AddState(engine, new TrainingState(), "To Town");
             WTState.AddState(engine, new BuyFoodState(), "To Town");
             WTState.AddState(engine, new BuyDrinkState(), "To Town");
             WTState.AddState(engine, new BuyAmmoState(), "To Town");
             WTState.AddState(engine, new RepairState(), "To Town");
             WTState.AddState(engine, new SellState(), "To Town");
-
+            */
             engine.RemoveStateByName("Trainers");
+            _statesAdded = true;
         }
     }
 
     public static void Logger(string message)
     {
-        Logging.Write($"[{Name}]: { message}", Logging.LogType.Normal, Color.ForestGreen);
+        Logging.Write($"[{Name}]: {message}", Logging.LogType.Normal, Color.ForestGreen);
     }
     public static void LoggerError(string message)
     {
-        Logging.Write($"[{Name}]: { message}", Logging.LogType.Normal, Color.Red);
+        Logging.Write($"[{Name}]: {message}", Logging.LogType.Normal, Color.Red);
     }
 }
