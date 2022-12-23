@@ -68,6 +68,8 @@ namespace WholesomeVendors.Database
                     RecordMoney();
                     break;
                 case "WORLD_MAP_UPDATE":
+                case "PLAYER_ENTERING_WORLD":
+                case "PLAYER_LEAVING_WORLD":
                     RecordContinentAndInstancee();
                     break;
                 case "SKILL_LINES_CHANGED":
