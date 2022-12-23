@@ -85,9 +85,7 @@ namespace WholesomeVendors.Database
                     RecordKnownMounts();
                     break;
                 case "INSTANCE_LOCK_STOP":
-                case "ZONE_CHANGED_INDOORS":
                 case "COMMENTATOR_ENTER_WORLD":
-                case "ZONE_CHANGED_NEW_AREA":
                     CacheInLoadingScreen();
                     break;
             }
