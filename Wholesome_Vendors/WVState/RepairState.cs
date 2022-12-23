@@ -33,6 +33,7 @@ namespace WholesomeVendors.WVState
             {
                 if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
                     || !Main.IsLaunched
+                    || PluginCache.InLoadingScreen
                     || !MemoryDB.IsPopulated
                     || Fight.InFight
                     || !PluginCache.Initialized

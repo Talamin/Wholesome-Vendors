@@ -29,6 +29,7 @@ public class BuyBagsState : State
             if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
                 || !_stateTimer.IsReady
                 || !Main.IsLaunched
+                || PluginCache.InLoadingScreen
                 || !PluginSettings.CurrentSetting.BuyBags
                 || !MemoryDB.IsPopulated
                 || !PluginCache.Initialized

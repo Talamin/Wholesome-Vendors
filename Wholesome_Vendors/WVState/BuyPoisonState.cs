@@ -40,6 +40,7 @@ namespace WholesomeVendors.WVState
             {
                 if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
                     || !Main.IsLaunched
+                    || PluginCache.InLoadingScreen
                     || !_stateTimer.IsReady
                     || !MemoryDB.IsPopulated
                     || !PluginCache.Initialized

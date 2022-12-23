@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using WholesomeToolbox;
 using WholesomeVendors.WVSettings;
 using wManager;
@@ -23,6 +24,7 @@ namespace WholesomeVendors.Database
         public static bool IsInOutlands { get; private set; }
         public static int RidingSkill { get; private set; }
         public static List<int> KnownMountSpells { get; private set; } = new List<int>();
+        public static bool InLoadingScreen { get; private set; }
 
         public static bool Know75Mount => KnownMountSpells.Exists(ms => MemoryDB.GetNormalMounts.Exists(nm => nm.Id == ms));
         public static bool Know150Mount => KnownMountSpells.Exists(ms => MemoryDB.GetEpicMounts.Exists(nm => nm.Id == ms));
@@ -70,6 +72,7 @@ namespace WholesomeVendors.Database
                 case "WORLD_MAP_UPDATE":
                 case "PLAYER_ENTERING_WORLD":
                 case "PLAYER_LEAVING_WORLD":
+                    CacheInLoadingScreen();
                     RecordContinentAndInstancee();
                     break;
                 case "SKILL_LINES_CHANGED":
@@ -81,7 +84,23 @@ namespace WholesomeVendors.Database
                 case "COMPANION_UNLEARNED":
                     RecordKnownMounts();
                     break;
+                case "INSTANCE_LOCK_STOP":
+                case "ZONE_CHANGED_INDOORS":
+                case "COMMENTATOR_ENTER_WORLD":
+                case "ZONE_CHANGED_NEW_AREA":
+                    CacheInLoadingScreen();
+                    break;
             }
+        }
+
+        private static void CacheInLoadingScreen()
+        {
+            InLoadingScreen = true;
+            Task.Run(async delegate
+            {
+                await Task.Delay(2000);
+                InLoadingScreen = false;
+            });
         }
 
         public static void RecordKnownMounts()

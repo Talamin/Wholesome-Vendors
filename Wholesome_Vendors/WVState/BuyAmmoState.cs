@@ -41,6 +41,7 @@ namespace WholesomeVendors.WVState
                     || !Main.IsLaunched
                     || !MemoryDB.IsPopulated
                     || !PluginCache.Initialized
+                    || PluginCache.InLoadingScreen
                     || Fight.InFight
                     || PluginCache.RangedWeaponType == null
                     || PluginSettings.CurrentSetting.AmmoAmount <= 0

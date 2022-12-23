@@ -43,6 +43,7 @@ namespace WholesomeVendors.WVState
                     || !Main.IsLaunched
                     || !_stateTimer.IsReady
                     || !MemoryDB.IsPopulated
+                    || PluginCache.InLoadingScreen
                     || !PluginCache.Initialized
                     || Fight.InFight
                     || _me.Level <= 3
