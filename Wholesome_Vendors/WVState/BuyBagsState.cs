@@ -1,6 +1,7 @@
 ﻿using robotManager.FiniteStateMachine;
 using robotManager.Helpful;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using WholesomeToolbox;
 using WholesomeVendors;
@@ -39,7 +40,7 @@ public class BuyBagsState : State
             
             if (PluginCache.EmptyContainerSlots <= 0)
             {
-                Helpers.RemoveItemFromDoNotSellAndMailList(MemoryDB.GetBags);
+                WTSettings.RemoveItemFromDoNotSellAndMailList(MemoryDB.GetBags.Select(bag => bag.Name).ToList());
                 return false;
             }
             
@@ -94,7 +95,7 @@ public class BuyBagsState : State
             if (Helpers.NpcIsAbsentOrDead(_bagVendor.CreatureTemplate))
                 return;
 
-            Helpers.AddItemToDoNotSellAndMailList(_bagToBuy.Name);
+            WTSettings.AddItemToDoNotSellAndMailList(new List<string>() { _bagToBuy.Name });
 
             for (int i = 0; i <= 5; i++)
             {

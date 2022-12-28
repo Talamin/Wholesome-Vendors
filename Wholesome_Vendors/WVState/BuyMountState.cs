@@ -164,7 +164,7 @@ namespace WholesomeVendors.WVState
                     if (Helpers.NpcIsAbsentOrDead(_mountVendor))
                         return;
 
-                    Helpers.AddItemToDoNotSellAndMailList(_mountSpellToLearn.AssociatedItem.Name);
+                    WTSettings.AddItemToDoNotSellAndMailList(new List<string>() { _mountSpellToLearn.AssociatedItem.Name });
 
                     for (int i = 0; i <= 5; i++)
                     {

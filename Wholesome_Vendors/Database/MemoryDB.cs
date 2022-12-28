@@ -7,6 +7,7 @@ using System.Data.SQLite;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using WholesomeToolbox;
 using WholesomeVendors.Blacklist;
 using WholesomeVendors.Database.Models;
 using WholesomeVendors.WVSettings;
@@ -293,23 +294,26 @@ namespace WholesomeVendors.Database
         {
             if (PluginCache.IsInInstance) return;
 
+            List<string> itemsToAdd = new List<string>();
+            List<string> itemsToRemove = new List<string>();
+
             // food
-            wManagerSetting.CurrentSetting.DoNotSellList.RemoveAll(dns => _foods.Exists(food => food.Name == dns));
+            itemsToRemove.AddRange(wManagerSetting.CurrentSetting.DoNotSellList.Where(dns => _foods.Exists(food => food.Name == dns)));
             if (PluginSettings.CurrentSetting.FoodNbToBuy > 0)
-                wManagerSetting.CurrentSetting.DoNotSellList.AddRange(GetAllUsableFoods().Select(food => food.Name));
-            wManagerSetting.CurrentSetting.DoNotMailList.RemoveAll(dns => _foods.Exists(food => food.Name == dns));
-            if (PluginSettings.CurrentSetting.FoodNbToBuy > 0)
-                wManagerSetting.CurrentSetting.DoNotMailList.AddRange(GetAllUsableFoods().Select(food => food.Name));
+            {
+                itemsToAdd.AddRange(GetAllUsableFoods().Select(food => food.Name));
+            }
 
             // drink
-            wManagerSetting.CurrentSetting.DoNotSellList.RemoveAll(dns => _drinks.Exists(drink => drink.Name == dns));
+            itemsToRemove.AddRange(wManagerSetting.CurrentSetting.DoNotSellList.Where(dns => _drinks.Exists(drink => drink.Name == dns)));
             if (PluginSettings.CurrentSetting.DrinkNbToBuy > 0)
-                wManagerSetting.CurrentSetting.DoNotSellList.AddRange(GetAllUsableDrinks().Select(drink => drink.Name));
-            wManagerSetting.CurrentSetting.DoNotMailList.RemoveAll(dns => _drinks.Exists(drink => drink.Name == dns));
-            if (PluginSettings.CurrentSetting.DrinkNbToBuy > 0)
-                wManagerSetting.CurrentSetting.DoNotMailList.AddRange(GetAllUsableDrinks().Select(drink => drink.Name));
+            {
+                itemsToAdd.AddRange(GetAllUsableDrinks().Select(drink => drink.Name));
+            }
 
-            wManagerSetting.CurrentSetting.Save();
+            itemsToRemove.RemoveAll(item => itemsToAdd.Contains(item));
+            WTSettings.RemoveItemFromDoNotSellAndMailList(itemsToRemove);
+            WTSettings.AddItemToDoNotSellAndMailList(itemsToAdd);
         }
 
         public static List<ModelItemTemplate> GetInstantPoisons => _poisons.FindAll(p => p.displayid == 13710);

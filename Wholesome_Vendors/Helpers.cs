@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using WholesomeToolbox;
 using WholesomeVendors.Blacklist;
 using WholesomeVendors.Database;
 using WholesomeVendors.Database.Models;
@@ -85,75 +86,6 @@ namespace WholesomeVendors
                 case PlayerFactions.Draenei: return Factions.Draenei;
                 case PlayerFactions.Worgen: return Factions.Worgen;
                 default: throw new Exception($"Couldn't get your faction");
-            }
-        }
-
-        public static void AddItemToDoNotSellAndMailList(string itemName)
-        {
-            bool newSettings = false;
-            if (!wManagerSetting.CurrentSetting.DoNotSellList.Contains(itemName))
-            {
-                Main.Logger($"Adding {itemName} to DoNotSell list");
-                wManagerSetting.CurrentSetting.DoNotSellList.Add(itemName);
-                newSettings = true;
-            }
-            if (!wManagerSetting.CurrentSetting.DoNotMailList.Contains(itemName))
-            {
-                Main.Logger($"Adding {itemName} to DoNotMail list");
-                wManagerSetting.CurrentSetting.DoNotMailList.Add(itemName);
-                newSettings = true;
-            }
-
-            if (newSettings)
-            {
-                wManagerSetting.CurrentSetting.Save();
-            }
-        }
-
-        public static void RemoveItemFromDoNotSellAndMailList(List<ModelItemTemplate> items)
-        {
-            bool newSettings = false;
-            foreach (ModelItemTemplate item in items)
-            {
-                if (wManagerSetting.CurrentSetting.DoNotSellList.Contains(item.Name))
-                {
-                    Main.Logger($"Removing {item.Name} from DoNotSell list");
-                    wManagerSetting.CurrentSetting.DoNotSellList.Remove(item.Name);
-                    newSettings = true;
-                }
-                if (wManagerSetting.CurrentSetting.DoNotMailList.Contains(item.Name))
-                {
-                    Main.Logger($"Removing {item.Name} from DoNotMail list");
-                    wManagerSetting.CurrentSetting.DoNotMailList.Remove(item.Name);
-                    newSettings = true;
-                }
-            }
-
-            if (newSettings)
-            {
-                wManagerSetting.CurrentSetting.Save();
-            }
-        }
-
-        public static void RemoveItemFromDoNotSellAndMailList(string itemName)
-        {
-            bool newSettings = false;
-            if (wManagerSetting.CurrentSetting.DoNotSellList.Contains(itemName))
-            {
-                Main.Logger($"Removing {itemName} from DoNotSell list");
-                wManagerSetting.CurrentSetting.DoNotSellList.Remove(itemName);
-                newSettings = true;
-            }
-            if (wManagerSetting.CurrentSetting.DoNotMailList.Contains(itemName))
-            {
-                Main.Logger($"Removing {itemName} from DoNotMail list");
-                wManagerSetting.CurrentSetting.DoNotMailList.Remove(itemName);
-                newSettings = true;
-            }
-
-            if (newSettings)
-            {
-                wManagerSetting.CurrentSetting.Save();
             }
         }
 

@@ -146,7 +146,7 @@ namespace WholesomeVendors.WVState
                     return;
 
                 ClearObsoletePoison(_poisonToBuy.displayid);
-                Helpers.AddItemToDoNotSellAndMailList(_poisonToBuy.Name);
+                WTSettings.AddItemToDoNotSellAndMailList(new List<string>() { _poisonToBuy.Name });
 
                 for (int i = 0; i <= 5; i++)
                 {
@@ -187,7 +187,9 @@ namespace WholesomeVendors.WVState
             foreach (ModelItemTemplate poison in MemoryDB.GetAllPoisons)
             {
                 if (poison.displayid == displayId)
-                    Helpers.RemoveItemFromDoNotSellAndMailList(poison.Name);
+                {
+                    WTSettings.RemoveItemFromDoNotSellAndMailList(new List<string>() { poison.Name });
+                }
             }
         }
 
