@@ -224,7 +224,8 @@ namespace WholesomeVendors.Database
                     if (item != null
                         && !wManagerSetting.CurrentSetting.DoNotSellList.Contains(item.Name)
                         && ShouldSellByQuality(item)
-                        && item.GetItemInfo.ItemSellPrice > 0)
+                        && item.GetItemInfo.ItemSellPrice > 0
+                        && (item.GetItemInfo.ItemMinLevel <= ObjectManager.Me.Level || !item.IsEquippableItem))
                     {
                         listItemsToSell.Add(item.Name);
                     }
