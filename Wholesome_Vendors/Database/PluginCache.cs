@@ -121,25 +121,47 @@ namespace WholesomeVendors.Database
             lock (_cacheLock)
             {
                 RecordBagItems();
-                RecordNbFreeSLots();
                 RecordItemsToSell();
-                RecordEmptyContainerSlots();
+                RecordBagSlotsAndFreeSlots();
             }
         }
 
-        private static void RecordEmptyContainerSlots()
+        private static void RecordBagSlotsAndFreeSlots()
         {
-            EmptyContainerSlots = Lua.LuaDoString<int>($@"
-                    local result = 0;
+            string[] result = Lua.LuaDoString<string[]>($@"
+                    local result = {{}}
+
+                    local nbEmptyBagSlots = 0;
                     for i=0,3,1
                     do
                         local bagLink = GetContainerItemLink(0, 0-i);
                         if (bagLink == nil) then
-                            result = result + 1
+                            nbEmptyBagSlots = nbEmptyBagSlots + 1
                         end
                     end
-                    return result;
+                    table.insert(result, nbEmptyBagSlots);
+
+                    local nbFreeSlots = 0;
+                    for i = 0, 5, 1 do
+                        local numberOfFreeSlots, BagType = GetContainerNumFreeSlots(i);
+                        if BagType == 0 then
+                            nbFreeSlots = nbFreeSlots + numberOfFreeSlots;
+                        end
+                    end
+                    table.insert(result, nbFreeSlots);
+                    
+                    return unpack(result);                    
                 ");
+
+            if (result.Length > 1)
+            {
+                EmptyContainerSlots = int.Parse(result[0]);
+                NbFreeSlots = int.Parse(result[1]);
+            }
+            else
+            {
+                Main.LoggerError($"RecordEmptyContainerSlots() -> Couldn't unpack result!");
+            }
         }
 
         private static void RecordContinentAndInstancee()
@@ -182,20 +204,6 @@ namespace WholesomeVendors.Database
                 }
                 RangedWeaponType = null;
             }
-        }
-
-        private static void RecordNbFreeSLots()
-        {
-            NbFreeSlots = Lua.LuaDoString<int>($@"
-                local result = 0;
-                for i = 0, 5, 1 do
-                    local numberOfFreeSlots, BagType = GetContainerNumFreeSlots(i);
-                    if BagType == 0 then
-                        result = result + numberOfFreeSlots;
-                    end
-                end
-                return result;
-            ");
         }
 
         private static void RecordBagItems()

@@ -37,13 +37,13 @@ public class BuyBagsState : State
                 || Fight.InFight
                 || _me.IsOnTaxi)
                 return false;
-            
+
             if (PluginCache.EmptyContainerSlots <= 0)
             {
                 WTSettings.RemoveItemFromDoNotSellAndMailList(MemoryDB.GetBags.Select(bag => bag.Name).ToList());
                 return false;
             }
-            
+
             if (BagInBags() != null)
             {
                 Main.Logger($"Equipping {BagInBags().Name}");
@@ -76,7 +76,7 @@ public class BuyBagsState : State
                     }
                 }
             }
-            
+
             return false;
         }
     }
@@ -107,8 +107,17 @@ public class BuyBagsState : State
                 {
                     Helpers.SellItems();
                     Thread.Sleep(1000);
+                    int nbEmptyContainerSlotsBeforeBuying = PluginCache.EmptyContainerSlots;
                     WTGossip.BuyItem(_bagToBuy.Name, 1, _bagToBuy.BuyCount);
                     Thread.Sleep(1000);
+
+                    // Check if already equipped by inventory plugin
+                    if (nbEmptyContainerSlotsBeforeBuying > PluginCache.EmptyContainerSlots)
+                    {
+                        Helpers.CloseWindow();
+                        return;
+                    }
+
                     if (ItemsManager.GetItemCountByNameLUA(_bagToBuy.Name) > 0)
                     {
                         Main.Logger($"Equipping {BagInBags().Name}");
