@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using WholesomeToolbox;
 using WholesomeVendors.WVSettings;
@@ -219,17 +220,38 @@ namespace WholesomeVendors.Database
             lock (_cacheLock)
             {
                 List<string> listItemsToSell = new List<string>();
+
                 foreach (WoWItem item in BagItems)
                 {
-                    if (item != null
-                        && !wManagerSetting.CurrentSetting.DoNotSellList.Contains(item.Name)
-                        && ShouldSellByQuality(item)
-                        && item.GetItemInfo.ItemSellPrice > 0
-                        && (item.GetItemInfo.ItemMinLevel <= ObjectManager.Me.Level || !item.IsEquippableItem))
+                    if (item == null
+                        || !ShouldSellByQuality(item)
+                        || item.GetItemInfo.ItemSellPrice <= 0)
+                    {
+                        continue;
+                    }
+
+                    // Don't sell items that can potentially be equipped later
+                    if (item.IsEquippableItem)
+                    {
+                        if (item.GetItemInfo.ItemMinLevel > ObjectManager.Me.Level)
+                            WTSettings.AddItemToDoNotSellAndMailList(new List<string>() { item.Name });
+                        else
+                            WTSettings.RemoveItemFromDoNotSellAndMailList(new List<string>() { item.Name });
+                    }
+
+                    if (!wManagerSetting.CurrentSetting.DoNotSellList.Contains(item.Name))
                     {
                         listItemsToSell.Add(item.Name);
                     }
                 }
+
+                WTSettings.AddItemToDoNotSellAndMailList(
+                    BagItems.Select(bItem => bItem.Name)
+                        .Where(item => !listItemsToSell.Contains(item))
+                        .ToList()
+                    );
+                WTSettings.RemoveItemFromDoNotSellAndMailList(listItemsToSell);
+
                 ItemsToSell = listItemsToSell;
             }
         }

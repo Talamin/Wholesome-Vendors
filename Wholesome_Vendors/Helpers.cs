@@ -170,6 +170,8 @@ namespace WholesomeVendors
                 return;
 
             Main.Logger($"Found {PluginCache.ItemsToSell.Count} items to sell");
+            // Careful, the list of item to sell we pass actually doesn't matter,
+            // it works even with an empty list and sells everything
             Vendor.SellItems(PluginCache.ItemsToSell, wManagerSetting.CurrentSetting.DoNotSellList, GetListQualityToSell());
             Thread.Sleep(1000);
         }
