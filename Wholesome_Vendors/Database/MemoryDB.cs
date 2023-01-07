@@ -281,7 +281,7 @@ namespace WholesomeVendors.Database
             {
                 Logging.WriteError("WriteJSONFromDBResult > " + e.Message);
             }
-            //Main.Logger($"Process time (JSON) : {jsonsWatch.ElapsedMilliseconds} ms");
+            Main.Logger($"Process time (JSON) : {jsonsWatch.ElapsedMilliseconds} ms");
 
             IsPopulated = true;
         }
@@ -297,6 +297,13 @@ namespace WholesomeVendors.Database
 
             List<string> itemsToAdd = new List<string>();
             List<string> itemsToRemove = new List<string>();
+
+            // ammo
+            itemsToRemove.AddRange(wManagerSetting.CurrentSetting.DoNotSellList.Where(dns => _ammos.Exists(ammo => ammo.Name == dns)));
+            if (PluginSettings.CurrentSetting.AmmoAmount > 0)
+            {
+                itemsToAdd.AddRange(GetUsableAmmos().Select(ammo => ammo.Name));
+            }
 
             // food
             itemsToRemove.AddRange(wManagerSetting.CurrentSetting.DoNotSellList.Where(dns => _foods.Exists(food => food.Name == dns)));
@@ -321,11 +328,10 @@ namespace WholesomeVendors.Database
         public static List<ModelItemTemplate> GetDeadlyPoisons => _poisons.FindAll(p => p.displayid == 13707);
         public static List<ModelItemTemplate> GetAllPoisons => _poisons;
 
-        public static List<ModelItemTemplate> GetAllDrinks => _drinks;
         public static List<ModelItemTemplate> GetAllUsableDrinks()
         {
             int minLevel = PluginSettings.CurrentSetting.BestDrink ? 10 : 20;
-            List<ModelItemTemplate> result = GetAllDrinks.FindAll(drink =>
+            List<ModelItemTemplate> result = _drinks.FindAll(drink =>
                 drink.RequiredLevel <= ObjectManager.Me.Level
                 && drink.RequiredLevel > ObjectManager.Me.Level - minLevel);
 
@@ -349,17 +355,31 @@ namespace WholesomeVendors.Database
 
         public static ModelSpell GetMyBestMount => GetKnownMounts.FirstOrDefault();
 
-        public static List<ModelItemTemplate> GetAllFoods => _foods;
         public static List<ModelItemTemplate> GetAllUsableFoods()
         {
             int minLevel = PluginSettings.CurrentSetting.BestFood ? 10 : 20;
-            List<ModelItemTemplate> result = GetAllFoods.FindAll(food =>
+            List<ModelItemTemplate> result = _foods.FindAll(food =>
                 food.RequiredLevel <= ObjectManager.Me.Level
                 && food.RequiredLevel > ObjectManager.Me.Level - minLevel);
 
             if (PluginSettings.CurrentSetting.FoodType != "Any")
                 result.RemoveAll(food => food.FoodType != FoodTypeCode[PluginSettings.CurrentSetting.FoodType]);
 
+            return result;
+        }
+
+        public static List<ModelItemTemplate> GetUsableAmmos()
+        {
+            string rangedWeaponType = PluginCache.RangedWeaponType;
+            List<ModelItemTemplate> result = new List<ModelItemTemplate>();
+            if (rangedWeaponType == "Bows" || rangedWeaponType == "Crossbows")
+            {
+                result = _ammos.FindAll(ammo => ammo.Subclass == 2 && ammo.RequiredLevel <= ObjectManager.Me.Level);
+            }
+            if (rangedWeaponType == "Guns")
+            {
+                result = _ammos.FindAll(ammo => ammo.Subclass == 3 && ammo.RequiredLevel <= ObjectManager.Me.Level);
+            }
             return result;
         }
 
@@ -372,20 +392,6 @@ namespace WholesomeVendors.Database
             { "Fungus", 5 },
             { "Fruit", 6 },
         };
-
-        public static List<ModelItemTemplate> GetUsableAmmos()
-        {
-            string rangedWeaponType = PluginCache.RangedWeaponType;
-            if (rangedWeaponType == "Bows" || rangedWeaponType == "Crossbows")
-            {
-                return _ammos.FindAll(ammo => ammo.Subclass == 2 && ammo.RequiredLevel <= ObjectManager.Me.Level);
-            }
-            if (rangedWeaponType == "Guns")
-            {
-                return _ammos.FindAll(ammo => ammo.Subclass == 3 && ammo.RequiredLevel <= ObjectManager.Me.Level);
-            }
-            return null;
-        }
 
         public static ModelNpcVendor GetNearestItemVendor(ModelItemTemplate item)
         {
@@ -521,7 +527,6 @@ namespace WholesomeVendors.Database
 
         private static void CreateIndices()
         {
-            Stopwatch stopwatchIndices = Stopwatch.StartNew();
             ExecuteQuery($@"
                 CREATE INDEX IF NOT EXISTS `idx_creature_id` ON `creature` (`id`);
                 CREATE INDEX IF NOT EXISTS `idx_creature_template_entry` ON `creature_template` (`entry`);
@@ -531,7 +536,6 @@ namespace WholesomeVendors.Database
                 CREATE INDEX IF NOT EXISTS `idx_item_template_spellid_1` ON `item_template` (`spellid_1`);
                 CREATE INDEX IF NOT EXISTS `idx_npc_trainer_spellid` ON `npc_trainer` (`SpellID`);
             ");
-            //Main.Logger($"Process time (Indices) : {stopwatchIndices.ElapsedMilliseconds} ms");
         }
 
         private static void ExecuteQuery(string query)

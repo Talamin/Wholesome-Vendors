@@ -111,8 +111,8 @@ namespace WholesomeVendors.WVState
                 if (Helpers.NpcIsAbsentOrDead(_ammoVendor.CreatureTemplate))
                     return;
 
-                WTSettings.RemoveItemFromDoNotSellAndMailList(MemoryDB.GetUsableAmmos().Select(ammo => ammo.Name).ToList());
-                WTSettings.AddItemToDoNotSellAndMailList(new List<string>() { _ammoToBuy.Name });
+                //WTSettings.RemoveItemFromDoNotSellAndMailList(MemoryDB.GetUsableAmmos().Select(ammo => ammo.Name).ToList());
+                //WTSettings.AddItemToDoNotSellAndMailList(new List<string>() { _ammoToBuy.Name });
 
                 for (int i = 0; i <= 5; i++)
                 {
