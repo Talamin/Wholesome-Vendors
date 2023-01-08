@@ -231,7 +231,7 @@ namespace WholesomeVendors.Database
                     }
 
                     // Don't sell items that can potentially be equipped later
-                    if (item.IsEquippableItem)
+                    if (item.IsEquippableItem && item.GetItemInfo.ItemEquipLoc != "INVTYPE_AMMO")
                     {
                         if (item.GetItemInfo.ItemMinLevel > ObjectManager.Me.Level && item.GetItemInfo.ItemRarity > 1)
                             WTSettings.AddItemToDoNotSellAndMailList(new List<string>() { item.Name });
