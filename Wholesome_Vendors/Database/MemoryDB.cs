@@ -98,7 +98,9 @@ namespace WholesomeVendors.Database
                     AND BuyCount = 200
                     AND Flags = 0
                     AND AllowableClass = -1
-                    AND RequiredReputationFaction  = 0;
+                    AND RequiredReputationFaction  = 0
+                    AND FlagsExtra = 0
+                    AND bonding = 0;
             ";
             List<ModelItemTemplate> ammos = _con.Query<ModelItemTemplate>(ammoSql)
                 .OrderByDescending(ammo => ammo.RequiredLevel)
