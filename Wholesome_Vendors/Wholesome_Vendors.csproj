@@ -4,6 +4,7 @@
   <Import Project="..\packages\Costura.Fody.5.0.2\build\Costura.Fody.props" Condition="Exists('..\packages\Costura.Fody.5.0.2\build\Costura.Fody.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
+    <AllowedReferenceRelatedFileExtensions>.pdb</AllowedReferenceRelatedFileExtensions>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{7A726A5B-7BB2-4204-9555-0C19984A9377}</ProjectGuid>
@@ -40,10 +41,11 @@
     <OutputPath>..\..\..\WoW Wotlk\WRobot WOTLK\Plugins\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
+    <DebugType>none</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
   </PropertyGroup>
   <PropertyGroup>
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
@@ -52,11 +54,6 @@
     <Reference Include="Costura, Version=5.0.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Costura.Fody.5.0.2\lib\netstandard1.0\Costura.dll</HintPath>
       <Private>False</Private>
-    </Reference>
-    <Reference Include="Dapper, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Dapper.2.0.123\lib\net461\Dapper.dll</HintPath>
-      <Private>True</Private>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.dll</HintPath>
@@ -111,19 +108,6 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Core" />
-    <Reference Include="System.Data.SQLite, Version=1.0.113.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
-      <HintPath>..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.113.3\lib\net46\System.Data.SQLite.dll</HintPath>
-      <Private>True</Private>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="System.Data.SQLite.EF6, Version=1.0.113.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Data.SQLite.EF6.1.0.113.0\lib\net46\System.Data.SQLite.EF6.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.Data.SQLite.Linq, Version=1.0.113.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Data.SQLite.Linq.1.0.113.0\lib\net46\System.Data.SQLite.Linq.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="System.Diagnostics.DiagnosticSource, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Diagnostics.DiagnosticSource.4.3.0\lib\net46\System.Diagnostics.DiagnosticSource.dll</HintPath>
       <Private>False</Private>
@@ -254,10 +238,10 @@
   <ItemGroup>
     <Compile Include="AutoUpdater.cs" />
     <Compile Include="Blacklist\NPCBlackList.cs" />
+    <Compile Include="Database\Models\FullJSONModel.cs" />
     <Compile Include="Database\Models\ModelNpcTrainer.cs" />
     <Compile Include="Database\Models\ModelSpell.cs" />
     <Compile Include="Database\PluginCache.cs" />
-    <Compile Include="Database\DBUpdater.cs" />
     <Compile Include="Database\MemoryDB.cs" />
     <Compile Include="Database\Models\ModelCreature.cs" />
     <Compile Include="Database\Models\ModelCreatureTemplate.cs" />
@@ -281,6 +265,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <EmbeddedResource Include="Database\WVM.zip" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -301,7 +286,6 @@
         <Link Condition="$([MSBuild]::ValueOrDefault('%(Identity)', '').Contains('x86'))">costura32\%(Filename)%(Extension)</Link>
         <Link Condition="$([MSBuild]::ValueOrDefault('%(Identity)', '').Contains('x64'))">costura64\%(Filename)%(Extension)</Link>
       </EmbeddedResource>
-      <EmbeddedResource Include="Database\Json\WVM.json" />
     </ItemGroup>
   </Target>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

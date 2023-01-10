@@ -2,8 +2,8 @@
 {
     public class ModelGameObjectTemplate
     {
-        public string name { get; }
-        public int entry { get; }
+        public string name { get; set; }
+        public int entry { get; set; }
 
         public ModelGameObject GameObject { get; set; }
     }
