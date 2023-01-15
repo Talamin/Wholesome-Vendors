@@ -2,11 +2,11 @@
 {
     public class ModelSpell
     {
-        public ModelItemTemplate AssociatedItem;
-        public ModelNpcTrainer NpcTrainer;
+        public ModelItemTemplate AssociatedItem { get; set; }
+        public ModelNpcTrainer NpcTrainer { get; set; }
 
-        public int Id { get; }
-        public int effectBasePoints_2 { get; }
-        public string name_lang_1 { get; }
+        public int Id { get; set; }
+        public int effectBasePoints_2 { get; set; }
+        public string name_lang_1 { get; set; }
     }
 }

@@ -116,6 +116,5 @@ namespace WholesomeVendors.WVState
                 NPCBlackList.AddNPCToBlacklist(_vendorNpc.entry);
             }
         }
-
     }
 }

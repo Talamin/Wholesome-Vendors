@@ -4,17 +4,17 @@ namespace WholesomeVendors.Database.Models
 {
     public class ModelItemTemplate
     {
-        public int Entry { get; }
-        public string Name { get; }
-        public int FoodType { get; }
-        public int BuyPrice { get; }
-        public int BuyCount { get; }
-        public int Subclass { get; }
-        public int RequiredLevel { get; }
-        public int displayid { get; }
-        public int ContainerSlots { get; }
-        public int AllowableRace { get; }
+        public int Entry { get; set; }
+        public string Name { get; set; }
+        public int FoodType { get; set; }
+        public int BuyPrice { get; set; }
+        public int BuyCount { get; set; }
+        public int Subclass { get; set; }
+        public int RequiredLevel { get; set; }
+        public int displayid { get; set; }
+        public int ContainerSlots { get; set; }
+        public int AllowableRace { get; set; }
 
-        public List<ModelNpcVendor> VendorsSellingThisItem = new List<ModelNpcVendor>();
+        public List<ModelNpcVendor> VendorsSellingThisItem { get; set; }
     }
 }

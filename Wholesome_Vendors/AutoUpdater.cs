@@ -1,6 +1,7 @@
 ﻿using robotManager.Helpful;
 using robotManager.Products;
 using System;
+using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
@@ -58,7 +59,8 @@ namespace WholesomeVendors
                 if (onlineFileContent != null && onlineFileContent.Length > 0)
                 {
                     Main.Logger($"Updating your version {currentVersion} to online Version {onlineVersion}");
-                    System.IO.File.WriteAllBytes(currentFile, onlineFileContent); // replace user file by online file
+                    File.WriteAllBytes(currentFile, onlineFileContent); // Replace user file by online file
+                    File.Delete(Others.GetCurrentDirectory + @"Data\WVM.json"); // Delete json to retrigger an extraction
                     Thread.Sleep(1000);
                     return true;
                 }

@@ -6,11 +6,11 @@ namespace WholesomeVendors.Database.Models
     {
         public List<ModelCreatureTemplate> VendorTemplates = new List<ModelCreatureTemplate>();
 
-        public int ID { get; }
-        public int SpellID { get; }
-        public int MoneyCost { get; }
-        public int ReqSkillLine { get; }
-        public int ReqSkillRank { get; }
-        public int ReqLevel { get; }
+        public int ID { get; set; }
+        public int SpellID { get; set; }
+        public int MoneyCost { get; set; }
+        public int ReqSkillLine { get; set; }
+        public int ReqSkillRank { get; set; }
+        public int ReqLevel { get; set; }
     }
 }

@@ -229,7 +229,6 @@ namespace WholesomeVendors.Database
                     {
                         continue;
                     }
-
                     // Don't sell items that can potentially be equipped later
                     if (item.IsEquippableItem && item.GetItemInfo.ItemEquipLoc != "INVTYPE_AMMO")
                     {

@@ -5,8 +5,6 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
-using System.IO;
-using System.Net;
 using WholesomeToolbox;
 using WholesomeVendors;
 using WholesomeVendors.Blacklist;
@@ -19,7 +17,6 @@ using Timer = robotManager.Helpful.Timer;
 
 public class Main : IPlugin
 {
-    //private readonly BackgroundWorker _pulseThread = new BackgroundWorker();
     private static string Name = "Wholesome Vendors";
     public static bool IsLaunched;
     private Timer stateAddTimer;
@@ -46,41 +43,7 @@ public class Main : IPlugin
 
             Logger($"Launching version {version} on client {WTLua.GetWoWVersion}");
 
-            if (File.Exists("Data/WoWDB335"))
-            {
-                var databaseUpdater = new DBUpdater();
-                if (databaseUpdater.CheckUpdate())
-                {
-                    databaseUpdater.Update();
-                }
-            }
-            else
-            {
-                Logger($"Downloading the Wholesome Database, please wait...");
-
-                using (var client = new WebClient())
-                {
-                    try
-                    {
-                        client.DownloadFile("https://s3-eu-west-1.amazonaws.com/wholesome.team/WoWDb335.zip",
-                        "Data/wholesome_db_temp.zip");
-                    }
-                    catch (WebException e)
-                    {
-                        throw new Exception($"Failed to download/write the Wholesome Database!\n" + e.Message + "\n" + e.StackTrace);
-                    }
-                }
-
-                Logger($"Extracting the Wholesome Database.");
-
-                System.IO.Compression.ZipFile.ExtractToDirectory("Data/wholesome_db_temp.zip", "Data");
-                File.Delete("Data/wholesome_db_temp.zip");
-
-                Logger($"Successfully downloaded the Wholesome Database");
-            }
-
             FiniteStateMachineEvents.OnRunState += StateAddEventHandler;
-            //_pulseThread.RunWorkerAsync();
 
             if (PluginSettings.CurrentSetting.DrinkNbToBuy > 0 || PluginSettings.CurrentSetting.FoodNbToBuy > 0)
             {
@@ -105,7 +68,6 @@ public class Main : IPlugin
         IsLaunched = false;
         Helpers.RestoreWRobotUserSettings();
         FiniteStateMachineEvents.OnRunState -= StateAddEventHandler;
-        //_pulseThread.Dispose();
         Logger("Disposed");
     }
 
@@ -124,7 +86,7 @@ public class Main : IPlugin
             FiniteStateMachineEvents.OnRunState -= StateAddEventHandler;
             return;
         }
-        
+
         if (engine.States.Count <= 5)
         {
             if (stateAddTimer == null)
@@ -133,7 +95,7 @@ public class Main : IPlugin
             }
             return;
         }
-        
+
         if (!engine.States.Exists(eng => eng.DisplayName == "To Town"))
         {
             LoggerError("The product you're currently using doesn't have a To Town state. Can't start.");
@@ -147,7 +109,7 @@ public class Main : IPlugin
         if (stateAddTimer.IsReady && engine != null)
         {
             stateAddTimer = new Timer(3000);
-            
+
             WTState.AddState(engine, new BuyPoisonState(), "To Town");
             WTState.AddState(engine, new BuyBagsState(), "To Town");
             WTState.AddState(engine, new BuyMountState(), "To Town");
@@ -157,7 +119,7 @@ public class Main : IPlugin
             WTState.AddState(engine, new BuyAmmoState(), "To Town");
             WTState.AddState(engine, new RepairState(), "To Town");
             WTState.AddState(engine, new SellState(), "To Town");
-            
+
             engine.RemoveStateByName("Trainers");
             _statesAdded = true;
         }

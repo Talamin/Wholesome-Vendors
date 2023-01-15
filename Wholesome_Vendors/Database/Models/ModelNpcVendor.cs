@@ -2,9 +2,9 @@
 {
     public class ModelNpcVendor
     {
-        public int entry { get; }
-        public int item { get; }
+        public int entry { get; set; }
+        public int item { get; set; }
 
-        public ModelCreatureTemplate CreatureTemplate;
+        public ModelCreatureTemplate CreatureTemplate { get; set; }
     }
 }
