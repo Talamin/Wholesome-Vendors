@@ -75,13 +75,24 @@ namespace WholesomeVendors.WVState
                 if (Helpers.NpcIsAbsentOrDead(_trainerNpc))
                     return;
 
-                GoToTask.ToPositionAndIntecractWithNpc(_trainerNpc.Creature.GetSpawnPosition, _trainerNpc.entry);
-                Trainer.TrainingSpell();
-                Thread.Sleep(800 + Usefuls.Latency);
-                SpellManager.UpdateSpellBook();
-                PluginSettings.CurrentSetting.LastLevelTrained = (int)ObjectManager.Me.Level;
-                PluginSettings.CurrentSetting.Save();
-                Helpers.CloseWindow();
+                for (int i = 0; i <= 5; i++)
+                {
+                    Main.Logger($"Attempt {i + 1}");
+                    GoToTask.ToPositionAndIntecractWithNpc(_trainerNpc.Creature.GetSpawnPosition, _trainerNpc.entry, i);
+                    Thread.Sleep(1000);
+                    WTGossip.ClickOnFrameButton("StaticPopup1Button2"); // discard hearthstone popup
+                    if (Lua.LuaDoString<int>($"return ClassTrainerFrame:IsVisible()") > 0)
+                    {
+                        Trainer.TrainingSpell();
+                        Thread.Sleep(800 + Usefuls.Latency);
+                        SpellManager.UpdateSpellBook();
+                        PluginSettings.CurrentSetting.LastLevelTrained = (int)ObjectManager.Me.Level;
+                        PluginSettings.CurrentSetting.Save();
+                        Helpers.CloseWindow();
+                        return;
+                    }
+                    Helpers.CloseWindow();
+                }
             }
         }
     }
