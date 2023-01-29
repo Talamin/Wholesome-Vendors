@@ -60,9 +60,17 @@ namespace WholesomeVendors.WVState
                     && Me.Level >= 40
                     && !PluginCache.Know150Mount)
                 {
-                    int neededMoney = 100000; // mount cost
-                    if (PluginCache.RidingSkill < 75) neededMoney += 40000; // training cost 75
-                    if (PluginCache.RidingSkill < 150) neededMoney += 500000; // training cost 75
+                    int neededMoney = PluginSettings.CurrentSetting.MountsAreFree ? 0 : 100000; // mount cost
+                    if (PluginCache.RidingSkill < 75
+                        && !PluginSettings.CurrentSetting.MountSkillsAreFree)
+                    {
+                        neededMoney += 40000; // training cost 75
+                    }
+                    if (PluginCache.RidingSkill < 150
+                        && !PluginSettings.CurrentSetting.MountSkillsAreFree)
+                    {
+                        neededMoney += 500000; // training cost 150
+                    }
 
                     if (PluginCache.Money >= neededMoney)
                     {
@@ -89,8 +97,12 @@ namespace WholesomeVendors.WVState
                     && !PluginCache.Know75Mount
                     && !PluginCache.Know150Mount)
                 {
-                    int neededMoney = 10000; // mount cost
-                    if (PluginCache.RidingSkill < 75) neededMoney += 40000; // training cost
+                    int neededMoney = PluginSettings.CurrentSetting.MountsAreFree ? 0 : 10000; // mount cost
+                    if (PluginCache.RidingSkill < 75
+                        && !PluginSettings.CurrentSetting.MountSkillsAreFree)
+                    {
+                        neededMoney += 40000; // training cost 75
+                    }
 
                     if (PluginCache.Money >= neededMoney)
                     {

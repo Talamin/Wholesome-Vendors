@@ -210,6 +210,20 @@ namespace WholesomeVendors.WVSettings
         [Description("Buys a random epic mount (+100% speed) if you don't already have one. Only works if you are on the right continent.")]
         public bool BuyEpicMount { get; set; }
 
+        [Setting]
+        [DefaultValue(false)]
+        [Category("Mount")]
+        [DisplayName("Mount skills are free")]
+        [Description("Check this if the mount skills are free on your server")]
+        public bool MountSkillsAreFree { get; set; }
+
+        [Setting]
+        [DefaultValue(false)]
+        [Category("Mount")]
+        [DisplayName("Mounts are free")]
+        [Description("Check this if the mounts are free on your server")]
+        public bool MountsAreFree { get; set; }
+
         public string Databasetype { get; set; }
         public int DriveByDistance { get; set; }
         public double LastUpdateDate { get; set; }
@@ -252,6 +266,8 @@ namespace WholesomeVendors.WVSettings
 
             BuyGroundMount = false;
             BuyEpicMount = false;
+            MountSkillsAreFree = false;
+            MountsAreFree = false;
 
             FoodType = "Any";
 
