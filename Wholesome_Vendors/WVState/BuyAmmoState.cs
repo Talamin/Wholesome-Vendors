@@ -104,7 +104,9 @@ namespace WholesomeVendors.WVState
             Vector3 vendorPos = _ammoVendor.CreatureTemplate.Creature.GetSpawnPosition;
 
             if (_me.Position.DistanceTo(vendorPos) >= 10)
+            {
                 GoToTask.ToPositionAndIntecractWithNpc(vendorPos, _ammoVendor.entry);
+            }
 
             if (_me.Position.DistanceTo(vendorPos) < 10)
             {

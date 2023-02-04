@@ -78,7 +78,11 @@ namespace WholesomeVendors.Database
                 _repairers = fullJsonModel.Repairers;
                 _trainers = fullJsonModel.Trainers
                     .FindAll(trainer => trainer.subname != null && trainer.subname.Contains(ObjectManager.Me.WowClass.ToString()));
-                _mailboxes = fullJsonModel.Mailboxes;
+                _mailboxes = fullJsonModel.Mailboxes
+                    .FindAll(mailbox => mailbox.GameObject.map == 0 
+                        || mailbox.GameObject.map == 1
+                        || mailbox.GameObject.map == 571
+                        || mailbox.GameObject.map == 530);
                 _mounts = fullJsonModel.Mounts
                     .FindAll(mount => mount.AssociatedItem != null && (mount.AssociatedItem.AllowableRace & (int)Helpers.GetFactions()) != 0);
                 PluginCache.RecordKnownMounts();
@@ -86,6 +90,37 @@ namespace WholesomeVendors.Database
                 foreach (ModelSpell ridingSpell in _ridingSpells)
                 {
                     ridingSpell.NpcTrainer.VendorTemplates.RemoveAll(npc => !npc.IsFriendly);
+                }
+
+                // TEMP
+                List< ModelCreatureTemplate> allVendors = new List<ModelCreatureTemplate>();
+                allVendors.AddRange(_repairers);
+                allVendors.AddRange(_trainers);
+                allVendors.AddRange(_sellers);
+                foreach (ModelGameObjectTemplate mailbox in _mailboxes)
+                {
+                    Main.Logger($"--------- Mailbox {mailbox.name} in {mailbox.GameObject.map}");
+                    List<ModelCreatureTemplate> sellersAroundMB = allVendors
+                        .Where(npc => npc.Creature.GetSpawnPosition.DistanceTo(mailbox.GameObject.GetSpawnPosition) < 200)
+                        .ToList();
+                    Logging.Write($".go xyz {mailbox.GameObject.position_x.ToString().Replace(",", ".")} {mailbox.GameObject.position_y.ToString().Replace(",", ".")} {(mailbox.GameObject.position_z + 5).ToString().Replace(",", ".")} {mailbox.GameObject.map}");
+                    
+                    if (sellersAroundMB.Count <= 0)
+                    {
+                        Main.LoggerError("NO SELLER AROUND !");
+                    }
+                    else if (sellersAroundMB.All(seller => seller.IsNeutralOrFriendly))
+                    {
+                        Main.Logger($"All sellers are friendly");
+                    }
+                    else if (sellersAroundMB.All(seller => seller.IsHostile))
+                    {
+                        Main.Logger($"All sellers are hostile");
+                    }
+                    else
+                    {
+                        Main.LoggerError($"Sellers are MIXED {sellersAroundMB.FindAll(s => s.IsNeutralOrFriendly).Count} friendly / {sellersAroundMB.FindAll(s => s.IsHostile).Count} hostile");
+                    }
                 }
             }
 

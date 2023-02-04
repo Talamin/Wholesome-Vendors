@@ -215,13 +215,13 @@ namespace WholesomeVendors
             if (!PluginSettings.CurrentSetting.AllowMail)
                 return;
 
-            Main.Logger($"Checking for a mailbox nearby {npc.name}");
+            Main.Logger($"Checking for a mailbox near {npc.name}");
 
             ModelGameObjectTemplate mailbox = MemoryDB.GetNearestMailBoxFrom(npc);
 
             if (mailbox == null)
             {
-                Main.Logger($"Couldn't find a mailbox nearby {npc.name}");
+                Main.Logger($"Couldn't find a mailbox near {npc.name}");
                 return; 
             }
             else

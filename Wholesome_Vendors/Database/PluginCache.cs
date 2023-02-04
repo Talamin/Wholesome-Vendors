@@ -229,13 +229,18 @@ namespace WholesomeVendors.Database
                     {
                         continue;
                     }
+
                     // Don't sell items that can potentially be equipped later
                     if (item.IsEquippableItem && item.GetItemInfo.ItemEquipLoc != "INVTYPE_AMMO")
                     {
                         if (item.GetItemInfo.ItemMinLevel > ObjectManager.Me.Level && item.GetItemInfo.ItemRarity > 1)
+                        {
                             WTSettings.AddItemToDoNotSellAndMailList(new List<string>() { item.Name });
+                        }
                         else
+                        {
                             WTSettings.RemoveItemFromDoNotSellAndMailList(new List<string>() { item.Name });
+                        }
                     }
 
                     if (!wManagerSetting.CurrentSetting.DoNotSellList.Contains(item.Name))
