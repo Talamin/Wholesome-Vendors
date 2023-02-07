@@ -4,77 +4,83 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using WholesomeToolbox;
-using WholesomeVendors.Blacklist;
-using WholesomeVendors.Database;
 using WholesomeVendors.Database.Models;
+using WholesomeVendors.Managers;
+using WholesomeVendors.Utils;
 using WholesomeVendors.WVSettings;
 using wManager;
 using wManager.Wow.Bot.Tasks;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
-using Timer = robotManager.Helpful.Timer;
 
 namespace WholesomeVendors.WVState
 {
     public class BuyFoodState : State
     {
-        public override string DisplayName { get; set; } = "WV Buying Food";
+        public override string DisplayName { get; set; } = "WV Buy Food";
+
+        private readonly IPluginCacheManager _pluginCacheManager;
+        private readonly IMemoryDBManager _memoryDBManager;
+        private readonly IVendorTimerManager _vendorTimerManager;
+        private readonly IBlackListManager _blackListManager;
 
         private readonly WoWLocalPlayer _me = ObjectManager.Me;
-        private Timer _stateTimer = new Timer();
-        private ModelNpcVendor _foodVendor;
+        private ModelCreatureTemplate _foodVendor;
         private ModelItemTemplate _foodToBuy;
         private int _nbFoodsInBags;
         private bool _usingDungeonProduct;
 
         private int FoodAmountSetting => PluginSettings.CurrentSetting.FoodNbToBuy;
-        private int AmountToBuy => FoodAmountSetting - GetNbOfFoodInBags();
+        private int AmountToBuy => FoodAmountSetting - _pluginCacheManager.NbFoodsInBags;
 
-        public BuyFoodState()
+        public BuyFoodState(
+            IMemoryDBManager memoryDBManager,
+            IPluginCacheManager pluginCacheManager,
+            IVendorTimerManager vendorTimerManager,
+            IBlackListManager blackListManager)
         {
             _usingDungeonProduct = Helpers.UsingDungeonProduct();
+            _memoryDBManager = memoryDBManager;
+            _pluginCacheManager = pluginCacheManager;
+            _vendorTimerManager = vendorTimerManager;
+            _blackListManager = blackListManager;
         }
 
         public override bool NeedToRun
         {
             get
             {
-                if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
-                    || !Main.IsLaunched
-                    || !_stateTimer.IsReady
-                    || !MemoryDB.IsPopulated
-                    || PluginCache.InLoadingScreen
-                    || !PluginCache.Initialized
+                if (!Main.IsLaunched
+                    || _pluginCacheManager.InLoadingScreen
                     || Fight.InFight
                     || _me.Level <= 3
                     || FoodAmountSetting <= 0
-                    || _me.IsOnTaxi)
+                    || _me.IsOnTaxi
+                    || !Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause)
                     return false;
 
                 _foodToBuy = null;
                 _foodVendor = null;
 
-                _nbFoodsInBags = GetNbOfFoodInBags();
+                _nbFoodsInBags = _pluginCacheManager.NbFoodsInBags;
 
-                if (PluginCache.IsInInstance)
+                if (_pluginCacheManager.IsInInstance)
                 {
                     return false;
                 }
 
-                _stateTimer = new Timer(5000);
-
                 if (_nbFoodsInBags <= FoodAmountSetting / 2 || _usingDungeonProduct)
                 {
                     int amountToBuy = AmountToBuy;
-                    Dictionary<ModelItemTemplate, ModelNpcVendor> potentialFoodVendors = new Dictionary<ModelItemTemplate, ModelNpcVendor>();
-                    foreach (ModelItemTemplate food in MemoryDB.GetAllUsableFoods())
+                    Dictionary<ModelItemTemplate, ModelCreatureTemplate> potentialFoodVendors = new Dictionary<ModelItemTemplate, ModelCreatureTemplate>();
+                    foreach (ModelItemTemplate food in _memoryDBManager.GetAllUsableFoods())
                     {
-                        if (Helpers.HaveEnoughMoneyFor(amountToBuy, food))
+                        if (_pluginCacheManager.HaveEnoughMoneyFor(amountToBuy, food))
                         {
-                            ModelNpcVendor vendor = MemoryDB.GetNearestItemVendor(food);
+                            ModelNpcVendor vendor = _memoryDBManager.GetNearestItemVendor(food);
                             if (vendor != null)
                             {
-                                potentialFoodVendors.Add(food, vendor);
+                                potentialFoodVendors.Add(food, vendor.CreatureTemplate);
                             }
                         }
                     }
@@ -82,21 +88,21 @@ namespace WholesomeVendors.WVState
                     if (potentialFoodVendors.Count > 0)
                     {
                         Vector3 myPos = ObjectManager.Me.Position;
-                        var sortedDic = potentialFoodVendors.OrderBy(kvp => myPos.DistanceTo(kvp.Value.CreatureTemplate.Creature.GetSpawnPosition));
+                        var sortedDic = potentialFoodVendors.OrderBy(kvp => myPos.DistanceTo(kvp.Value.Creature.GetSpawnPosition));
                         _foodToBuy = sortedDic.First().Key;
                         _foodVendor = sortedDic.First().Value;
 
                         if (_nbFoodsInBags <= FoodAmountSetting / 10
                             || _usingDungeonProduct && _nbFoodsInBags < FoodAmountSetting)
                         {
-                            DisplayName = $"Buying {amountToBuy} x {_foodToBuy.Name} at vendor {_foodVendor.CreatureTemplate.name}";
+                            DisplayName = $"Buying {amountToBuy} x {_foodToBuy.Name} at vendor {_foodVendor.name}";
                             return true;
                         }
 
                         if (_nbFoodsInBags <= FoodAmountSetting / 2
-                            && ObjectManager.Me.Position.DistanceTo(_foodVendor.CreatureTemplate.Creature.GetSpawnPosition) < PluginSettings.CurrentSetting.DriveByDistance)
+                            && ObjectManager.Me.Position.DistanceTo(_foodVendor.Creature.GetSpawnPosition) < PluginSettings.CurrentSetting.DriveByDistance)
                         {
-                            DisplayName = $"Drive-by buying {amountToBuy} x {_foodToBuy.Name} at vendor {_foodVendor.CreatureTemplate.name}";
+                            DisplayName = $"Drive-by buying {amountToBuy} x {_foodToBuy.Name} at vendor {_foodVendor.name}";
                             return true;
                         }
                     }
@@ -108,69 +114,38 @@ namespace WholesomeVendors.WVState
 
         public override void Run()
         {
-            Main.Logger(DisplayName);
-            Vector3 vendorPos = _foodVendor.CreatureTemplate.Creature.GetSpawnPosition;
+            Vector3 vendorPosition = _foodVendor.Creature.GetSpawnPosition;
 
-            Helpers.CheckMailboxNearby(_foodVendor.CreatureTemplate);
-
-            if (_me.Position.DistanceTo(vendorPos) >= 10)
-                GoToTask.ToPosition(vendorPos);
-
-            if (_me.Position.DistanceTo(vendorPos) < 10)
+            if (!Helpers.TravelToVendorRange(_vendorTimerManager, _foodVendor, DisplayName)
+                || Helpers.NpcIsAbsentOrDead(_blackListManager, _foodVendor))
             {
-                if (Helpers.NpcIsAbsentOrDead(_foodVendor.CreatureTemplate))
-                    return;
+                return;
+            }
 
-                for (int i = 0; i <= 5; i++)
+            for (int i = 0; i <= 5; i++)
+            {
+                Logger.Log($"Attempt {i + 1}");
+                GoToTask.ToPositionAndIntecractWithNpc(vendorPosition, _foodVendor.entry, i);
+                Thread.Sleep(1000);
+                WTGossip.ClickOnFrameButton("StaticPopup1Button2"); // discard hearthstone popup
+                if (WTGossip.IsVendorGossipOpen)
                 {
-                    Main.Logger($"Attempt {i + 1}");
-                    GoToTask.ToPositionAndIntecractWithNpc(vendorPos, _foodVendor.entry, i);
+                    Helpers.SellItems(_pluginCacheManager);
                     Thread.Sleep(1000);
-                    WTGossip.ClickOnFrameButton("StaticPopup1Button2"); // discard hearthstone popup
-                    if (WTGossip.IsVendorGossipOpen)
+                    WTGossip.BuyItem(_foodToBuy.Name, AmountToBuy, _foodToBuy.BuyCount);
+                    Thread.Sleep(1000);
+
+                    if (_pluginCacheManager.NbFoodsInBags >= FoodAmountSetting)
                     {
-                        Helpers.SellItems();
-                        Thread.Sleep(1000);
-                        WTGossip.BuyItem(_foodToBuy.Name, AmountToBuy, _foodToBuy.BuyCount);
-                        Thread.Sleep(1000);
-
-                        if (GetNbOfFoodInBags() >= FoodAmountSetting)
-                        {
-                            Helpers.CloseWindow();
-                            return;
-                        }
+                        Helpers.CloseWindow();
+                        return;
                     }
-                    Helpers.CloseWindow();
                 }
-
-                Main.Logger($"Failed to buy {_foodToBuy.Name}, blacklisting vendor");
-                NPCBlackList.AddNPCToBlacklist(_foodVendor.entry);
-            }
-        }
-
-        private int GetNbOfFoodInBags()
-        {
-            int nbFoodsInBags = 0;
-            List<WoWItem> items = PluginCache.BagItems;
-            List<ModelItemTemplate> allFoods = MemoryDB.GetAllUsableFoods();
-            string foodToSet = null;
-            foreach (WoWItem item in items)
-            {
-                if (allFoods.Exists(ua => ua.Entry == item.Entry))
-                {
-                    nbFoodsInBags += ItemsManager.GetItemCountById((uint)item.Entry);
-                    foodToSet = item.Name;
-                }
+                Helpers.CloseWindow();
             }
 
-            if (foodToSet != null && wManagerSetting.CurrentSetting.FoodName != foodToSet)
-            {
-                Main.Logger($"Setting food to {foodToSet}");
-                wManagerSetting.CurrentSetting.FoodName = foodToSet;
-                wManagerSetting.CurrentSetting.Save();
-            }
-
-            return nbFoodsInBags;
+            Logger.Log($"Failed to buy {_foodToBuy.Name}, blacklisting vendor");
+            _blackListManager.AddNPCToBlacklist(_foodVendor.entry);
         }
     }
 }

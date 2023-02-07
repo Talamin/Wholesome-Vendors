@@ -1,12 +1,11 @@
-﻿using robotManager.Products;
+﻿using robotManager.Helpful;
+using robotManager.Products;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using WholesomeToolbox;
-using WholesomeVendors.Blacklist;
-using WholesomeVendors.Database;
 using WholesomeVendors.Database.Models;
+using WholesomeVendors.Managers;
 using WholesomeVendors.WVSettings;
 using wManager;
 using wManager.Wow;
@@ -15,7 +14,7 @@ using wManager.Wow.Enums;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
 
-namespace WholesomeVendors
+namespace WholesomeVendors.Utils
 {
     public class Helpers
     {
@@ -27,6 +26,32 @@ namespace WholesomeVendors
         {
             return Products.ProductName.ToLower().Trim().Replace(" ", "")
                 == "Wholesome Dungeon Crawler".ToLower().Trim().Replace(" ", "");
+        }
+
+        // return true if arrived
+        public static bool TravelToVendorRange(
+            IVendorTimerManager vendorTimerManager,
+            ModelCreatureTemplate vendorTemplate,
+            string reason)
+        {
+            //vendorTimerManager.ClearReadies();
+            Vector3 vendorPosition = vendorTemplate.Creature.GetSpawnPosition;
+            if (ObjectManager.Me.Position.DistanceTo(vendorPosition) >= 30)
+            {
+                Logger.Log(reason);
+                GoToTask.ToPosition(vendorPosition, 30);
+                return false;
+                /*
+                vendorTimerManager.AddTimerToPreviousVendor(vendorTemplate);
+                if (!MovementManager.InMovement)
+                {
+                    Logger.Log(reason);
+                    List<Vector3> pathToVendor = PathFinder.FindPath(vendorPosition);
+                    MovementManager.Go(pathToVendor);
+                }
+                */
+            }
+            return true;
         }
 
         public static void CloseWindow()
@@ -44,7 +69,7 @@ namespace WholesomeVendors
             }
             catch (Exception e)
             {
-                Main.LoggerError("public static void CloseWindow(): " + e);
+                Logger.LogError("public static void CloseWindow(): " + e);
             }
             finally
             {
@@ -106,23 +131,24 @@ namespace WholesomeVendors
             }).Start();
         }
 
-        public static bool NpcIsAbsentOrDead(ModelCreatureTemplate npc)
+        public static bool NpcIsAbsentOrDead(IBlackListManager blackListManager, ModelCreatureTemplate npc)
         {
-            if (ObjectManager.GetObjectWoWUnit().Count(x => x.IsAlive && x.Name == npc.name) <= 0)
+            if (ObjectManager.GetObjectWoWUnit().Count(x => x.IsAlive && x.Entry == npc.entry) <= 0)
             {
-                Main.Logger("Looks like " + npc.name + " is not here, blacklisting");
-                NPCBlackList.AddNPCToBlacklist(npc.entry);
+                Logger.Log($"{npc.name} [{npc.entry}] is absent or dead, blacklisting");
+                blackListManager.AddNPCToBlacklist(npc.entry);
                 return true;
             }
+            Logger.Log($"{npc.name} [{npc.entry}] has been found");
             return false;
         }
 
-        public static bool MailboxIsAbsent(ModelGameObjectTemplate mailbox)
+        public static bool MailboxIsAbsent(IBlackListManager blackListManager, ModelGameObjectTemplate mailbox)
         {
             if (ObjectManager.GetObjectWoWGameObject().Count(x => x.Name == mailbox.name) <= 0)
             {
-                Main.Logger("Looks like " + mailbox.name + " is not here, blacklisting");
-                NPCBlackList.AddNPCToBlacklist(mailbox.entry);
+                Logger.Log("Looks like " + mailbox.name + " is not here, blacklisting");
+                blackListManager.AddNPCToBlacklist(mailbox.entry);
                 return true;
             }
             return false;
@@ -146,33 +172,15 @@ namespace WholesomeVendors
             return listQualitySell;
         }
 
-        public static List<WoWItemQuality> GetListQualityToMail()
+        public static void SellItems(IPluginCacheManager pluginCacheManager)
         {
-            List<WoWItemQuality> listQualityMail = new List<WoWItemQuality>();
-
-            if (PluginSettings.CurrentSetting.MailGrayItems)
-                listQualityMail.Add(WoWItemQuality.Poor);
-            if (PluginSettings.CurrentSetting.MailWhiteItems)
-                listQualityMail.Add(WoWItemQuality.Common);
-            if (PluginSettings.CurrentSetting.MailGreenItems)
-                listQualityMail.Add(WoWItemQuality.Uncommon);
-            if (PluginSettings.CurrentSetting.MailBlueItems)
-                listQualityMail.Add(WoWItemQuality.Rare);
-            if (PluginSettings.CurrentSetting.MailPurpleItems)
-                listQualityMail.Add(WoWItemQuality.Epic);
-
-            return listQualityMail;
-        }
-
-        public static void SellItems()
-        {
-            if (!PluginSettings.CurrentSetting.AllowSell || PluginCache.ItemsToSell.Count <= 0)
+            if (!PluginSettings.CurrentSetting.AllowSell || pluginCacheManager.ItemsToSell.Count <= 0)
                 return;
 
-            Main.Logger($"Found {PluginCache.ItemsToSell.Count} items to sell");
+            Logger.Log($"Found {pluginCacheManager.ItemsToSell.Count} items to sell");
             // Careful, the list of item to sell we pass actually doesn't matter,
             // it works even with an empty list and sells everything
-            Vendor.SellItems(PluginCache.ItemsToSell, wManagerSetting.CurrentSetting.DoNotSellList, GetListQualityToSell());
+            Vendor.SellItems(pluginCacheManager.ItemsToSell.Select(item => item.Name).ToList(), wManagerSetting.CurrentSetting.DoNotSellList, GetListQualityToSell());
             Thread.Sleep(1000);
         }
 
@@ -206,56 +214,6 @@ namespace WholesomeVendors
             wManagerSetting.CurrentSetting.TrainNewSkills = saveWRobotSettingTrain;
 
             wManagerSetting.CurrentSetting.Save();
-        }
-
-        public static bool HaveEnoughMoneyFor(int amount, ModelItemTemplate item) => PluginCache.Money >= item.BuyPrice * amount / item.BuyCount;
-
-        public static void CheckMailboxNearby(ModelCreatureTemplate npc)
-        {
-            if (!PluginSettings.CurrentSetting.AllowMail)
-                return;
-
-            Main.Logger($"Checking for a mailbox near {npc.name}");
-
-            ModelGameObjectTemplate mailbox = MemoryDB.GetNearestMailBoxFrom(npc);
-
-            if (mailbox == null)
-            {
-                Main.Logger($"Couldn't find a mailbox near {npc.name}");
-                return; 
-            }
-            else
-            {
-                Main.Logger($"Sending mail to {PluginSettings.CurrentSetting.MailingRecipient}");
-            }
-
-            if (ObjectManager.Me.Position.DistanceTo(mailbox.GameObject.GetSpawnPosition) >= 10)
-            {
-                GoToTask.ToPositionAndIntecractWithGameObject(mailbox.GameObject.GetSpawnPosition, mailbox.entry);
-            }
-
-            if (ObjectManager.Me.Position.DistanceTo(mailbox.GameObject.GetSpawnPosition) < 10
-                && MailboxIsAbsent(mailbox))
-                return;
-
-            bool needRunAgain = true;
-            for (int i = 7; i > 0 && needRunAgain; i--)
-            {
-                GoToTask.ToPositionAndIntecractWithGameObject(mailbox.GameObject.GetSpawnPosition, mailbox.entry);
-                Thread.Sleep(500);
-                Mail.SendMessage(PluginSettings.CurrentSetting.MailingRecipient,
-                    "Post",
-                    "Message",
-                    wManagerSetting.CurrentSetting.ForceMailList,
-                    wManagerSetting.CurrentSetting.DoNotMailList,
-                    GetListQualityToMail(),
-                    out needRunAgain);
-            }
-
-            if (!needRunAgain)
-                Main.Logger($"Sent Items to {PluginSettings.CurrentSetting.MailingRecipient}");
-
-            Mail.CloseMailFrame();
         }
     }
 }

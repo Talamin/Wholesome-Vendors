@@ -1,58 +1,67 @@
 ﻿using robotManager.FiniteStateMachine;
-using System.Collections.Generic;
+using robotManager.Helpful;
 using System.Threading;
 using WholesomeToolbox;
-using WholesomeVendors.Blacklist;
-using WholesomeVendors.Database;
 using WholesomeVendors.Database.Models;
+using WholesomeVendors.Managers;
+using WholesomeVendors.Utils;
 using WholesomeVendors.WVSettings;
 using wManager.Wow.Bot.Tasks;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
-using Timer = robotManager.Helpful.Timer;
 
 namespace WholesomeVendors.WVState
 {
     public class SellState : State
     {
-        public override string DisplayName { get; set; } = "WV Repair and Sell";
-
         private ModelCreatureTemplate _vendorNpc;
-        private Timer _stateTimer = new Timer();
         private int _nbFreeSlotsOnNeedToRun;
         private bool _usingDungeonProduct;
 
+        public override string DisplayName { get; set; } = "WV Sell";
+
+        private readonly IPluginCacheManager _pluginCacheManager;
+        private readonly IMemoryDBManager _memoryDBManager;
+        private readonly IVendorTimerManager _vendorTimerManager;
+        private readonly IBlackListManager _blackListManager;
         private int MinFreeSlots => PluginSettings.CurrentSetting.MinFreeSlots;
 
-        public SellState()
+        public SellState(
+            IMemoryDBManager memoryDBManager,
+            IPluginCacheManager pluginCacheManager,
+            IVendorTimerManager vendorTimerManager,
+            IBlackListManager blackListManager)
         {
             _usingDungeonProduct = Helpers.UsingDungeonProduct();
+            _memoryDBManager = memoryDBManager;
+            _pluginCacheManager = pluginCacheManager;
+            _vendorTimerManager = vendorTimerManager;
+            _blackListManager = blackListManager;
         }
 
         public override bool NeedToRun
         {
             get
             {
-                if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
+                if (!PluginSettings.CurrentSetting.AllowSell
+                    || _pluginCacheManager.ItemsToSell.Count <= 0
                     || !Main.IsLaunched
-                    || PluginCache.InLoadingScreen
-                    || !MemoryDB.IsPopulated
-                    || !PluginCache.Initialized
+                    || _pluginCacheManager.InLoadingScreen
                     || Fight.InFight
-                    || !PluginSettings.CurrentSetting.AllowSell
-                    || PluginCache.IsInInstance
-                    || !_stateTimer.IsReady
-                    || ObjectManager.Me.IsOnTaxi)
+                    || _pluginCacheManager.IsInInstance
+                    || ObjectManager.Me.IsOnTaxi
+                    || !Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause)
+                {
                     return false;
+                }
 
-                _stateTimer = new Timer(5000);
-                _nbFreeSlotsOnNeedToRun = PluginCache.NbFreeSlots;
+                _nbFreeSlotsOnNeedToRun = _pluginCacheManager.NbFreeSlots;
 
                 // Normal
                 if (_nbFreeSlotsOnNeedToRun <= MinFreeSlots
-                    || _usingDungeonProduct && PluginCache.ItemsToSell.Count > 5)
+                    || _usingDungeonProduct && _pluginCacheManager.ItemsToSell.Count > 5)
                 {
-                    _vendorNpc = MemoryDB.GetNearestSeller();
+                    _vendorNpc = _memoryDBManager.GetNearestSeller();
                     if (_vendorNpc != null)
                     {
                         DisplayName = $"Selling at {_vendorNpc.subname} {_vendorNpc.name}";
@@ -61,9 +70,9 @@ namespace WholesomeVendors.WVState
                 }
 
                 // Drive-by
-                if (PluginCache.ItemsToSell.Count > 5)
+                if (_pluginCacheManager.ItemsToSell.Count > 5)
                 {
-                    _vendorNpc = MemoryDB.GetNearestSeller();
+                    _vendorNpc = _memoryDBManager.GetNearestSeller();
                     if (_vendorNpc != null
                         && _vendorNpc.Creature.GetSpawnPosition.DistanceTo(ObjectManager.Me.Position) < PluginSettings.CurrentSetting.DriveByDistance)
                     {
@@ -78,42 +87,35 @@ namespace WholesomeVendors.WVState
 
         public override void Run()
         {
-            Main.Logger(DisplayName);
+            Vector3 vendorPosition = _vendorNpc.Creature.GetSpawnPosition;
 
-            Helpers.CheckMailboxNearby(_vendorNpc);
-
-            List<WoWItem> bagItems = PluginCache.BagItems;
-
-            if (ObjectManager.Me.Position.DistanceTo(_vendorNpc.Creature.GetSpawnPosition) >= 10)
-                GoToTask.ToPosition(_vendorNpc.Creature.GetSpawnPosition);
-
-            if (ObjectManager.Me.Position.DistanceTo(_vendorNpc.Creature.GetSpawnPosition) < 10)
+            if (!Helpers.TravelToVendorRange(_vendorTimerManager, _vendorNpc, DisplayName) 
+                || Helpers.NpcIsAbsentOrDead(_blackListManager, _vendorNpc))
             {
-                if (Helpers.NpcIsAbsentOrDead(_vendorNpc))
-                    return;
-
-                for (int i = 0; i <= 5; i++)
-                {
-                    Main.Logger($"Attempt {i + 1}");
-                    GoToTask.ToPositionAndIntecractWithNpc(_vendorNpc.Creature.GetSpawnPosition, _vendorNpc.entry, i);
-                    Thread.Sleep(1000);
-                    WTGossip.ClickOnFrameButton("StaticPopup1Button2"); // discard hearthstone popup
-                    if (WTGossip.IsVendorGossipOpen)
-                    {
-                        Helpers.SellItems();
-                        Thread.Sleep(1000);
-                        if (PluginCache.NbFreeSlots > _nbFreeSlotsOnNeedToRun)
-                        {
-                            Helpers.CloseWindow();
-                            return;
-                        }
-                    }
-                    Helpers.CloseWindow();
-                }
-
-                Main.Logger($"Failed to sell, blacklisting {_vendorNpc.name}");
-                NPCBlackList.AddNPCToBlacklist(_vendorNpc.entry);
+                return;
             }
+
+            for (int i = 0; i <= 5; i++)
+            {
+                Logger.Log($"Attempt {i + 1}");
+                GoToTask.ToPositionAndIntecractWithNpc(vendorPosition, _vendorNpc.entry, i);
+                Thread.Sleep(1000);
+                WTGossip.ClickOnFrameButton("StaticPopup1Button2"); // discard hearthstone popup
+                if (WTGossip.IsVendorGossipOpen)
+                {
+                    Helpers.SellItems(_pluginCacheManager);
+                    Thread.Sleep(1000);
+                    if (_pluginCacheManager.NbFreeSlots > _nbFreeSlotsOnNeedToRun)
+                    {
+                        Helpers.CloseWindow();
+                        return;
+                    }
+                }
+                Helpers.CloseWindow();
+            }
+
+            Logger.Log($"Failed to sell, blacklisting {_vendorNpc.name}");
+            _blackListManager.AddNPCToBlacklist(_vendorNpc.entry);
         }
     }
 }

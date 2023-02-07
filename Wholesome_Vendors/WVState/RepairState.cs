@@ -1,14 +1,14 @@
 ﻿using robotManager.FiniteStateMachine;
+using robotManager.Helpful;
 using System.Threading;
 using WholesomeToolbox;
-using WholesomeVendors.Blacklist;
-using WholesomeVendors.Database;
 using WholesomeVendors.Database.Models;
+using WholesomeVendors.Managers;
+using WholesomeVendors.Utils;
 using WholesomeVendors.WVSettings;
 using wManager.Wow.Bot.Tasks;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
-using Timer = robotManager.Helpful.Timer;
 
 namespace WholesomeVendors.WVState
 {
@@ -16,42 +16,48 @@ namespace WholesomeVendors.WVState
     {
         public override string DisplayName { get; set; } = "WV Repair";
 
+        private readonly IPluginCacheManager _pluginCacheManager;
+        private readonly IMemoryDBManager _memoryDBManager;
+        private readonly IVendorTimerManager _vendorTimerManager;
+        private readonly IBlackListManager _blackListManager;
+
         private ModelCreatureTemplate _vendorNpc;
-        private Timer _stateTimer = new Timer();
-        private readonly int MIN_DURABILITY = 35;
         private double _durabilityOnNeedToRun;
         private bool _usingDungeonProduct;
 
-        public RepairState()
+        public RepairState(
+            IMemoryDBManager memoryDBManager,
+            IPluginCacheManager pluginCacheManager,
+            IVendorTimerManager vendorTimerManager,
+            IBlackListManager blackListManager)
         {
             _usingDungeonProduct = Helpers.UsingDungeonProduct();
+            _memoryDBManager = memoryDBManager;
+            _pluginCacheManager = pluginCacheManager;
+            _vendorTimerManager = vendorTimerManager;
+            _blackListManager = blackListManager;
         }
 
         public override bool NeedToRun
         {
             get
             {
-                if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
-                    || !Main.IsLaunched
-                    || PluginCache.InLoadingScreen
-                    || !MemoryDB.IsPopulated
-                    || Fight.InFight
-                    || !PluginCache.Initialized
+                if (!Main.IsLaunched
                     || !PluginSettings.CurrentSetting.AllowRepair
-                    || PluginCache.IsInInstance
-                    || !_stateTimer.IsReady
-                    || ObjectManager.Me.IsOnTaxi)
+                    || _pluginCacheManager.InLoadingScreen
+                    || Fight.InFight
+                    || _pluginCacheManager.IsInInstance
+                    || ObjectManager.Me.IsOnTaxi
+                    || !Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause)
                     return false;
-
-                _stateTimer = new Timer(5000);
 
                 _durabilityOnNeedToRun = ObjectManager.Me.GetDurabilityPercent;
 
                 // Normal
-                if (_durabilityOnNeedToRun < MIN_DURABILITY
+                if (_durabilityOnNeedToRun < 35
                     || _usingDungeonProduct && _durabilityOnNeedToRun < 90)
                 {
-                    _vendorNpc = MemoryDB.GetNearestRepairer();
+                    _vendorNpc = _memoryDBManager.GetNearestRepairer();
                     if (_vendorNpc != null)
                     {
                         DisplayName = $"Repairing at {_vendorNpc.subname} {_vendorNpc.name}";
@@ -60,9 +66,9 @@ namespace WholesomeVendors.WVState
                 }
 
                 // Drive-by
-                if (PluginSettings.CurrentSetting.AllowRepair && _durabilityOnNeedToRun < 70)
+                if (_durabilityOnNeedToRun < 70)
                 {
-                    _vendorNpc = MemoryDB.GetNearestRepairer();
+                    _vendorNpc = _memoryDBManager.GetNearestRepairer();
                     if (_vendorNpc != null
                         && _vendorNpc.Creature.GetSpawnPosition.DistanceTo(ObjectManager.Me.Position) < PluginSettings.CurrentSetting.DriveByDistance)
                     {
@@ -77,44 +83,39 @@ namespace WholesomeVendors.WVState
 
         public override void Run()
         {
-            Main.Logger(DisplayName);
+            Vector3 vendorPosition = _vendorNpc.Creature.GetSpawnPosition;
 
-            Helpers.CheckMailboxNearby(_vendorNpc);
-
-            if (ObjectManager.Me.Position.DistanceTo(_vendorNpc.Creature.GetSpawnPosition) >= 10)
-                GoToTask.ToPosition(_vendorNpc.Creature.GetSpawnPosition);
-
-            if (ObjectManager.Me.Position.DistanceTo(_vendorNpc.Creature.GetSpawnPosition) < 10)
+            if (!Helpers.TravelToVendorRange(_vendorTimerManager, _vendorNpc, DisplayName) 
+                || Helpers.NpcIsAbsentOrDead(_blackListManager, _vendorNpc))
             {
-                if (Helpers.NpcIsAbsentOrDead(_vendorNpc))
-                    return;
-
-                for (int i = 0; i <= 5; i++)
-                {
-                    Main.Logger($"Attempt {i + 1}");
-                    GoToTask.ToPositionAndIntecractWithNpc(_vendorNpc.Creature.GetSpawnPosition, _vendorNpc.entry, i);
-                    Thread.Sleep(1000);
-                    WTGossip.ClickOnFrameButton("StaticPopup1Button2"); // discard hearthstone popup
-                    if (WTGossip.IsVendorGossipOpen)
-                    {
-                        Helpers.SellItems();
-                        Thread.Sleep(1000);
-                        Vendor.RepairAllItems();
-                        Thread.Sleep(1000);
-                        WTGossip.RepairAll();
-                        Thread.Sleep(1000);
-                        if (ObjectManager.Me.GetDurabilityPercent > _durabilityOnNeedToRun)
-                        {
-                            Helpers.CloseWindow();
-                            return;
-                        }
-                    }
-                    Helpers.CloseWindow();
-                }
-
-                Main.Logger($"Failed to repair, blacklisting {_vendorNpc.name}");
-                NPCBlackList.AddNPCToBlacklist(_vendorNpc.entry);
+                return;
             }
+
+            for (int i = 0; i <= 5; i++)
+            {
+                Logger.Log($"Attempt {i + 1}");
+                GoToTask.ToPositionAndIntecractWithNpc(vendorPosition, _vendorNpc.entry, i);
+                Thread.Sleep(1000);
+                WTGossip.ClickOnFrameButton("StaticPopup1Button2"); // discard hearthstone popup
+                if (WTGossip.IsVendorGossipOpen)
+                {
+                    Helpers.SellItems(_pluginCacheManager);
+                    Thread.Sleep(1000);
+                    Vendor.RepairAllItems();
+                    Thread.Sleep(1000);
+                    WTGossip.RepairAll();
+                    Thread.Sleep(1000);
+                    if (ObjectManager.Me.GetDurabilityPercent > _durabilityOnNeedToRun)
+                    {
+                        Helpers.CloseWindow();
+                        return;
+                    }
+                }
+                Helpers.CloseWindow();
+            }
+
+            Logger.Log($"Failed to repair, blacklisting {_vendorNpc.name}");
+            _blackListManager.AddNPCToBlacklist(_vendorNpc.entry);
         }
     }
 }

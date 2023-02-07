@@ -237,19 +237,27 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutoUpdater.cs" />
-    <Compile Include="Blacklist\NPCBlackList.cs" />
     <Compile Include="Database\Models\FullJSONModel.cs" />
     <Compile Include="Database\Models\ModelNpcTrainer.cs" />
     <Compile Include="Database\Models\ModelSpell.cs" />
-    <Compile Include="Database\PluginCache.cs" />
-    <Compile Include="Database\MemoryDB.cs" />
     <Compile Include="Database\Models\ModelCreature.cs" />
     <Compile Include="Database\Models\ModelCreatureTemplate.cs" />
     <Compile Include="Database\Models\ModelGameObject.cs" />
     <Compile Include="Database\Models\ModelGameObjectTemplate.cs" />
     <Compile Include="Database\Models\ModelItemTemplate.cs" />
     <Compile Include="Database\Models\ModelNpcVendor.cs" />
-    <Compile Include="Helpers.cs" />
+    <Compile Include="Managers\BlackListManager.cs" />
+    <Compile Include="Managers\IBlackListManager.cs" />
+    <Compile Include="Managers\ICycleable.cs" />
+    <Compile Include="Managers\IMemoryDBManager.cs" />
+    <Compile Include="Managers\IPluginCacheManager.cs" />
+    <Compile Include="Managers\IVendorTimerManager.cs" />
+    <Compile Include="Managers\MemoryDBManager.cs" />
+    <Compile Include="Managers\PluginCacheManager.cs" />
+    <Compile Include="Utils\Helpers.cs" />
+    <Compile Include="Utils\Logger.cs" />
+    <Compile Include="Managers\VendorTimers.cs" />
+    <Compile Include="Utils\WVItem.cs" />
     <Compile Include="WVState\BuyAmmoState.cs" />
     <Compile Include="WVState\BuyBagsState.cs" />
     <Compile Include="WVState\BuyDrinkState.cs" />
@@ -259,9 +267,10 @@
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WVState\RepairState.cs" />
+    <Compile Include="WVState\SendMailState.cs" />
     <Compile Include="WVState\SellState.cs" />
     <Compile Include="WVState\TrainingState.cs" />
-    <Compile Include="WVSettings\Settings.cs" />
+    <Compile Include="WVSettings\PluginSettings.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

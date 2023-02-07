@@ -5,6 +5,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
+using WholesomeVendors.Utils;
 using WholesomeVendors.WVSettings;
 
 namespace WholesomeVendors
@@ -15,7 +16,7 @@ namespace WholesomeVendors
         {
             if (wManager.Information.Version.Contains("1.7.2"))
             {
-                Main.Logger($"Plugin couldn't load (v {wManager.Information.Version})");
+                Logger.Log($"Plugin couldn't load (v {wManager.Information.Version})");
                 Products.ProductStop();
                 return false;
             }
@@ -33,7 +34,7 @@ namespace WholesomeVendors
             // If last update try was < 30 seconds ago, we exit to avoid looping
             if (timeSinceLastUpdate < 30)
             {
-                Main.Logger($"Last update attempts was {timeSinceLastUpdate} seconds ago. Exiting updater.");
+                Logger.Log($"Last update attempts was {timeSinceLastUpdate} seconds ago. Exiting updater.");
                 return false;
             }
 
@@ -49,7 +50,7 @@ namespace WholesomeVendors
 
                 if (onlineVersion.CompareTo(currentVersion) <= 0)
                 {
-                    Main.Logger($"Your version is up to date ({currentVersion} / {onlineVersion})");
+                    Logger.Log($"Your version is up to date ({currentVersion} / {onlineVersion})");
                     return false;
                 }
 
@@ -58,7 +59,7 @@ namespace WholesomeVendors
                 var onlineFileContent = new WebClient { Encoding = Encoding.UTF8 }.DownloadData(onlineDllLink);
                 if (onlineFileContent != null && onlineFileContent.Length > 0)
                 {
-                    Main.Logger($"Updating your version {currentVersion} to online Version {onlineVersion}");
+                    Logger.Log($"Updating your version {currentVersion} to online Version {onlineVersion}");
                     File.WriteAllBytes(currentFile, onlineFileContent); // Replace user file by online file
                     File.Delete(Others.GetCurrentDirectory + @"Data\WVM.json"); // Delete json to retrigger an extraction
                     Thread.Sleep(1000);

@@ -1,91 +1,95 @@
 ﻿using robotManager.FiniteStateMachine;
 using robotManager.Helpful;
-using System.Collections.Generic;
 using System.Threading;
 using WholesomeToolbox;
-using WholesomeVendors.Blacklist;
-using WholesomeVendors.Database;
 using WholesomeVendors.Database.Models;
+using WholesomeVendors.Managers;
+using WholesomeVendors.Utils;
 using WholesomeVendors.WVSettings;
-using wManager;
 using wManager.Wow.Bot.Tasks;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
-using Timer = robotManager.Helpful.Timer;
 
 namespace WholesomeVendors.WVState
 {
     public class BuyDrinkState : State
     {
-        public override string DisplayName { get; set; } = "WV Buying Drink";
+        public override string DisplayName { get; set; } = "WV Buy Drink";
+
+        private readonly IPluginCacheManager _pluginCacheManager;
+        private readonly IMemoryDBManager _memoryDBManager;
+        private readonly IVendorTimerManager _vendorTimerManager;
+        private readonly IBlackListManager _blackListManager;
 
         private WoWLocalPlayer _me = ObjectManager.Me;
-        private Timer _stateTimer = new Timer();
-        private ModelNpcVendor _drinkVendor;
+        private ModelCreatureTemplate _drinkVendor;
         private ModelItemTemplate _drinkToBuy;
         private int _nbDrinksInBag;
         private bool _usingDungeonProduct;
 
         private int DrinkAmountSetting => PluginSettings.CurrentSetting.DrinkNbToBuy;
-        private int AmountToBuy => DrinkAmountSetting - GetNbDrinksInBags();
+        private int AmountToBuy => DrinkAmountSetting - _pluginCacheManager.NbDrinksInBags;
 
-        public BuyDrinkState()
+        public BuyDrinkState(
+            IMemoryDBManager memoryDBManager,
+            IPluginCacheManager pluginCacheManager,
+            IVendorTimerManager vendorTimerManager,
+            IBlackListManager blackListManager)
         {
             _usingDungeonProduct = Helpers.UsingDungeonProduct();
+            _memoryDBManager = memoryDBManager;
+            _pluginCacheManager = pluginCacheManager;
+            _vendorTimerManager = vendorTimerManager;
+            _blackListManager = blackListManager;
         }
 
         public override bool NeedToRun
         {
             get
             {
-                if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
-                    || !Main.IsLaunched
-                    || !MemoryDB.IsPopulated
-                    || !PluginCache.Initialized
-                    || PluginCache.InLoadingScreen
+                if (!Main.IsLaunched
+                    || _pluginCacheManager.InLoadingScreen
                     || Fight.InFight
-                    || !_stateTimer.IsReady
                     || _me.Level <= 3
                     || DrinkAmountSetting <= 0
-                    || _me.IsOnTaxi)
+                    || _me.IsOnTaxi
+                    || !Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause)
                     return false;
 
                 _drinkVendor = null;
                 _drinkToBuy = null;
 
-                _nbDrinksInBag = GetNbDrinksInBags();
+                _nbDrinksInBag = _pluginCacheManager.NbDrinksInBags;
 
-                if (PluginCache.IsInInstance)
+                if (_pluginCacheManager.IsInInstance)
                 {
                     return false;
                 }
 
-                _stateTimer = new Timer(5000);
-
                 if (_nbDrinksInBag <= DrinkAmountSetting / 2 || _usingDungeonProduct)
                 {
                     int amountToBuy = AmountToBuy;
-                    foreach (ModelItemTemplate drink in MemoryDB.GetAllUsableDrinks())
+                    foreach (ModelItemTemplate drink in _memoryDBManager.GetAllUsableDrinks())
                     {
-                        if (Helpers.HaveEnoughMoneyFor(amountToBuy, drink))
+                        if (_pluginCacheManager.HaveEnoughMoneyFor(amountToBuy, drink))
                         {
-                            ModelNpcVendor vendor = MemoryDB.GetNearestItemVendor(drink);
+                            ModelNpcVendor vendor = _memoryDBManager.GetNearestItemVendor(drink);
                             if (vendor != null)
                             {
                                 _drinkToBuy = drink;
-                                _drinkVendor = vendor;
+                                _drinkVendor = vendor.CreatureTemplate;
                                 // Normal
                                 if (_nbDrinksInBag <= DrinkAmountSetting / 10
                                     || _usingDungeonProduct && _nbDrinksInBag < DrinkAmountSetting)
                                 {
-                                    DisplayName = $"Buying {amountToBuy} x {_drinkToBuy.Name} at vendor {_drinkVendor.CreatureTemplate.name}";
+                                    DisplayName = $"Buying {amountToBuy} x {_drinkToBuy.Name} at vendor {_drinkVendor.name}";
                                     return true;
                                 }
                                 // Drive-by
                                 if (_nbDrinksInBag <= DrinkAmountSetting / 2
                                     && ObjectManager.Me.Position.DistanceTo(vendor.CreatureTemplate.Creature.GetSpawnPosition) < PluginSettings.CurrentSetting.DriveByDistance)
                                 {
-                                    DisplayName = $"Drive-by buying {amountToBuy} x {_drinkToBuy.Name} at vendor {_drinkVendor.CreatureTemplate.name}";
+                                    DisplayName = $"Drive-by buying {amountToBuy} x {_drinkToBuy.Name} at vendor {_drinkVendor.name}";
                                     return true;
                                 }
                             }
@@ -99,69 +103,38 @@ namespace WholesomeVendors.WVState
 
         public override void Run()
         {
-            Main.Logger(DisplayName);
-            Vector3 vendorPos = _drinkVendor.CreatureTemplate.Creature.GetSpawnPosition;
+            Vector3 vendorPosition = _drinkVendor.Creature.GetSpawnPosition;
 
-            Helpers.CheckMailboxNearby(_drinkVendor.CreatureTemplate);
-
-            if (_me.Position.DistanceTo(vendorPos) >= 10)
-                GoToTask.ToPosition(vendorPos);
-
-            if (_me.Position.DistanceTo(vendorPos) < 10)
+            if (!Helpers.TravelToVendorRange(_vendorTimerManager, _drinkVendor, DisplayName) 
+                || Helpers.NpcIsAbsentOrDead(_blackListManager, _drinkVendor))
             {
-                if (Helpers.NpcIsAbsentOrDead(_drinkVendor.CreatureTemplate))
-                    return;
+                return;
+            }
 
-                for (int i = 0; i <= 5; i++)
+            for (int i = 0; i <= 5; i++)
+            {
+                Logger.Log($"Attempt {i + 1}");
+                GoToTask.ToPositionAndIntecractWithNpc(vendorPosition, _drinkVendor.entry, i);
+                Thread.Sleep(1000);
+                WTGossip.ClickOnFrameButton("StaticPopup1Button2"); // discard hearthstone popup
+                if (WTGossip.IsVendorGossipOpen)
                 {
-                    Main.Logger($"Attempt {i + 1}");
-                    GoToTask.ToPositionAndIntecractWithNpc(vendorPos, _drinkVendor.entry, i);
+                    Helpers.SellItems(_pluginCacheManager);
                     Thread.Sleep(1000);
-                    WTGossip.ClickOnFrameButton("StaticPopup1Button2"); // discard hearthstone popup
-                    if (WTGossip.IsVendorGossipOpen)
+                    WTGossip.BuyItem(_drinkToBuy.Name, AmountToBuy, _drinkToBuy.BuyCount);
+                    Thread.Sleep(1000);
+
+                    if (_pluginCacheManager.NbDrinksInBags >= DrinkAmountSetting)
                     {
-                        Helpers.SellItems();
-                        Thread.Sleep(1000);
-                        WTGossip.BuyItem(_drinkToBuy.Name, AmountToBuy, _drinkToBuy.BuyCount);
-                        Thread.Sleep(1000);
-
-                        if (GetNbDrinksInBags() >= DrinkAmountSetting)
-                        {
-                            Helpers.CloseWindow();
-                            return;
-                        }
+                        Helpers.CloseWindow();
+                        return;
                     }
-                    Helpers.CloseWindow();
                 }
-
-                Main.Logger($"Failed to buy {_drinkToBuy.Name}, blacklisting vendor");
-                NPCBlackList.AddNPCToBlacklist(_drinkVendor.entry);
-            }
-        }
-
-        private int GetNbDrinksInBags()
-        {
-            int nbDrinksInBags = 0;
-            List<WoWItem> items = PluginCache.BagItems;
-            List<ModelItemTemplate> allDrinks = MemoryDB.GetAllUsableDrinks();
-            string drinkToSet = null;
-            foreach (WoWItem item in items)
-            {
-                if (allDrinks.Exists(ua => ua.Entry == item.Entry))
-                {
-                    nbDrinksInBags += ItemsManager.GetItemCountById((uint)item.Entry);
-                    drinkToSet = item.Name;
-                }
+                Helpers.CloseWindow();
             }
 
-            if (drinkToSet != null && wManagerSetting.CurrentSetting.DrinkName != drinkToSet)
-            {
-                Main.Logger($"Setting drink to {drinkToSet}");
-                wManagerSetting.CurrentSetting.DrinkName = drinkToSet;
-                wManagerSetting.CurrentSetting.Save();
-            }
-
-            return nbDrinksInBags;
+            Logger.Log($"Failed to buy {_drinkToBuy.Name}, blacklisting vendor");
+            _blackListManager.AddNPCToBlacklist(_drinkVendor.entry);
         }
     }
 }

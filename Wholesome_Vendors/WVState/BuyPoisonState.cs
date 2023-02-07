@@ -3,91 +3,95 @@ using robotManager.Helpful;
 using System.Collections.Generic;
 using System.Threading;
 using WholesomeToolbox;
-using WholesomeVendors.Blacklist;
-using WholesomeVendors.Database;
 using WholesomeVendors.Database.Models;
+using WholesomeVendors.Managers;
+using WholesomeVendors.Utils;
 using WholesomeVendors.WVSettings;
 using wManager.Wow.Bot.Tasks;
 using wManager.Wow.Enums;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
-using Timer = robotManager.Helpful.Timer;
 
 namespace WholesomeVendors.WVState
 {
     public class BuyPoisonState : State
     {
-        public override string DisplayName { get; set; } = "WV Buying Poison";
+        public override string DisplayName { get; set; } = "WV Buy Poison";
+
+        private readonly IPluginCacheManager _pluginCacheManager;
+        private readonly IMemoryDBManager _memoryDBManager;
+        private readonly IVendorTimerManager _vendorTimerManager;
+        private readonly IBlackListManager _blackListManager;
 
         private WoWLocalPlayer _me = ObjectManager.Me;
 
         private ModelItemTemplate _poisonToBuy;
-        private ModelNpcVendor _poisonVendor;
-        private int _nbInstantsInBags;
-        private int _nbDeadlysInBags;
+        private ModelCreatureTemplate _poisonVendor;
         private int _amountToBuy;
-        private Timer _stateTimer = new Timer();
         private bool _usingDungeonProduct;
 
-        public BuyPoisonState()
+        public BuyPoisonState(
+            IMemoryDBManager memoryDBManager,
+            IPluginCacheManager pluginCacheManager,
+            IVendorTimerManager vendorTimerManager,
+            IBlackListManager blackListManager)
         {
             _usingDungeonProduct = Helpers.UsingDungeonProduct();
+            _memoryDBManager = memoryDBManager;
+            _pluginCacheManager = pluginCacheManager;
+            _vendorTimerManager = vendorTimerManager;
+            _blackListManager = blackListManager;
         }
 
         public override bool NeedToRun
         {
             get
             {
-                if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
-                    || !Main.IsLaunched
-                    || PluginCache.InLoadingScreen
-                    || !_stateTimer.IsReady
-                    || !MemoryDB.IsPopulated
-                    || !PluginCache.Initialized
+                if (!Main.IsLaunched
+                    || _pluginCacheManager.InLoadingScreen
                     || Fight.InFight
                     || !PluginSettings.CurrentSetting.BuyPoison
                     || ObjectManager.Me.WowClass != WoWClass.Rogue
                     || ObjectManager.Me.Level < 20
-                    || _me.IsOnTaxi)
+                    || _me.IsOnTaxi
+                    || !Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause)
+                {
                     return false;
+                }
 
                 _poisonToBuy = null;
                 _poisonVendor = null;
                 _amountToBuy = 0;
 
-                RecordNbPoisonsInBags();
-
-                if (PluginCache.IsInInstance)
+                if (_pluginCacheManager.IsInInstance)
                 {
                     return false;
                 }
 
-                _stateTimer = new Timer(5000);
-
                 // Deadly Poison
-                if (_nbDeadlysInBags <= 15)
+                if (_pluginCacheManager.NbDeadlyPoisonsInBags <= 15)
                 {
-                    _amountToBuy = 20 - _nbDeadlysInBags;
-                    ModelItemTemplate deadlyP = MemoryDB.GetDeadlyPoisons.Find(p => p.RequiredLevel <= ObjectManager.Me.Level);
-                    if (deadlyP != null && Helpers.HaveEnoughMoneyFor(_amountToBuy, deadlyP))
+                    _amountToBuy = 20 - _pluginCacheManager.NbDeadlyPoisonsInBags;
+                    ModelItemTemplate deadlyP = _memoryDBManager.GetDeadlyPoisons.Find(p => p.RequiredLevel <= ObjectManager.Me.Level);
+                    if (deadlyP != null && _pluginCacheManager.HaveEnoughMoneyFor(_amountToBuy, deadlyP))
                     {
-                        ModelNpcVendor vendor = MemoryDB.GetNearestItemVendor(deadlyP);
+                        ModelNpcVendor vendor = _memoryDBManager.GetNearestItemVendor(deadlyP);
                         if (vendor != null)
                         {
                             _poisonToBuy = deadlyP;
-                            _poisonVendor = vendor;
+                            _poisonVendor = vendor.CreatureTemplate;
                             // Normal
-                            if (_nbDeadlysInBags <= 1
-                                || _usingDungeonProduct && _nbDeadlysInBags <= 15)
+                            if (_pluginCacheManager.NbDeadlyPoisonsInBags <= 1
+                                || _usingDungeonProduct && _pluginCacheManager.NbDeadlyPoisonsInBags <= 15)
                             {
-                                DisplayName = $"Buying {_amountToBuy} x {_poisonToBuy.Name} at vendor {_poisonVendor.CreatureTemplate.name}";
+                                DisplayName = $"Buying {_amountToBuy} x {_poisonToBuy.Name} at vendor {_poisonVendor.name}";
                                 return true;
                             }
                             // Drive-by
-                            if (_nbDeadlysInBags <= 15
+                            if (_pluginCacheManager.NbDeadlyPoisonsInBags <= 15
                                 && ObjectManager.Me.Position.DistanceTo(vendor.CreatureTemplate.Creature.GetSpawnPosition) < PluginSettings.CurrentSetting.DriveByDistance)
                             {
-                                DisplayName = $"Drive-by buying {_amountToBuy} x {_poisonToBuy.Name} at vendor {_poisonVendor.CreatureTemplate.name}";
+                                DisplayName = $"Drive-by buying {_amountToBuy} x {_poisonToBuy.Name} at vendor {_poisonVendor.name}";
                                 return true;
                             }
                         }
@@ -95,31 +99,31 @@ namespace WholesomeVendors.WVState
                 }
 
                 // Instant Poison
-                if (_nbInstantsInBags <= 10)
+                if (_pluginCacheManager.NbInstantPoisonsInBags <= 10)
                 {
-                    _amountToBuy = 20 - _nbInstantsInBags;
-                    ModelItemTemplate instantP = MemoryDB.GetInstantPoisons.Find(p => p.RequiredLevel <= ObjectManager.Me.Level);
-                    if (instantP != null && Helpers.HaveEnoughMoneyFor(_amountToBuy, instantP))
+                    _amountToBuy = 20 - _pluginCacheManager.NbInstantPoisonsInBags;
+                    ModelItemTemplate instantP = _memoryDBManager.GetInstantPoisons.Find(p => p.RequiredLevel <= ObjectManager.Me.Level);
+                    if (instantP != null && _pluginCacheManager.HaveEnoughMoneyFor(_amountToBuy, instantP))
                     {
-                        ModelNpcVendor vendor = MemoryDB.GetNearestItemVendor(instantP);
+                        ModelNpcVendor vendor = _memoryDBManager.GetNearestItemVendor(instantP);
                         if (vendor != null)
                         {
                             // Normal
-                            if (_nbInstantsInBags <= 1
-                                || _usingDungeonProduct && _nbInstantsInBags <= 15)
+                            if (_pluginCacheManager.NbInstantPoisonsInBags <= 1
+                                || _usingDungeonProduct && _pluginCacheManager.NbInstantPoisonsInBags <= 15)
                             {
                                 _poisonToBuy = instantP;
-                                _poisonVendor = vendor;
-                                DisplayName = $"Buying {_amountToBuy} x {_poisonToBuy.Name} at vendor {_poisonVendor.CreatureTemplate.name}";
+                                _poisonVendor = vendor.CreatureTemplate;
+                                DisplayName = $"Buying {_amountToBuy} x {_poisonToBuy.Name} at vendor {_poisonVendor.name}";
                                 return true;
                             }
                             // Drive-by
-                            if (_nbInstantsInBags <= 15
+                            if (_pluginCacheManager.NbInstantPoisonsInBags <= 15
                                 && ObjectManager.Me.Position.DistanceTo(vendor.CreatureTemplate.Creature.GetSpawnPosition) < PluginSettings.CurrentSetting.DriveByDistance)
                             {
                                 _poisonToBuy = instantP;
-                                _poisonVendor = vendor;
-                                DisplayName = $"Drive-by buying {_amountToBuy} x {_poisonToBuy.Name} at vendor {_poisonVendor.CreatureTemplate.name}";
+                                _poisonVendor = vendor.CreatureTemplate;
+                                DisplayName = $"Drive-by buying {_amountToBuy} x {_poisonToBuy.Name} at vendor {_poisonVendor.name}";
                                 return true;
                             }
                         }
@@ -132,83 +136,43 @@ namespace WholesomeVendors.WVState
 
         public override void Run()
         {
-            Main.Logger(DisplayName);
-            Vector3 vendorPos = _poisonVendor.CreatureTemplate.Creature.GetSpawnPosition;
+            Vector3 vendorPosition = _poisonVendor.Creature.GetSpawnPosition;
 
-            Helpers.CheckMailboxNearby(_poisonVendor.CreatureTemplate);
-
-            if (_me.Position.DistanceTo(vendorPos) >= 10)
-                GoToTask.ToPosition(vendorPos);
-
-            if (_me.Position.DistanceTo(vendorPos) < 10)
+            if (!Helpers.TravelToVendorRange(_vendorTimerManager, _poisonVendor, DisplayName) 
+                || Helpers.NpcIsAbsentOrDead(_blackListManager, _poisonVendor))
             {
-                if (Helpers.NpcIsAbsentOrDead(_poisonVendor.CreatureTemplate))
-                    return;
+                return;
+            }
 
-                ClearObsoletePoison(_poisonToBuy.displayid);
-                WTSettings.AddItemToDoNotSellAndMailList(new List<string>() { _poisonToBuy.Name });
-
-                for (int i = 0; i <= 5; i++)
+            for (int i = 0; i <= 5; i++)
+            {
+                Logger.Log($"Attempt {i + 1}");
+                GoToTask.ToPositionAndIntecractWithNpc(vendorPosition, _poisonVendor.entry, i);
+                Thread.Sleep(1000);
+                WTGossip.ClickOnFrameButton("StaticPopup1Button2"); // discard hearthstone popup
+                if (WTGossip.IsVendorGossipOpen)
                 {
-                    Main.Logger($"Attempt {i + 1}");
-                    GoToTask.ToPositionAndIntecractWithNpc(vendorPos, _poisonVendor.entry, i);
+                    Helpers.SellItems(_pluginCacheManager);
                     Thread.Sleep(1000);
-                    WTGossip.ClickOnFrameButton("StaticPopup1Button2"); // discard hearthstone popup
-                    if (WTGossip.IsVendorGossipOpen)
+                    WTGossip.BuyItem(_poisonToBuy.Name, _amountToBuy, _poisonToBuy.BuyCount);
+                    Thread.Sleep(1000);
+
+                    if (_poisonToBuy.displayid == 13710 && _pluginCacheManager.NbInstantPoisonsInBags >= 20) // Instant
                     {
-                        Helpers.SellItems();
-                        Thread.Sleep(1000);
-                        WTGossip.BuyItem(_poisonToBuy.Name, _amountToBuy, _poisonToBuy.BuyCount);
-                        Thread.Sleep(1000);
-                        RecordNbPoisonsInBags();
-                        Thread.Sleep(1000);
-
-                        if (_poisonToBuy.displayid == 13710 && _nbInstantsInBags >= 20) // Instant
-                        {
-                            Helpers.CloseWindow();
-                            return;
-                        }
-                        if (_poisonToBuy.displayid == 13707 && _nbDeadlysInBags >= 20) // Deadly
-                        {
-                            Helpers.CloseWindow();
-                            return;
-                        }
+                        Helpers.CloseWindow();
+                        return;
                     }
-                    Helpers.CloseWindow();
+                    if (_poisonToBuy.displayid == 13707 && _pluginCacheManager.NbDeadlyPoisonsInBags >= 20) // Deadly
+                    {
+                        Helpers.CloseWindow();
+                        return;
+                    }
                 }
-
-                Main.Logger($"Failed to buy poisons, blacklisting vendor");
-                NPCBlackList.AddNPCToBlacklist(_poisonVendor.entry);
+                Helpers.CloseWindow();
             }
-        }
 
-        private void ClearObsoletePoison(int displayId)
-        {
-            foreach (ModelItemTemplate poison in MemoryDB.GetAllPoisons)
-            {
-                if (poison.displayid == displayId)
-                {
-                    WTSettings.RemoveItemFromDoNotSellAndMailList(new List<string>() { poison.Name });
-                }
-            }
-        }
-
-        private void RecordNbPoisonsInBags()
-        {
-            _nbDeadlysInBags = 0;
-            _nbInstantsInBags = 0;
-            List<WoWItem> bagItems = PluginCache.BagItems;
-            foreach (WoWItem item in bagItems)
-            {
-                if (MemoryDB.GetDeadlyPoisons.Exists(p => p.Entry == item.Entry))
-                {
-                    _nbDeadlysInBags += ItemsManager.GetItemCountById((uint)item.Entry);
-                }
-                if (MemoryDB.GetInstantPoisons.Exists(p => p.Entry == item.Entry))
-                {
-                    _nbInstantsInBags += ItemsManager.GetItemCountById((uint)item.Entry);
-                }
-            }
+            Logger.Log($"Failed to buy poisons, blacklisting vendor");
+            _blackListManager.AddNPCToBlacklist(_poisonVendor.entry);
         }
     }
 }

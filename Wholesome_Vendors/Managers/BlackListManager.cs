@@ -5,22 +5,39 @@ using wManager.Wow.Enums;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
 
-namespace WholesomeVendors.Blacklist
+namespace WholesomeVendors.Managers
 {
-    public static class NPCBlackList
+    internal class BlackListManager : IBlackListManager
     {
-        public static void AddNPCListToBlacklist()
-        {
-            if (WTPlayer.IsHorde())
-                AddNPCToBlacklist(_hordeBlacklist);
-            else
-                AddNPCToBlacklist(_allianceBlacklist);
+        private IVendorTimerManager _vendorTimerManager;
 
-            if (ObjectManager.Me.Level > 10)
-                AddNPCToBlacklist(new HashSet<int> { 5871, 8307, 3489 }); // starter zone vendors
+        public BlackListManager(IVendorTimerManager vendorTimerManager)
+        {
+            _vendorTimerManager = vendorTimerManager;
         }
 
-        public static void AddNPCToBlacklist(int npcId)
+        public void Initialize()
+        {
+            if (WTPlayer.IsHorde())
+            {
+                AddNPCToBlacklist(_hordeBlacklist);
+            }
+            else
+            {
+                AddNPCToBlacklist(_allianceBlacklist);
+            }
+
+            if (ObjectManager.Me.Level > 10)
+            {
+                AddNPCToBlacklist(new HashSet<int> { 5871, 8307, 3489 }); // starter zone vendors}
+            }
+        }
+
+        public void Dispose()
+        {
+        }
+
+        public void AddNPCToBlacklist(int npcId)
         {
             if (!_sessionBlacklist.Contains(npcId))
             {
@@ -28,16 +45,20 @@ namespace WholesomeVendors.Blacklist
             }
         }
 
-        public static void AddNPCToBlacklist(HashSet<int> npcIds)
+        public void AddNPCToBlacklist(HashSet<int> npcIds)
         {
             foreach (int id in npcIds)
+            {
                 AddNPCToBlacklist(id);
+            }
         }
 
-        public static bool IsVendorValid(ModelCreatureTemplate creatureTemplate)
+        public bool IsVendorValid(ModelCreatureTemplate creatureTemplate)
         {
             bool isPlayerDK = ObjectManager.Me.WowClass == WoWClass.DeathKnight;
-            return creatureTemplate.Creature != null
+            return creatureTemplate != null
+                && creatureTemplate.Creature != null
+                && !_vendorTimerManager.IsVendorOnTimer(creatureTemplate)
                 && !_sessionBlacklist.Contains(creatureTemplate.entry)
                 && creatureTemplate.Creature.map == Usefuls.ContinentId
                 && creatureTemplate.IsNeutralOrFriendly
@@ -48,7 +69,7 @@ namespace WholesomeVendors.Blacklist
                 && GetListUsableZones().Contains(creatureTemplate.Creature.zoneid + 1);
         }
 
-        public static bool IsMailBoxValid(ModelGameObjectTemplate goTemplate)
+        public bool IsMailBoxValid(ModelGameObjectTemplate goTemplate)
         {
             return goTemplate.GameObject != null
                 && !_sessionBlacklist.Contains(goTemplate.entry)
@@ -57,7 +78,7 @@ namespace WholesomeVendors.Blacklist
         }
 
 
-        private static readonly HashSet<int> _hordeBlacklist = new HashSet<int>
+        private readonly HashSet<int> _hordeBlacklist = new HashSet<int>
         {
             10857, // Neutral in alliance camp
             8305, // Kixxle
@@ -67,7 +88,7 @@ namespace WholesomeVendors.Blacklist
             14963, // Gapp Jinglepocket, Neutral in Ashenvale
         };
 
-        private static readonly HashSet<int> _allianceBlacklist = new HashSet<int>
+        private readonly HashSet<int> _allianceBlacklist = new HashSet<int>
         {
             15125, // Kosco Copperpinch
             2805, // Deneb walker
@@ -77,7 +98,7 @@ namespace WholesomeVendors.Blacklist
             5497, // Jennea Cannon (mage tower)
         };
 
-        private static readonly HashSet<int> _sessionBlacklist = new HashSet<int>
+        private readonly HashSet<int> _sessionBlacklist = new HashSet<int>
         {
             14637, // Zorbin Fandazzle
             15898, // Event NPC
@@ -140,7 +161,7 @@ namespace WholesomeVendors.Blacklist
             5783,
         };
 
-        private static HashSet<int> GetListUsableZones()
+        private HashSet<int> GetListUsableZones()
         {
             HashSet<int> listZones = new HashSet<int>();
             foreach (KeyValuePair<int, int> zones in ZoneLevelDictionary)
@@ -154,7 +175,7 @@ namespace WholesomeVendors.Blacklist
             return listZones;
         }
 
-        private static readonly Dictionary<int, int> ZoneLevelDictionary = new Dictionary<int, int>
+        private readonly Dictionary<int, int> ZoneLevelDictionary = new Dictionary<int, int>
         {
             {465,1}, //AzuremystIsle
             {28,1}, //DunMorogh

@@ -4,24 +4,28 @@ using robotManager.Helpful;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing;
 using WholesomeToolbox;
 using WholesomeVendors;
-using WholesomeVendors.Blacklist;
-using WholesomeVendors.Database;
+using WholesomeVendors.Managers;
+using WholesomeVendors.Utils;
 using WholesomeVendors.WVSettings;
 using WholesomeVendors.WVState;
 using wManager;
 using wManager.Plugin;
+using wManager.Wow.Enums;
+using wManager.Wow.ObjectManager;
 using Timer = robotManager.Helpful.Timer;
 
 public class Main : IPlugin
 {
-    private static string Name = "Wholesome Vendors";
     public static bool IsLaunched;
     private Timer stateAddTimer;
     public static string version = FileVersionInfo.GetVersionInfo(Others.GetCurrentDirectory + @"\Plugins\Wholesome_Vendors.dll").FileVersion;
     private bool _statesAdded;
+    private IVendorTimerManager _vendorTimerManager;
+    private IBlackListManager _blackListManager;
+    private IPluginCacheManager _pluginCacheManager;
+    private IMemoryDBManager _memoryDBManager;
 
     public void Initialize()
     {
@@ -32,16 +36,24 @@ public class Main : IPlugin
             WTSettings.AddRecommendedBlacklistZones();
             WTSettings.AddRecommendedOffmeshConnections();
             WTTransport.AddRecommendedTransportsOffmeshes();
-            NPCBlackList.AddNPCListToBlacklist();
+
+            _vendorTimerManager = new VendorTimerManager();
+            _vendorTimerManager.Initialize();
+            _blackListManager = new BlackListManager(_vendorTimerManager);
+            _blackListManager.Initialize();
+            _memoryDBManager = new MemoryDBManager(_blackListManager);
+            _memoryDBManager.Initialize();
+            _pluginCacheManager = new PluginCacheManager(_memoryDBManager);
+            _pluginCacheManager.Initialize();
 
             if (AutoUpdater.CheckUpdate(version))
             {
-                Logger("New version downloaded, restarting, please wait");
+                Logger.Log("New version downloaded, restarting, please wait");
                 Helpers.Restart();
                 return;
             }
 
-            Logger($"Launching version {version} on client {WTLua.GetWoWVersion}");
+            Logger.Log($"Launching version {version} on client {WTLua.GetWoWVersion}");
 
             FiniteStateMachineEvents.OnRunState += StateAddEventHandler;
 
@@ -51,24 +63,40 @@ public class Main : IPlugin
                 wManagerSetting.CurrentSetting.Save();
             }
 
+            if (PluginSettings.CurrentSetting.FirstLaunch)
+            {
+                if (ObjectManager.Me.WowClass == WoWClass.Rogue)
+                {
+                    PluginSettings.CurrentSetting.BuyPoison = true;
+                }
+                if (ObjectManager.Me.WowClass == WoWClass.Hunter)
+                {
+                    PluginSettings.CurrentSetting.AmmoAmount = 2000;
+                }
+                PluginSettings.CurrentSetting.LastLevelTrained = (int)ObjectManager.Me.Level;
+
+                PluginSettings.CurrentSetting.FirstLaunch = false;
+                PluginSettings.CurrentSetting.Save();
+            }
+
             IsLaunched = true;
-            PluginCache.Initialize();
-            MemoryDB.Initialize();
         }
         catch (Exception ex)
         {
-            LoggerError("Something gone wrong!\n" + ex.Message + "\n" + ex.StackTrace);
+            Logger.LogError("Something gone wrong!\n" + ex.Message + "\n" + ex.StackTrace);
         }
     }
 
     public void Dispose()
     {
-        PluginCache.Dispose();
-        MemoryDB.Dispose();
+        _blackListManager?.Dispose();
+        _vendorTimerManager?.Dispose();
+        _memoryDBManager?.Dispose();
+        _pluginCacheManager?.Dispose();
         IsLaunched = false;
         Helpers.RestoreWRobotUserSettings();
         FiniteStateMachineEvents.OnRunState -= StateAddEventHandler;
-        Logger("Disposed");
+        Logger.Log("Disposed");
     }
 
     public void Settings()
@@ -82,7 +110,7 @@ public class Main : IPlugin
     {
         if (_statesAdded)
         {
-            Logger($"States added");
+            Logger.Log($"States added");
             FiniteStateMachineEvents.OnRunState -= StateAddEventHandler;
             return;
         }
@@ -98,39 +126,36 @@ public class Main : IPlugin
 
         if (!engine.States.Exists(eng => eng.DisplayName == "To Town"))
         {
-            LoggerError("The product you're currently using doesn't have a To Town state. Can't start.");
+            Logger.LogError("The product you're currently using doesn't have a To Town state. Can't start.");
             Dispose();
             return;
         }
 
         if (stateAddTimer == null)
+        {
             stateAddTimer = new Timer();
+        }
 
         if (stateAddTimer.IsReady && engine != null)
         {
             stateAddTimer = new Timer(3000);
 
-            WTState.AddState(engine, new BuyPoisonState(), "To Town");
-            WTState.AddState(engine, new BuyBagsState(), "To Town");
-            WTState.AddState(engine, new BuyMountState(), "To Town");
-            WTState.AddState(engine, new TrainingState(), "To Town");
-            WTState.AddState(engine, new BuyFoodState(), "To Town");
-            WTState.AddState(engine, new BuyDrinkState(), "To Town");
-            WTState.AddState(engine, new BuyAmmoState(), "To Town");
-            WTState.AddState(engine, new RepairState(), "To Town");
-            WTState.AddState(engine, new SellState(), "To Town");
+            // From bottom to top priority
+            WTState.AddState(engine, new BuyPoisonState(_memoryDBManager, _pluginCacheManager, _vendorTimerManager, _blackListManager), "To Town");
+            WTState.AddState(engine, new BuyBagsState(_memoryDBManager, _pluginCacheManager, _vendorTimerManager, _blackListManager), "To Town");
+            WTState.AddState(engine, new BuyMountState(_memoryDBManager, _pluginCacheManager, _vendorTimerManager, _blackListManager), "To Town");
+            WTState.AddState(engine, new TrainingState(_memoryDBManager, _pluginCacheManager, _vendorTimerManager, _blackListManager), "To Town");
+            WTState.AddState(engine, new BuyFoodState(_memoryDBManager, _pluginCacheManager, _vendorTimerManager, _blackListManager), "To Town");
+            WTState.AddState(engine, new BuyDrinkState(_memoryDBManager, _pluginCacheManager, _vendorTimerManager, _blackListManager), "To Town");
+            WTState.AddState(engine, new BuyAmmoState(_memoryDBManager, _pluginCacheManager, _vendorTimerManager, _blackListManager), "To Town");
+            WTState.AddState(engine, new RepairState(_memoryDBManager, _pluginCacheManager, _vendorTimerManager, _blackListManager), "To Town");
+            WTState.AddState(engine, new SellState(_memoryDBManager, _pluginCacheManager, _vendorTimerManager, _blackListManager), "To Town");
+            WTState.AddState(engine, new SendMailState(_memoryDBManager, _pluginCacheManager, _vendorTimerManager, _blackListManager), "To Town");
+
+            //engine.States.ForEach(s => Logger.Log($"state {s.DisplayName} with prio {s.Priority}"));
 
             engine.RemoveStateByName("Trainers");
             _statesAdded = true;
         }
-    }
-
-    public static void Logger(string message)
-    {
-        Logging.Write($"[{Name}]: {message}", Logging.LogType.Normal, Color.ForestGreen);
-    }
-    public static void LoggerError(string message)
-    {
-        Logging.Write($"[{Name}]: {message}", Logging.LogType.Normal, Color.Red);
     }
 }

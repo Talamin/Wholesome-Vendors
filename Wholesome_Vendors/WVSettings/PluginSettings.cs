@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
 using System.IO;
-using wManager.Wow.Enums;
+using WholesomeVendors.Utils;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
 
@@ -224,26 +224,26 @@ namespace WholesomeVendors.WVSettings
         [Description("Check this if the mounts are free on your server")]
         public bool MountsAreFree { get; set; }
 
-        public string Databasetype { get; set; }
         public int DriveByDistance { get; set; }
         public double LastUpdateDate { get; set; }
         public int LastLevelTrained { get; set; }
+        public bool FirstLaunch { get; set; }
 
         public PluginSettings()
         {
-            Databasetype = "external";
+            FirstLaunch = true;
             DriveByDistance = 100;
             FoodNbToBuy = 20;
             BestFood = false;
             DrinkNbToBuy = 0;
             BestDrink = false;
-            BuyPoison = ObjectManager.Me.WowClass == WoWClass.Rogue;
-            AmmoAmount = ObjectManager.Me.WowClass == WoWClass.Hunter ? 2000 : 0;
+            BuyPoison = false;
+            AmmoAmount = 0;
             AllowRepair = true;
             AllowSell = true;
             AllowTrain = true;
             LastUpdateDate = 0;
-            LastLevelTrained = (int)ObjectManager.Me.Level;
+            LastLevelTrained = 0;
 
             MinFreeSlots = 2;
             SellGrayItems = true;
@@ -284,7 +284,7 @@ namespace WholesomeVendors.WVSettings
             }
             catch (Exception e)
             {
-                Main.Logger("Wholesome-BuyingPlugin > Save(): " + e);
+                Logger.Log("Wholesome-BuyingPlugin > Save(): " + e);
                 return false;
             }
         }
@@ -303,7 +303,7 @@ namespace WholesomeVendors.WVSettings
             }
             catch (Exception e)
             {
-                Main.Logger("Wholesome-BuyingPlugin > Load(): " + e);
+                Logger.Log("Wholesome-BuyingPlugin > Load(): " + e);
             }
             return false;
         }

@@ -1,91 +1,98 @@
 ﻿using robotManager.FiniteStateMachine;
 using robotManager.Helpful;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using WholesomeToolbox;
-using WholesomeVendors.Blacklist;
-using WholesomeVendors.Database;
 using WholesomeVendors.Database.Models;
+using WholesomeVendors.Managers;
+using WholesomeVendors.Utils;
 using WholesomeVendors.WVSettings;
 using wManager.Wow.Bot.Tasks;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
-using Timer = robotManager.Helpful.Timer;
 
 namespace WholesomeVendors.WVState
 {
     public class BuyAmmoState : State
     {
-        public override string DisplayName { get; set; } = "WV Buying Ammunition";
+        public override string DisplayName { get; set; } = "WV Buy Ammunition";
+
+        private readonly IPluginCacheManager _pluginCacheManager;
+        private readonly IMemoryDBManager _memoryDBManager;
+        private readonly IVendorTimerManager _vendorTimerManager;
+        private readonly IBlackListManager _blackListManager;
 
         private WoWLocalPlayer _me = ObjectManager.Me;
-        private Timer _stateTimer = new Timer();
-        private ModelNpcVendor _ammoVendor;
+        private ModelCreatureTemplate _ammoVendor;
         private ModelItemTemplate _ammoToBuy;
         private int _nbAmmoInBags;
         private bool _usingDungeonProduct;
 
         private int AmmoAmountSetting => PluginSettings.CurrentSetting.AmmoAmount;
-        private int AmountToBuy => AmmoAmountSetting - GetNbAmmosInBags();
+        private int AmountToBuy => AmmoAmountSetting - _pluginCacheManager.NbAmmosInBags;
 
-        public BuyAmmoState()
+        public BuyAmmoState(
+            IMemoryDBManager memoryDBManager,
+            IPluginCacheManager pluginCacheManager,
+            IVendorTimerManager vendorTimerManager,
+            IBlackListManager blackListManager)
         {
             _usingDungeonProduct = Helpers.UsingDungeonProduct();
+            _memoryDBManager = memoryDBManager;
+            _pluginCacheManager = pluginCacheManager;
+            _vendorTimerManager = vendorTimerManager;
+            _blackListManager = blackListManager;
         }
 
         public override bool NeedToRun
         {
             get
             {
-                if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
-                    || !Main.IsLaunched
-                    || !MemoryDB.IsPopulated
-                    || !PluginCache.Initialized
-                    || PluginCache.InLoadingScreen
+                if (!Main.IsLaunched
+                    || _pluginCacheManager.InLoadingScreen
                     || Fight.InFight
-                    || PluginCache.RangedWeaponType == null
+                    || _pluginCacheManager.RangedWeaponType == null
                     || PluginSettings.CurrentSetting.AmmoAmount <= 0
-                    || !_stateTimer.IsReady
-                    || _me.IsOnTaxi)
-                    return false;
-
-                _ammoVendor = null;
-                _ammoToBuy = null;
-
-                _nbAmmoInBags = GetNbAmmosInBags();
-
-                if (PluginCache.IsInInstance)
+                    || _me.IsOnTaxi
+                    || !Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause)
                 {
                     return false;
                 }
 
-                _stateTimer = new Timer(5000);
+                _ammoVendor = null;
+                _ammoToBuy = null;
+
+                _nbAmmoInBags = _pluginCacheManager.NbAmmosInBags;
+
+                if (_pluginCacheManager.IsInInstance)
+                {
+                    return false;
+                }
 
                 if (_nbAmmoInBags <= AmmoAmountSetting / 2 || _usingDungeonProduct)
                 {
                     int amountToBuy = AmountToBuy;
-                    foreach (ModelItemTemplate ammo in MemoryDB.GetUsableAmmos())
+                    foreach (ModelItemTemplate ammo in _pluginCacheManager.UsableAmmos)
                     {
-                        if (Helpers.HaveEnoughMoneyFor(amountToBuy, ammo))
+                        if (_pluginCacheManager.HaveEnoughMoneyFor(amountToBuy, ammo))
                         {
-                            ModelNpcVendor vendor = MemoryDB.GetNearestItemVendor(ammo);
+                            ModelNpcVendor vendor = _memoryDBManager.GetNearestItemVendor(ammo);
                             if (vendor != null)
                             {
                                 _ammoToBuy = ammo;
-                                _ammoVendor = vendor;
+                                _ammoVendor = vendor.CreatureTemplate;
                                 // Normal
                                 if (_nbAmmoInBags <= AmmoAmountSetting / 10
                                     || _usingDungeonProduct && _nbAmmoInBags < AmmoAmountSetting)
                                 {
-                                    DisplayName = $"Buying {amountToBuy} x {_ammoToBuy.Name} at vendor {_ammoVendor.CreatureTemplate.name}";
+                                    DisplayName = $"Buying {amountToBuy} x {_ammoToBuy.Name} at vendor {_ammoVendor.name}";
                                     return true;
                                 }
                                 // Drive-by
                                 if (_nbAmmoInBags <= AmmoAmountSetting / 2
                                     && ObjectManager.Me.Position.DistanceTo(vendor.CreatureTemplate.Creature.GetSpawnPosition) < PluginSettings.CurrentSetting.DriveByDistance)
                                 {
-                                    DisplayName = $"Drive-by buying {amountToBuy} x {_ammoToBuy.Name} at vendor {_ammoVendor.CreatureTemplate.name}";
+                                    DisplayName = $"Drive-by buying {amountToBuy} x {_ammoToBuy.Name} at vendor {_ammoVendor.name}";
                                     return true;
                                 }
                             }
@@ -98,64 +105,38 @@ namespace WholesomeVendors.WVState
 
         public override void Run()
         {
-            Main.Logger(DisplayName);
+            Vector3 vendorPosition = _ammoVendor.Creature.GetSpawnPosition;
 
-            Helpers.CheckMailboxNearby(_ammoVendor.CreatureTemplate);
-            Vector3 vendorPos = _ammoVendor.CreatureTemplate.Creature.GetSpawnPosition;
-
-            if (_me.Position.DistanceTo(vendorPos) >= 10)
+            if (!Helpers.TravelToVendorRange(_vendorTimerManager, _ammoVendor, DisplayName) 
+                || Helpers.NpcIsAbsentOrDead(_blackListManager, _ammoVendor))
             {
-                GoToTask.ToPositionAndIntecractWithNpc(vendorPos, _ammoVendor.entry);
+                return;
             }
 
-            if (_me.Position.DistanceTo(vendorPos) < 10)
+            for (int i = 0; i <= 5; i++)
             {
-                if (Helpers.NpcIsAbsentOrDead(_ammoVendor.CreatureTemplate))
-                    return;
-
-                //WTSettings.RemoveItemFromDoNotSellAndMailList(MemoryDB.GetUsableAmmos().Select(ammo => ammo.Name).ToList());
-                //WTSettings.AddItemToDoNotSellAndMailList(new List<string>() { _ammoToBuy.Name });
-
-                for (int i = 0; i <= 5; i++)
+                Logger.Log($"Attempt {i + 1}");
+                GoToTask.ToPositionAndIntecractWithNpc(vendorPosition, _ammoVendor.entry, i);
+                Thread.Sleep(1000);
+                WTGossip.ClickOnFrameButton("StaticPopup1Button2"); // discard hearthstone popup
+                if (WTGossip.IsVendorGossipOpen)
                 {
-                    Main.Logger($"Attempt {i + 1}");
-                    GoToTask.ToPositionAndIntecractWithNpc(vendorPos, _ammoVendor.entry, i);
+                    Helpers.SellItems(_pluginCacheManager);
                     Thread.Sleep(1000);
-                    WTGossip.ClickOnFrameButton("StaticPopup1Button2"); // discard hearthstone popup
-                    if (WTGossip.IsVendorGossipOpen)
+                    WTGossip.BuyItem(_ammoToBuy.Name, AmountToBuy, _ammoToBuy.BuyCount);
+                    Thread.Sleep(1000);
+
+                    if (_pluginCacheManager.NbAmmosInBags >= AmmoAmountSetting)
                     {
-                        Helpers.SellItems();
-                        Thread.Sleep(1000);
-                        WTGossip.BuyItem(_ammoToBuy.Name, AmountToBuy, _ammoToBuy.BuyCount);
-                        Thread.Sleep(1000);
-
-                        if (GetNbAmmosInBags() >= AmmoAmountSetting)
-                        {
-                            Helpers.CloseWindow();
-                            return;
-                        }
+                        Helpers.CloseWindow();
+                        return;
                     }
-                    Helpers.CloseWindow();
                 }
-
-                Main.Logger($"Failed to buy {_ammoToBuy.Name}, blacklisting vendor");
-                NPCBlackList.AddNPCToBlacklist(_ammoVendor.CreatureTemplate.entry);
+                Helpers.CloseWindow();
             }
-        }
 
-        private int GetNbAmmosInBags()
-        {
-            int nbAmmosInBags = 0;
-            List<WoWItem> bagItems = PluginCache.BagItems;
-            List<ModelItemTemplate> allAmmos = MemoryDB.GetUsableAmmos();
-            foreach (WoWItem bagItem in bagItems)
-            {
-                if (allAmmos.Exists(ua => ua.Entry == bagItem.Entry))
-                {
-                    nbAmmosInBags += ItemsManager.GetItemCountById((uint)bagItem.Entry);
-                }
-            }
-            return nbAmmosInBags;
+            Logger.Log($"Failed to buy {_ammoToBuy.Name}, blacklisting vendor");
+            _blackListManager.AddNPCToBlacklist(_ammoVendor.entry);
         }
     }
 }
