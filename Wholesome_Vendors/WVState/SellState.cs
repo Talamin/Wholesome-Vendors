@@ -9,6 +9,7 @@ using WholesomeVendors.WVSettings;
 using wManager.Wow.Bot.Tasks;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
+using Timer = robotManager.Helpful.Timer;
 
 namespace WholesomeVendors.WVState
 {
@@ -17,6 +18,7 @@ namespace WholesomeVendors.WVState
         private ModelCreatureTemplate _vendorNpc;
         private int _nbFreeSlotsOnNeedToRun;
         private bool _usingDungeonProduct;
+        private Timer _stateTimer = new Timer(); // avoid triggering too often
 
         public override string DisplayName { get; set; } = "WV Sell";
 
@@ -44,6 +46,7 @@ namespace WholesomeVendors.WVState
             get
             {
                 if (!PluginSettings.CurrentSetting.AllowSell
+                    || !_stateTimer.IsReady
                     || _pluginCacheManager.ItemsToSell.Count <= 0
                     || !Main.IsLaunched
                     || _pluginCacheManager.InLoadingScreen
@@ -108,6 +111,7 @@ namespace WholesomeVendors.WVState
                     if (_pluginCacheManager.NbFreeSlots > _nbFreeSlotsOnNeedToRun)
                     {
                         Helpers.CloseWindow();
+                        _stateTimer = new Timer(1000 * 60 * 5);
                         return;
                     }
                 }

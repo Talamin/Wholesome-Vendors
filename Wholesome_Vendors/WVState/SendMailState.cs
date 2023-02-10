@@ -65,6 +65,8 @@ namespace WholesomeVendors.WVState
 
                 _nbFreeSlotsOnNeedToRun = _pluginCacheManager.NbFreeSlots;
 
+                //Logger.Log($"{_pluginCacheManager.ItemsToMail.Count} items to mail");
+
                 // Normal
                 if (_nbFreeSlotsOnNeedToRun <= MinFreeSlots
                     || _usingDungeonProduct && _pluginCacheManager.ItemsToMail.Count > 5)
@@ -80,9 +82,20 @@ namespace WholesomeVendors.WVState
                 // Drive-by
                 if (_pluginCacheManager.ItemsToMail.Count > 5)
                 {
-                    _mailBox = _memoryDBManager.GetNearestMailBoxFromMe(300);
-                    if (_mailBox != null
-                        && _mailBox.GameObject.GetSpawnPosition.DistanceTo(ObjectManager.Me.Position) < PluginSettings.CurrentSetting.DriveByDistance)
+                    _mailBox = _memoryDBManager.GetNearestMailBoxFromMe(PluginSettings.CurrentSetting.DriveByDistance);
+                    if (_mailBox != null)
+                    {
+                        DisplayName = $"Drive-by mail to {_recipient} ({_pluginCacheManager.ItemsToMail.Count} items to send)";
+                        return true;
+                    }
+                }
+
+                // Drive-by on sell
+                if (_pluginCacheManager.ItemsToMail.Count > 0
+                    && _pluginCacheManager.ItemsToSell.Count > 5)
+                {
+                    _mailBox = _memoryDBManager.GetNearestMailBoxFromMe(PluginSettings.CurrentSetting.DriveByDistance);
+                    if (_mailBox != null)
                     {
                         DisplayName = $"Drive-by mail to {_recipient} ({_pluginCacheManager.ItemsToMail.Count} items to send)";
                         return true;
@@ -153,17 +166,17 @@ namespace WholesomeVendors.WVState
                     }
 
                     Lua.LuaDoString("SendMailMailButton:Click();");
-
                     Thread.Sleep(1000);
                     Mail.CloseMailFrame();
-                }
 
-                // force sell what we were unable to send
-                foreach (WVItem item in _pluginCacheManager.ItemsToMail)
-                {
-                    Logger.LogError($"Unable to send {item.Name}, removing from mail list.");
-                    _pluginCacheManager.SetItemToUnMailable(item);
+                    // force sell what we were unable to send
+                    foreach (WVItem item in _pluginCacheManager.ItemsToMail)
+                    {
+                        Logger.LogError($"Unable to send {item.Name}, removing from mail list.");
+                        _pluginCacheManager.SetItemToUnMailable(item);
+                    }
                 }
+                _stateTimer = new Timer(1000 * 60 * 5);
             }
         }
 
