@@ -2,6 +2,7 @@
 using robotManager.FiniteStateMachine;
 using robotManager.Helpful;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using WholesomeToolbox;
@@ -36,6 +37,12 @@ public class Main : IPlugin
             WTSettings.AddRecommendedBlacklistZones();
             WTSettings.AddRecommendedOffmeshConnections();
             WTTransport.AddRecommendedTransportsOffmeshes();
+            WTSettings.AddItemToDoNotSellAndMailList(new List<string>()
+            {
+                "Hearthstone",
+                "Skinning Knife",
+                "Mining Pick"
+            });
 
             _vendorTimerManager = new VendorTimerManager();
             _vendorTimerManager.Initialize();
