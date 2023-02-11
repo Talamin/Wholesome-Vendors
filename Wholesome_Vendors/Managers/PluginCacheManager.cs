@@ -552,7 +552,9 @@ namespace WholesomeVendors.Managers
                     }
 
                     // Don't sell items that can potentially be equipped later
-                    if (item.IsEquippable && item.EquipSlot != "INVTYPE_AMMO")
+                    if (item.IsEquippable 
+                        && item.EquipSlot != "INVTYPE_AMMO"
+                        && item.Quality > 1)
                     {
                         if (item.ReqLevel > ObjectManager.Me.Level && item.Quality > 1)
                         {
