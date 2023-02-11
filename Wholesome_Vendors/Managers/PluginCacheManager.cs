@@ -366,6 +366,12 @@ namespace WholesomeVendors.Managers
                     return unpack(result);
                 ");
 
+                if (itemsFromLua.Length <= 0 || string.IsNullOrEmpty(itemsFromLua[0]))
+                {
+                    Logger.LogError($"[RecordBagItems] LUA info was empty");
+                    return;
+                }
+
                 BagItems.Clear();
                 foreach (string item in itemsFromLua)
                 {
