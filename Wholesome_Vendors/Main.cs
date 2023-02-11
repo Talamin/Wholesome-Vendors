@@ -148,6 +148,7 @@ public class Main : IPlugin
             stateAddTimer = new Timer(3000);
 
             // From bottom to top priority
+            WTState.AddState(engine, new TrainWeaponsState(_memoryDBManager, _pluginCacheManager, _vendorTimerManager, _blackListManager), "To Town");
             WTState.AddState(engine, new BuyPoisonState(_memoryDBManager, _pluginCacheManager, _vendorTimerManager, _blackListManager), "To Town");
             WTState.AddState(engine, new BuyBagsState(_memoryDBManager, _pluginCacheManager, _vendorTimerManager, _blackListManager), "To Town");
             WTState.AddState(engine, new BuyMountState(_memoryDBManager, _pluginCacheManager, _vendorTimerManager, _blackListManager), "To Town");

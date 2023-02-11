@@ -1,9 +1,12 @@
-﻿namespace WholesomeVendors.Database.Models
+﻿using System.Collections.Generic;
+
+namespace WholesomeVendors.Database.Models
 {
     public class ModelSpell
     {
         public ModelItemTemplate AssociatedItem { get; set; }
         public ModelNpcTrainer NpcTrainer { get; set; }
+        public List<ModelNpcTrainer> NpcTrainers { get; set; }
 
         public int Id { get; set; }
         public int effectBasePoints_2 { get; set; }

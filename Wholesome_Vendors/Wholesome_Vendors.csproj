@@ -269,6 +269,7 @@
     <Compile Include="WVState\RepairState.cs" />
     <Compile Include="WVState\SendMailState.cs" />
     <Compile Include="WVState\SellState.cs" />
+    <Compile Include="WVState\TrainWeaponsState.cs" />
     <Compile Include="WVState\TrainingState.cs" />
     <Compile Include="WVSettings\PluginSettings.cs" />
   </ItemGroup>

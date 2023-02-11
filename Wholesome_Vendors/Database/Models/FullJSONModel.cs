@@ -15,5 +15,6 @@ namespace WholesomeVendors.Database.Models
         public List<ModelGameObjectTemplate> Mailboxes { get; set; }
         public List<ModelSpell> Mounts { get; set; }
         public List<ModelSpell> RidingSpells { get; set; }
+        public List<ModelSpell> WeaponSpells { get; set; }
     }
 }

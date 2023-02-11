@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using WholesomeVendors.Database.Models;
 using WholesomeVendors.Utils;
-using wManager.Wow.ObjectManager;
+using wManager.Wow.Enums;
 
 namespace WholesomeVendors.Managers
 {
@@ -27,6 +27,8 @@ namespace WholesomeVendors.Managers
         int NbFoodsInBags { get; }
         int NbDeadlyPoisonsInBags { get; }
         int NbInstantPoisonsInBags { get; }
+        List<(SkillLine, int)> WeaponsSpellsToLearn { get; }
+        List<string> KnownSkills { get; }
 
         void RecordKnownMounts();
         bool HaveEnoughMoneyFor(int amount, ModelItemTemplate item);

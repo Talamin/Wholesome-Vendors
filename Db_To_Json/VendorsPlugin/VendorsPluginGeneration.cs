@@ -221,6 +221,24 @@ namespace Db_To_Json.VendorsPlugin
             }
             Console.WriteLine($"[Vendors] Riding spells took {ridingSpellsWatch.ElapsedMilliseconds}ms");
 
+            // Weapon skills
+            Stopwatch weaponSkillsWatch = Stopwatch.StartNew();
+            string weaponSkillsSql = $@"
+                SELECT * FROM spell
+                WHERE (""Attributes"" = 192
+                    AND EquippedItemSubclass  <> 0
+                    AND Effect_2 = 60
+                    AND SpellIconID > 1) OR ID = 15590;
+            ";
+            List<VendorsModelSpell> weaponSpells = con.Query<VendorsModelSpell>(weaponSkillsSql).ToList();
+            foreach (VendorsModelSpell weaponSpell in weaponSpells)
+            {
+                weaponSpell.NpcTrainers = QueryNpcWeaponTrainersBySpellID(con, weaponSpell.Id);
+            }
+            weaponSpells.RemoveAll(ws => ws.NpcTrainers.Count == 0);
+            Console.WriteLine($"[Vendors] Weapon spells took {weaponSkillsWatch.ElapsedMilliseconds}ms");
+
+
             File.Delete(_vendorsJsonOutputPath);
             File.Delete(_zipFilePath);
             File.Delete(_vendorsJsonCopyToPath + $"{JSONGenerator.PathSep}{_jsonFileName}");
@@ -229,7 +247,7 @@ namespace Db_To_Json.VendorsPlugin
             {
                 var serializer = new JsonSerializer();
                 serializer.Serialize(file, new VendorsJsonExport(drinks, foods, ammos, poisons, bags, sellers, repairers,
-                    trainers, mailboxes, mountsSpells, ridingSpells));
+                    trainers, mailboxes, mountsSpells, ridingSpells, weaponSpells));
                 Console.WriteLine($"[Vendors] JSON created in {_vendorsJsonOutputPath}");
                 long fileSize = new FileInfo(_vendorsJsonOutputPath).Length;
                 Console.WriteLine($"[Vendors] JSON size is {((float)fileSize / 1000000).ToString("0.00")} MB");
@@ -320,6 +338,26 @@ namespace Db_To_Json.VendorsPlugin
             return result;
         }
 
+        private static List<VendorsModelNpcTrainer> QueryNpcWeaponTrainersBySpellID(SQLiteConnection con, int spellId)
+        {
+            string sql = $@"
+                SELECT * FROM npc_trainer
+                WHERE SpellID = {spellId};
+            ";
+
+            List<VendorsModelNpcTrainer> result = con.Query<VendorsModelNpcTrainer>(sql).ToList();
+            foreach (VendorsModelNpcTrainer trainer in result)
+            {
+                trainer.VendorTemplates = QueryCreatureTemplatesByEntries(con, new int[] { trainer.ID });
+                List<VendorsModelCreature> creatures = QueryCreaturesByEntries(con, new int[] { trainer.ID });
+                foreach (VendorsModelCreatureTemplate template in trainer.VendorTemplates)
+                {
+                    template.Creature = creatures.Find(creature => creature.id == template.entry);
+                }
+            }
+            return result;
+        }
+
         private static VendorsModelNpcTrainer QueryNpcTrainerBySpellID(SQLiteConnection con, int spellId)
         {
             string sql = $@"
@@ -358,6 +396,7 @@ namespace Db_To_Json.VendorsPlugin
         public List<VendorsModelGameObjectTemplate> MailBoxes { get; }
         public List<VendorsModelSpell> Mounts { get; }
         public List<VendorsModelSpell> RidingSpells { get; }
+        public List<VendorsModelSpell> WeaponSpells { get; }
 
         public VendorsJsonExport(List<VendorsModelItemTemplate> waters,
             List<VendorsModelItemTemplate> foods,
@@ -369,7 +408,8 @@ namespace Db_To_Json.VendorsPlugin
             List<VendorsModelCreatureTemplate> trainers,
             List<VendorsModelGameObjectTemplate> mailboxes,
             List<VendorsModelSpell> mounts,
-            List<VendorsModelSpell> ridingSpells)
+            List<VendorsModelSpell> ridingSpells,
+            List<VendorsModelSpell> weaponSpells)
         {
             Waters = waters;
             Foods = foods;
@@ -382,6 +422,7 @@ namespace Db_To_Json.VendorsPlugin
             Bags = bags;
             Mounts = mounts;
             RidingSpells = ridingSpells;
+            WeaponSpells = weaponSpells;
         }
     }
 }

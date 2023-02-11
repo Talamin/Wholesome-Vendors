@@ -40,6 +40,8 @@ namespace WholesomeVendors.Managers
         public int NbDeadlyPoisonsInBags { get; private set; }
         public int NbInstantPoisonsInBags { get; private set; }
         public List<ModelItemTemplate> UsableAmmos { get; private set; } = new List<ModelItemTemplate>();
+        public List<(SkillLine, int)> WeaponsSpellsToLearn { get; private set; } = new List<(SkillLine, int)>();
+        public List<string> KnownSkills { get; private set; } = new List<string>();
 
         private object _cacheLock = new object();
 
@@ -52,6 +54,20 @@ namespace WholesomeVendors.Managers
         {
             lock (_cacheLock)
             {
+                // Make sure all skills are expanded
+                Lua.LuaDoString($@"
+                    local skills = {{}};
+                    for i = 1, 100 do
+                        local skillName, header, isExpanded, skillRank, numTempPoints, skillModifier, skillMaxRank, 
+                    isAbandonable, stepCost, rankCost, minLevel, skillCostType, skillDescription = GetSkillLineInfo(i);
+                        if skillName ~= nil then
+                            if (header ~= nil) then
+                                ExpandSkillHeader(i);
+                            end        
+                        end
+                    end
+                ");
+
                 RecordKnownMounts();
                 RecordBags();
                 RecordRangedWeaponType();
@@ -234,6 +250,34 @@ namespace WholesomeVendors.Managers
         private void RecordSkills()
         {
             RidingSkill = Skill.GetValue(SkillLine.Riding);
+            List<SkillLine> myClassWeaponSkillsToLearn = classWeaponSkills[ObjectManager.Me.WowClass]
+                .Where(skill => Skill.GetValue(skill) <= 0)
+                .ToList();
+            List<(SkillLine, int)> weaponSpellsToLearn = new List<(SkillLine, int)>();
+            foreach (KeyValuePair<SkillLine, int> kvp in _skillSpells)
+            {
+                if (myClassWeaponSkillsToLearn.Contains(kvp.Key))
+                {
+                    weaponSpellsToLearn.Add((kvp.Key, kvp.Value));
+                }
+            }
+
+            string[] luaSkills = Lua.LuaDoString<string[]>($@"
+                local skills = {{}};
+                for i = 1, GetNumSkillLines() do
+                    local skillName, header, isExpanded, skillRank, numTempPoints, skillModifier, skillMaxRank, 
+                        isAbandonable, stepCost, rankCost, minLevel, skillCostType, skillDescription = GetSkillLineInfo(i);
+                    if skillName ~= nil then
+                        if (header == nil) then
+                            table.insert(skills, skillName);
+                        end        
+                    end
+                end
+                return unpack(skills);
+            ");
+
+            KnownSkills = luaSkills.ToList();
+            WeaponsSpellsToLearn = weaponSpellsToLearn;
         }
 
         private void RecordBags()
@@ -551,5 +595,130 @@ namespace WholesomeVendors.Managers
         }
 
         public bool HaveEnoughMoneyFor(int amount, ModelItemTemplate item) => Money >= item.BuyPrice * amount / item.BuyCount;
+
+        private Dictionary<SkillLine, int> _skillSpells = new Dictionary<SkillLine, int>()
+        {
+            { SkillLine.Axes, 196 },
+            { SkillLine.TwoHandedAxes, 197 },
+            { SkillLine.Maces, 198 },
+            { SkillLine.TwoHandedMaces, 199 },
+            { SkillLine.Polearms, 200 },
+            { SkillLine.Swords, 201 },
+            { SkillLine.TwoHandedSwords, 202 },
+            { SkillLine.Staves, 227 },
+            { SkillLine.Bows, 264 },
+            { SkillLine.Guns, 266 },
+            { SkillLine.Daggers, 1180 },
+            { SkillLine.Crossbows, 5011 },
+            { SkillLine.FistWeapons, 15590 },
+        };
+
+        private Dictionary<WoWClass, List<SkillLine>> classWeaponSkills = new Dictionary<WoWClass, List<SkillLine>>()
+        {
+            { WoWClass.DeathKnight, new List<SkillLine>()
+                {
+                    SkillLine.Axes,
+                    SkillLine.TwoHandedAxes,
+                    SkillLine.Swords,
+                    SkillLine.TwoHandedSwords,
+                    SkillLine.Maces,
+                    SkillLine.TwoHandedMaces,
+                    SkillLine.Polearms,
+                }},
+            { WoWClass.Druid, new List<SkillLine>()
+                {
+                    SkillLine.Maces,
+                    SkillLine.TwoHandedMaces,
+                    SkillLine.Polearms,
+                    SkillLine.Staves,
+                    SkillLine.Daggers,
+                    SkillLine.FistWeapons,
+                }},
+            { WoWClass.Hunter, new List<SkillLine>()
+                {
+                    SkillLine.Axes,
+                    SkillLine.TwoHandedAxes,
+                    SkillLine.Swords,
+                    SkillLine.TwoHandedSwords,
+                    SkillLine.Polearms,
+                    SkillLine.Staves,
+                    SkillLine.Daggers,
+                    SkillLine.FistWeapons,
+                    SkillLine.Bows,
+                    SkillLine.Crossbows,
+                    SkillLine.Guns,
+                }},
+            { WoWClass.Mage, new List<SkillLine>()
+                {
+                    SkillLine.Swords,
+                    SkillLine.Staves,
+                    SkillLine.Daggers,
+                    SkillLine.Wands,
+                }},
+            { WoWClass.Paladin, new List<SkillLine>()
+                {
+                    SkillLine.Axes,
+                    SkillLine.TwoHandedAxes,
+                    SkillLine.Swords,
+                    SkillLine.TwoHandedSwords,
+                    SkillLine.Maces,
+                    SkillLine.TwoHandedMaces,
+                    SkillLine.Polearms,
+                }},
+            { WoWClass.Priest, new List<SkillLine>()
+                {
+                    SkillLine.Maces,
+                    SkillLine.Staves,
+                    SkillLine.Daggers,
+                    SkillLine.Wands,
+                }},
+            { WoWClass.Rogue, new List<SkillLine>()
+                {
+                    SkillLine.Axes,
+                    SkillLine.Maces,
+                    SkillLine.Swords,
+                    SkillLine.Daggers,
+                    SkillLine.FistWeapons,
+                    SkillLine.Bows,
+                    SkillLine.Crossbows,
+                    SkillLine.Guns,
+                    SkillLine.Thrown,
+                }},
+            { WoWClass.Shaman, new List<SkillLine>()
+                {
+                    SkillLine.Axes,
+                    SkillLine.TwoHandedAxes,
+                    SkillLine.Maces,
+                    SkillLine.TwoHandedMaces,
+                    SkillLine.Polearms,
+                    SkillLine.Staves,
+                    SkillLine.Daggers,
+                    SkillLine.FistWeapons,
+                }},
+            { WoWClass.Warlock, new List<SkillLine>()
+                {
+                    SkillLine.Swords,
+                    SkillLine.Staves,
+                    SkillLine.Daggers,
+                    SkillLine.Wands,
+                }},
+            { WoWClass.Warrior, new List<SkillLine>()
+                {
+                    SkillLine.Axes,
+                    SkillLine.TwoHandedAxes,
+                    SkillLine.Swords,
+                    SkillLine.TwoHandedSwords,
+                    SkillLine.Maces,
+                    SkillLine.TwoHandedMaces,
+                    SkillLine.Polearms,
+                    SkillLine.Staves,
+                    SkillLine.Daggers,
+                    SkillLine.FistWeapons,
+                    SkillLine.Bows,
+                    SkillLine.Crossbows,
+                    SkillLine.Guns,
+                    SkillLine.Thrown,
+                }},
+        };
     }
 }

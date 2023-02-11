@@ -29,6 +29,7 @@ namespace WholesomeVendors.Managers
         private List<ModelGameObjectTemplate> _mailboxes;
         private List<ModelSpell> _mounts;
         private List<ModelSpell> _ridingSpells;
+        private List<ModelSpell> _weaponSpells;
 
         public List<ModelItemTemplate> GetAllPoisons => _poisons;
         public List<ModelItemTemplate> GetAllAmmos => _ammos;
@@ -95,9 +96,15 @@ namespace WholesomeVendors.Managers
                 _mounts = fullJsonModel.Mounts
                     .FindAll(mount => mount.AssociatedItem != null && (mount.AssociatedItem.AllowableRace & (int)Helpers.GetFactions()) != 0);
                 _ridingSpells = fullJsonModel.RidingSpells;
+                _weaponSpells = fullJsonModel.WeaponSpells;
                 foreach (ModelSpell ridingSpell in _ridingSpells)
                 {
                     ridingSpell.NpcTrainer.VendorTemplates.RemoveAll(npc => !npc.IsFriendly);
+                }
+                _weaponSpells = fullJsonModel.WeaponSpells;
+                foreach (ModelSpell weaponSpell in _weaponSpells)
+                {
+                    weaponSpell.NpcTrainers.RemoveAll(npc => npc.VendorTemplates.Any(vt => !vt.IsFriendly));
                 }
             }
 
@@ -326,8 +333,26 @@ namespace WholesomeVendors.Managers
             return _trainers
                 .Where(vendor => _blackListManager.IsVendorValid(vendor)
                     && (ObjectManager.Me.Level <= vendor.minLevel || vendor.minLevel > 15 || vendor.entry == 328)) // Allow Zaldimar Wefhellt (goldshire mage trainer)
-                .OrderBy(trainer => ObjectManager.Me.Position.DistanceTo(trainer.Creature.GetSpawnPosition))
+                .OrderBy(vendor => ObjectManager.Me.Position.DistanceTo(vendor.Creature.GetSpawnPosition))
                 .FirstOrDefault();
         }
+
+        public ModelCreatureTemplate GetNearestWeaponsTrainer(int spellId)
+        {
+            ModelSpell spellToLearn = _weaponSpells
+                .Find(ws => ws.Id == spellId);
+            List<ModelCreatureTemplate> potentialVendors = new List<ModelCreatureTemplate>();
+            foreach (ModelNpcTrainer mct in spellToLearn.NpcTrainers)
+            {
+                potentialVendors.AddRange(mct.VendorTemplates);
+            }
+            return potentialVendors
+                .Where(vendor => _blackListManager.IsVendorValid(vendor))
+                .Where(vendor => ObjectManager.Me.Position.DistanceTo(vendor.Creature.GetSpawnPosition) < 1000)
+                .OrderBy(vendor => ObjectManager.Me.Position.DistanceTo(vendor.Creature.GetSpawnPosition))
+                .FirstOrDefault();
+        }
+
+        public ModelSpell GetWeaponSpellById(int id) => _weaponSpells.Find(w => w.Id == id);
     }
 }

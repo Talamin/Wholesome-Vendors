@@ -122,15 +122,22 @@ namespace WholesomeVendors.WVSettings
         [Setting]
         [DefaultValue(true)]
         [Category("Training")]
-        [DisplayName("Train")]
-        [Description("Allow training")]
+        [DisplayName("Train spells")]
+        [Description("Allow spells training")]
         public bool AllowTrain { get; set; }
 
         [Setting]
         [Category("Training")]
-        [DisplayName("Training levels")]
+        [DisplayName("Spell training levels")]
         [Description("Set at which levels you want to train. Leave empty if you want to train every 2 levels.")]
         public List<int> TrainLevels { get; set; }
+
+        [Setting]
+        [DefaultValue(true)]
+        [Category("Training")]
+        [DisplayName("Train weapons")]
+        [Description("Allow weapons training. Will only train when in city range of a weapon trainer.")]
+        public bool AllowWeaponTrain { get; set; }
 
         [Setting]
         [DefaultValue(false)]
@@ -231,8 +238,7 @@ namespace WholesomeVendors.WVSettings
 
         public PluginSettings()
         {
-            FirstLaunch = true;
-            DriveByDistance = 100;
+            FoodType = "Any";
             FoodNbToBuy = 20;
             BestFood = false;
             DrinkNbToBuy = 0;
@@ -241,9 +247,6 @@ namespace WholesomeVendors.WVSettings
             AmmoAmount = 0;
             AllowRepair = true;
             AllowSell = true;
-            AllowTrain = true;
-            LastUpdateDate = 0;
-            LastLevelTrained = 0;
 
             MinFreeSlots = 2;
             SellGrayItems = true;
@@ -269,9 +272,15 @@ namespace WholesomeVendors.WVSettings
             MountSkillsAreFree = false;
             MountsAreFree = false;
 
-            FoodType = "Any";
 
+            AllowTrain = true;
+            AllowWeaponTrain = true;
             TrainLevels = new List<int> { };
+            LastLevelTrained = 0;
+
+            LastUpdateDate = 0;
+            FirstLaunch = true;
+            DriveByDistance = 100;
         }
 
         public static PluginSettings CurrentSetting { get; set; }
