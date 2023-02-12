@@ -137,13 +137,21 @@ namespace WholesomeVendors.WVState
                 }
             }
 
-            if (GoToTask.ToPositionAndIntecractWithGameObject(_mailBox.GameObject.GetSpawnPosition, _mailBox.entry))
+            for (int k = 0; k < 5; k++)
             {
+                Logger.Log($"Attempt {k + 1}");
+                GoToTask.ToPositionAndIntecractWithGameObject(_mailBox.GameObject.GetSpawnPosition, _mailBox.entry);
+                Thread.Sleep(1000);
+                bool mailFrameDisplayed = Lua.LuaDoString<bool>($" return MailFrameTab2:IsVisible();");                
+                if (!mailFrameDisplayed)
+                {
+                    continue;
+                }
+
                 for (int i = 0; i < mailStacks.Count; i++)
                 {
                     Logger.Log($"Send stack {i + 1} with {mailStacks[i].Count} items :");
                     GoToTask.ToPositionAndIntecractWithGameObject(_mailBox.GameObject.GetSpawnPosition, _mailBox.entry);
-
                     Lua.LuaDoString($@"
                         MailFrameTab2:Click();
                         SendMailNameEditBox:SetText(""{_recipient}"");
@@ -179,8 +187,13 @@ namespace WholesomeVendors.WVState
                         }
                     }
                 }
+
                 _stateTimer = new Timer(1000 * 60 * 5);
+                return;
             }
+
+            Logger.Log($"Failed to send mail, blacklisting mailbox");
+            _blackListManager.AddNPCToBlacklist(_mailBox.entry);
         }
 
         private List<WoWItemQuality> GetListQualityToMail()

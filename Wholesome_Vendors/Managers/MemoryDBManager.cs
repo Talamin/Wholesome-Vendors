@@ -262,7 +262,9 @@ namespace WholesomeVendors.Managers
                 && food.RequiredLevel > ObjectManager.Me.Level - minLevel);
 
             if (PluginSettings.CurrentSetting.FoodType != "Any")
+            {
                 result.RemoveAll(food => food.FoodType != FoodTypeCode[PluginSettings.CurrentSetting.FoodType]);
+            }
 
             return result;
         }
