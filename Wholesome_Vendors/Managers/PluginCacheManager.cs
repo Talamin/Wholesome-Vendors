@@ -520,7 +520,8 @@ namespace WholesomeVendors.Managers
 
                     if (!ShouldMailByQuality(item)
                         || wManagerSetting.CurrentSetting.DoNotMailList.Contains(item.Name)
-                        || item.SellPrice <= 0)
+                        || item.SellPrice <= 0
+                        || ItemMightBeEquippableLater(item)) // Don't send items that can potentially be equipped later
                     {
                         continue;
                     }
@@ -546,24 +547,10 @@ namespace WholesomeVendors.Managers
                     }
 
                     if (!ShouldSellByQuality(item)
-                        || item.SellPrice <= 0)
+                        || item.SellPrice <= 0
+                        || ItemMightBeEquippableLater(item)) // Don't sell items that can potentially be equipped later
                     {
                         continue;
-                    }
-
-                    // Don't sell items that can potentially be equipped later
-                    if (item.IsEquippable 
-                        && item.EquipSlot != "INVTYPE_AMMO"
-                        && item.Quality > 1)
-                    {
-                        if (item.ReqLevel > ObjectManager.Me.Level && item.Quality > 1)
-                        {
-                            WTSettings.AddToDoNotSellList(new List<string>() { item.Name });
-                        }
-                        else
-                        {
-                            WTSettings.RemoveFromDoNotSellList(new List<string>() { item.Name });
-                        }
                     }
 
                     if (!wManagerSetting.CurrentSetting.DoNotSellList.Contains(item.Name))
@@ -574,6 +561,14 @@ namespace WholesomeVendors.Managers
 
                 ItemsToSell = listItemsToSell;
             }
+        }
+
+        private bool ItemMightBeEquippableLater(WVItem item)
+        {
+            return item.IsEquippable
+                && item.EquipSlot != "INVTYPE_AMMO"
+                && item.Quality > 1
+                && item.ReqLevel > ObjectManager.Me.Level;
         }
 
         private bool ShouldSellByQuality(WVItem item)

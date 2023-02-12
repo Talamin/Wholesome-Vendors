@@ -170,10 +170,13 @@ namespace WholesomeVendors.WVState
                     Mail.CloseMailFrame();
 
                     // force sell what we were unable to send
-                    foreach (WVItem item in _pluginCacheManager.ItemsToMail)
+                    foreach (WVItem item in mailStacks[i])
                     {
-                        Logger.LogError($"Unable to send {item.Name}, removing from mail list.");
-                        _pluginCacheManager.SetItemToUnMailable(item);
+                        if (_pluginCacheManager.BagItems.Exists(bagItem => bagItem.Entry == item.Entry && bagItem.InBag == item.InBag && bagItem.InSlot == item.InSlot))
+                        {
+                            Logger.LogError($"Unable to send {item.Name}, removing from mail list.");
+                            _pluginCacheManager.SetItemToUnMailable(item);
+                        }
                     }
                 }
                 _stateTimer = new Timer(1000 * 60 * 5);
