@@ -114,6 +114,7 @@ namespace WholesomeVendors.WVState
 
         public override void Run()
         {
+            _pluginCacheManager.SanitizeDNSAndDNMLists();
             Vector3 vendorPosition = _foodVendor.Creature.GetSpawnPosition;
 
             if (!Helpers.TravelToVendorRange(_vendorTimerManager, _foodVendor, DisplayName)

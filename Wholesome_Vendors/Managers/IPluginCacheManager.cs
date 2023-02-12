@@ -33,6 +33,6 @@ namespace WholesomeVendors.Managers
         void RecordKnownMounts();
         bool HaveEnoughMoneyFor(int amount, ModelItemTemplate item);
         void SetItemToUnMailable(WVItem umItem);
-
+        void SanitizeDNSAndDNMLists();
     }
 }

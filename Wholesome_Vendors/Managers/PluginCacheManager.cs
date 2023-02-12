@@ -155,7 +155,7 @@ namespace WholesomeVendors.Managers
             }
         }
 
-        private void SanitizeDNSAndDNMLists()
+        public void SanitizeDNSAndDNMLists()
         {
             if (IsInInstance) return;
 
@@ -165,7 +165,6 @@ namespace WholesomeVendors.Managers
              * The DNS and DNM lists are there to protect items from other plugins
              */
 
-            List<string> itemsToAdd = new List<string>();
             List<string> itemsToRemove = new List<string>();
 
             List<string> itemsToRemoveFromDNSList = wManagerSetting.CurrentSetting.DoNotSellList
@@ -185,6 +184,16 @@ namespace WholesomeVendors.Managers
             itemsToRemove.AddRange(itemsToRemoveFromDNMList);
 
             List<string> allItemsToRemove = itemsToRemove.Distinct().ToList();
+            List<string> itemsToAdd = GetAllUsableItems().Select(item => item.Name).ToList();
+            allItemsToRemove.RemoveAll(item => itemsToAdd.Contains(item));
+
+            WTSettings.RemoveItemFromDoNotSellAndMailList(allItemsToRemove);
+            WTSettings.AddItemToDoNotSellAndMailList(itemsToAdd);
+        }
+
+        private List<ModelItemTemplate> GetAllUsableItems()
+        {
+            List<ModelItemTemplate> result = new List<ModelItemTemplate>();
 
             // poisons
             if (PluginSettings.CurrentSetting.BuyPoison)
@@ -192,37 +201,34 @@ namespace WholesomeVendors.Managers
                 ModelItemTemplate deadlyPoison = _memoryDBManager.GetDeadlyPoisons.Find(p => p.RequiredLevel <= ObjectManager.Me.Level);
                 if (deadlyPoison != null)
                 {
-                    itemsToAdd.Add(deadlyPoison.Name);
+                    result.Add(deadlyPoison);
                 }
                 ModelItemTemplate instantPoison = _memoryDBManager.GetInstantPoisons.Find(p => p.RequiredLevel <= ObjectManager.Me.Level);
                 if (instantPoison != null)
                 {
-                    itemsToAdd.Add(instantPoison.Name);
+                    result.Add(instantPoison);
                 }
             }
 
             // ammo
             if (PluginSettings.CurrentSetting.AmmoAmount > 0)
             {
-                itemsToAdd.AddRange(UsableAmmos.Select(ammo => ammo.Name));
+                result.AddRange(UsableAmmos);
             }
 
             // food
             if (PluginSettings.CurrentSetting.FoodNbToBuy > 0)
             {
-                itemsToAdd.AddRange(_memoryDBManager.GetAllUsableFoods().Select(food => food.Name));
+                result.AddRange(_memoryDBManager.GetAllUsableFoods());
             }
 
             // drink
             if (PluginSettings.CurrentSetting.DrinkNbToBuy > 0)
             {
-                itemsToAdd.AddRange(_memoryDBManager.GetAllUsableDrinks().Select(drink => drink.Name));
+                result.AddRange(_memoryDBManager.GetAllUsableDrinks());
             }
 
-            allItemsToRemove.RemoveAll(item => itemsToAdd.Contains(item));
-
-            WTSettings.RemoveItemFromDoNotSellAndMailList(allItemsToRemove);
-            WTSettings.AddItemToDoNotSellAndMailList(itemsToAdd);
+            return result;
         }
 
         private void CacheInLoadingScreen()
@@ -553,7 +559,8 @@ namespace WholesomeVendors.Managers
                         continue;
                     }
 
-                    if (!wManagerSetting.CurrentSetting.DoNotSellList.Contains(item.Name))
+                    if (!wManagerSetting.CurrentSetting.DoNotSellList.Contains(item.Name)
+                        && !GetAllUsableItems().Exists(usableItem => usableItem.Entry == item.Entry))
                     {
                         listItemsToSell.Add(item);
                     }

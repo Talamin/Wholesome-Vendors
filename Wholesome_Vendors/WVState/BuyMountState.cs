@@ -147,6 +147,8 @@ namespace WholesomeVendors.WVState
 
         public override void Run()
         {
+            _pluginCacheManager.SanitizeDNSAndDNMLists();
+
             if (_ridingSkillToLearn != null)
             {
                 Vector3 vendorPos = _ridingTrainer.Creature.GetSpawnPosition;

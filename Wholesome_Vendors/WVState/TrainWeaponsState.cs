@@ -99,12 +99,14 @@ namespace WholesomeVendors.WVState
                 GoToTask.ToPositionAndIntecractWithNpc(trainerPosition, _trainerNpc.entry, i);
                 Thread.Sleep(1000);
                 WTGossip.ClickOnFrameButton("StaticPopup1Button2"); // discard hearthstone popup
-                if (Lua.LuaDoString<int>($"return ClassTrainerFrame:IsVisible()") > 0)
+                if (Lua.LuaDoString<int>($"return ClassTrainerFrame:IsVisible();") > 0)
                 {
+                    WTGossip.ShowAndExpandAvailableTrainerSpells();
                     bool success = Lua.LuaDoString<bool>($@"
                         SetTrainerServiceTypeFilter(""available"", 1, 1);
+                        ExpandTrainerSkillLine(0);
                         for i = 1, GetNumTrainerServices() do
-                            local serviceName, serviceSubText, serviceType, isExpanded = GetTrainerServiceInfo(i)
+                            local serviceName, serviceSubText, serviceType, isExpanded = GetTrainerServiceInfo(i);
                             if (serviceType ~= 'header' and serviceName == '{_weaponSpell.name_lang_1}') then
                                 BuyTrainerService(i);
                                 return true;
