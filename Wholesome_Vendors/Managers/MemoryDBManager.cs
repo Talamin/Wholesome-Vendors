@@ -239,12 +239,44 @@ namespace WholesomeVendors.Managers
 
         public List<ModelItemTemplate> GetAllUsableDrinks()
         {
-            int minLevel = PluginSettings.CurrentSetting.BestDrink ? 10 : 20;
-            List<ModelItemTemplate> result = _drinks.FindAll(drink =>
-                drink.RequiredLevel <= ObjectManager.Me.Level
-                && drink.RequiredLevel > ObjectManager.Me.Level - minLevel);
+            List<ModelItemTemplate> allDrinks = _drinks
+                .FindAll(drink => drink.RequiredLevel <= ObjectManager.Me.Level);
 
-            return result;
+            List<ModelItemTemplate> bestDrinks = allDrinks
+                .FindAll(drink => drink.RequiredLevel > ObjectManager.Me.Level - 10);
+            List<ModelItemTemplate> usableDrinks = allDrinks
+                .FindAll(drink => drink.RequiredLevel > ObjectManager.Me.Level - 20);
+
+            if (PluginSettings.CurrentSetting.BestDrink && bestDrinks.Count > 0)
+            {
+                return bestDrinks;
+            }
+
+            return usableDrinks;
+        }
+
+        public List<ModelItemTemplate> GetAllUsableFoods()
+        {
+            List<ModelItemTemplate> allFoods = _foods.FindAll(food =>
+                food.RequiredLevel <= ObjectManager.Me.Level);
+
+            List<ModelItemTemplate> bestFoods = allFoods
+                .FindAll(food => food.RequiredLevel > ObjectManager.Me.Level - 10);
+            List<ModelItemTemplate> usableFoods = allFoods
+                .FindAll(food => food.RequiredLevel > ObjectManager.Me.Level - 20);
+
+            if (PluginSettings.CurrentSetting.FoodType != "Any")
+            {
+                bestFoods.RemoveAll(food => food.FoodType != FoodTypeCode[PluginSettings.CurrentSetting.FoodType]);
+                usableFoods.RemoveAll(food => food.FoodType != FoodTypeCode[PluginSettings.CurrentSetting.FoodType]);
+            }
+
+            if (PluginSettings.CurrentSetting.BestFood && bestFoods.Count > 0)
+            {
+                return bestFoods;
+            }
+
+            return usableFoods;
         }
 
         public List<ModelItemTemplate> GetBags => _bags;
@@ -254,20 +286,6 @@ namespace WholesomeVendors.Managers
         public List<ModelSpell> GetFlyingMounts => _mounts.FindAll(m => m.effectBasePoints_2 == 149);
         public List<ModelSpell> GetEpicFlyingMounts => _mounts.FindAll(m => m.effectBasePoints_2 >= 279);
         public ModelSpell GetRidingSpellById(int id) => _ridingSpells.Find(rs => rs.Id == id);
-        public List<ModelItemTemplate> GetAllUsableFoods()
-        {
-            int minLevel = PluginSettings.CurrentSetting.BestFood ? 10 : 20;
-            List<ModelItemTemplate> result = _foods.FindAll(food =>
-                food.RequiredLevel <= ObjectManager.Me.Level
-                && food.RequiredLevel > ObjectManager.Me.Level - minLevel);
-
-            if (PluginSettings.CurrentSetting.FoodType != "Any")
-            {
-                result.RemoveAll(food => food.FoodType != FoodTypeCode[PluginSettings.CurrentSetting.FoodType]);
-            }
-
-            return result;
-        }
 
         private readonly Dictionary<string, int> FoodTypeCode = new Dictionary<string, int>()
         {
