@@ -65,9 +65,21 @@ namespace WholesomeVendors.WVState
                 foreach ((SkillLine skill, int spell) skillToLearn in _pluginCacheManager.WeaponsSpellsToLearn)
                 {
                     _weaponSpell = _memoryDBManager.GetWeaponSpellById(skillToLearn.spell);
-                    // Swords is bugged
+                    // OH bug
                     if (_pluginCacheManager.KnownSkills.Contains("Swords")
                         && _weaponSpell.name_lang_1 == "One-Handed Swords")
+                    {
+                        continue;
+                    }
+                    // OH bug
+                    if (_pluginCacheManager.KnownSkills.Contains("Maces")
+                        && _weaponSpell.name_lang_1 == "One-Handed Maces")
+                    {
+                        continue;
+                    }
+                    // OH bug
+                    if (_pluginCacheManager.KnownSkills.Contains("Axes")
+                        && _weaponSpell.name_lang_1 == "One-Handed Axes")
                     {
                         continue;
                     }
