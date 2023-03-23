@@ -239,13 +239,14 @@ namespace WholesomeVendors.Managers
 
         public List<ModelItemTemplate> GetAllUsableDrinks()
         {
+            int myLevel = (int)ObjectManager.Me.Level;
             List<ModelItemTemplate> allDrinks = _drinks
-                .FindAll(drink => drink.RequiredLevel <= ObjectManager.Me.Level);
+                .FindAll(drink => drink.RequiredLevel <= myLevel);
 
             List<ModelItemTemplate> bestDrinks = allDrinks
-                .FindAll(drink => drink.RequiredLevel > ObjectManager.Me.Level - 10);
+                .FindAll(drink => drink.RequiredLevel > myLevel - 10);
             List<ModelItemTemplate> usableDrinks = allDrinks
-                .FindAll(drink => drink.RequiredLevel > ObjectManager.Me.Level - 20);
+                .FindAll(drink => drink.RequiredLevel > myLevel - 20);
 
             if (PluginSettings.CurrentSetting.BestDrink && bestDrinks.Count > 0)
             {
@@ -257,13 +258,14 @@ namespace WholesomeVendors.Managers
 
         public List<ModelItemTemplate> GetAllUsableFoods()
         {
+            int myLevel = (int)ObjectManager.Me.Level;
             List<ModelItemTemplate> allFoods = _foods.FindAll(food =>
                 food.RequiredLevel <= ObjectManager.Me.Level);
 
             List<ModelItemTemplate> bestFoods = allFoods
-                .FindAll(food => food.RequiredLevel > ObjectManager.Me.Level - 10);
+                .FindAll(food => food.RequiredLevel > (myLevel - 10));
             List<ModelItemTemplate> usableFoods = allFoods
-                .FindAll(food => food.RequiredLevel > ObjectManager.Me.Level - 20);
+                .FindAll(food => food.RequiredLevel > (myLevel - 20));
 
             if (PluginSettings.CurrentSetting.FoodType != "Any")
             {
