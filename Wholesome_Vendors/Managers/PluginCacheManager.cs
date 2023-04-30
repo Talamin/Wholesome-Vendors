@@ -431,8 +431,8 @@ namespace WholesomeVendors.Managers
                 // Record nb ammos in bags
                 int nbAmmosInBags = 0;
                 foreach (WVItem bagItem in BagItems)
-                {
-                    if (_memoryDBManager.GetAllAmmos.Exists(ua => ua.Entry == bagItem.Entry))
+                {                    
+                    if (UsableAmmos.Exists(ua => ua.Entry == bagItem.Entry))
                     {
                         nbAmmosInBags += bagItem.Count;
                     }
