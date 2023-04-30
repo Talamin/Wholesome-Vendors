@@ -68,9 +68,9 @@ namespace WholesomeVendors.Managers
                     end
                 ");
 
+                RecordRangedWeaponType();
                 RecordKnownMounts();
                 RecordBags();
-                RecordRangedWeaponType();
                 RecordMoney();
                 RecordContinentAndInstancee();
                 RecordSkills();
