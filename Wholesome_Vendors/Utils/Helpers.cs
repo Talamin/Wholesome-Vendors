@@ -177,10 +177,19 @@ namespace WholesomeVendors.Utils
             if (!PluginSettings.CurrentSetting.AllowSell || pluginCacheManager.ItemsToSell.Count <= 0)
                 return;
 
-            Logger.Log($"Found {pluginCacheManager.ItemsToSell.Count} items to sell");
+            List<string> itemsNoSell = new List<string>();
+            itemsNoSell.AddRange(wManagerSetting.CurrentSetting.DoNotSellList);
+            foreach (WVItem bagItem in pluginCacheManager.BagItems)
+            {
+                if (!pluginCacheManager.ItemsToSell.Exists(itemToSell => itemToSell.Name == bagItem.Name))
+                {
+                    itemsNoSell.Add(bagItem.Name);
+                }
+            }
+
             // Careful, the list of item to sell we pass actually doesn't matter,
             // it works even with an empty list and sells everything
-            Vendor.SellItems(pluginCacheManager.ItemsToSell.Select(item => item.Name).ToList(), wManagerSetting.CurrentSetting.DoNotSellList, GetListQualityToSell());
+            Vendor.SellItems(pluginCacheManager.ItemsToSell.Select(item => item.Name).ToList(), itemsNoSell, GetListQualityToSell());
             Thread.Sleep(1000);
         }
 
