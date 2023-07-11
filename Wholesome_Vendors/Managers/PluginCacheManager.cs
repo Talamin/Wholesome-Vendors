@@ -694,7 +694,6 @@ namespace WholesomeVendors.Managers
                     SkillLine.TwoHandedAxes,
                     SkillLine.Maces,
                     SkillLine.TwoHandedMaces,
-                    SkillLine.Polearms,
                     SkillLine.Staves,
                     SkillLine.Daggers,
                     SkillLine.FistWeapons,
