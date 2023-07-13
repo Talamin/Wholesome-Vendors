@@ -61,7 +61,7 @@ namespace WholesomeVendors
                 {
                     Logger.Log($"Updating your version {currentVersion} to online Version {onlineVersion}");
                     File.WriteAllBytes(currentFile, onlineFileContent); // Replace user file by online file
-                    File.Delete(Others.GetCurrentDirectory + @"Data\WVM.json"); // Delete json to retrigger an extraction
+                    //File.Delete(Others.GetCurrentDirectory + @"Data\WVM.json"); // Delete json to retrigger an extraction
                     Thread.Sleep(1000);
                     return true;
                 }

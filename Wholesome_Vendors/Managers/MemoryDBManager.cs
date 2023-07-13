@@ -38,6 +38,9 @@ namespace WholesomeVendors.Managers
         public List<ModelItemTemplate> GetInstantPoisons => _poisons.FindAll(p => p.displayid == 13710);
         public List<ModelItemTemplate> GetDeadlyPoisons => _poisons.FindAll(p => p.displayid == 13707);
 
+        private readonly string _zipPath = Others.GetCurrentDirectory + @"Data\WVM.zip";
+        private readonly string _jsonPath = Others.GetCurrentDirectory + @"Data\WVM.json";
+
         public MemoryDBManager(IBlackListManager blackListManager)
         {
             _blackListManager = blackListManager;
@@ -47,27 +50,34 @@ namespace WholesomeVendors.Managers
         {
             Stopwatch watch = Stopwatch.StartNew();
             Assembly assembly = Assembly.GetExecutingAssembly();
-            string zipPath = Others.GetCurrentDirectory + @"Data\WVM.zip";
-            string jsonPath = Others.GetCurrentDirectory + @"Data\WVM.json";
 
-            // unzip json into data folder
-            if (!File.Exists(jsonPath))
+            if (File.Exists(_zipPath) && File.Exists(_jsonPath))
             {
-                Logger.Log($"Extracting WVM.json to your data folder");
-                File.Delete(zipPath);
-                using (Stream compressedStream = assembly.GetManifestResourceStream("WholesomeVendors.Database.WVM.zip"))
+                using (Stream fileStream = File.OpenRead(_zipPath))
                 {
-                    using (FileStream outputFileStream = new FileStream(zipPath, FileMode.CreateNew, FileAccess.Write))
+                    using (Stream embedStream = assembly.GetManifestResourceStream("WholesomeVendors.Database.WVM.zip"))
                     {
-                        compressedStream.CopyTo(outputFileStream);
-                        compressedStream.Close();
+                        if (fileStream.Length != embedStream.Length)
+                        {
+                            embedStream.Close();
+                            fileStream.Close();
+                            Logger.Log($"Updating your json file");
+                            ExtractZipAndJsonFromEmbed();
+                        }
+                        else
+                        {
+                            Logger.Log($"Your json file is up to date");
+                        }
                     }
                 }
-                ZipFile.ExtractToDirectory(zipPath, Others.GetCurrentDirectory + @"Data");
-                File.Delete(zipPath);
+            }
+            else
+            {
+                Logger.Log($"Extracting your json file");
+                ExtractZipAndJsonFromEmbed();
             }
 
-            using (StreamReader reader = new StreamReader(jsonPath))
+            using (StreamReader reader = new StreamReader(_jsonPath))
             {
                 string jsonFile = reader.ReadToEnd();
                 var settings = new JsonSerializerSettings
@@ -115,6 +125,22 @@ namespace WholesomeVendors.Managers
 
         public void Dispose()
         {
+        }
+
+        private void ExtractZipAndJsonFromEmbed()
+        {
+            File.Delete(_jsonPath);
+            File.Delete(_zipPath);
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            using (Stream compressedStream = assembly.GetManifestResourceStream("WholesomeVendors.Database.WVM.zip"))
+            {
+                using (FileStream outputFileStream = new FileStream(_zipPath, FileMode.CreateNew, FileAccess.Write))
+                {
+                    compressedStream.CopyTo(outputFileStream);
+                    outputFileStream.Close();
+                }
+            }
+            ZipFile.ExtractToDirectory(_zipPath, Others.GetCurrentDirectory + @"Data");
         }
 
         private void FilterMailBoxes()
