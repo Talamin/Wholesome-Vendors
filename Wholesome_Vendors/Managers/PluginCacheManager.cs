@@ -447,7 +447,7 @@ namespace WholesomeVendors.Managers
                 {
                     if (allDrinks.Exists(ua => ua.Entry == item.Entry))
                     {
-                        nbDrinksInBags += ItemsManager.GetItemCountById((uint)item.Entry);
+                        nbDrinksInBags += item.Count;
                         drinkToSet = item.Name;
                     }
                 }
@@ -468,7 +468,7 @@ namespace WholesomeVendors.Managers
                 {
                     if (allFoods.Exists(ua => ua.Entry == item.Entry))
                     {
-                        nbFoodsInBags += ItemsManager.GetItemCountById((uint)item.Entry);
+                        nbFoodsInBags += item.Count;
                         foodToSet = item.Name;
                     }
                 }
