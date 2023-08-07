@@ -231,35 +231,7 @@ namespace WholesomeVendors.Managers
 
                 result.Add(mailbox);
             }
-            /*
-            // DEBUG TP
-            bool lastBuggedReached = false;
-            int lastClean = 195467;
-            foreach (ModelGameObjectTemplate mailbox in result)
-            {
-                if (!lastBuggedReached)
-                {
-                    if (mailbox.entry == lastClean)
-                    {
-                        lastBuggedReached = true;
-                    }
-                    else
-                    {
-                        continue;
-                    }
-                }
 
-                string tpToMailBoxCommand = $".go xyz {mailbox.GameObject.position_x.ToString().Replace(",", ".")} {mailbox.GameObject.position_y.ToString().Replace(",", ".")} {(mailbox.GameObject.position_z + 5).ToString().Replace(",", ".")} {mailbox.GameObject.map}";
-                Logging.Write($"Going to MB {mailbox.entry}");
-                Lua.LuaDoString($@"SendChatMessage(""{tpToMailBoxCommand}"")");
-                Thread.Sleep(5000);
-
-                while (ObjectManager.Me.IsDead)
-                {
-                    Thread.Sleep(1000);
-                }
-            }
-            */
             _mailboxes = result;
         }
 

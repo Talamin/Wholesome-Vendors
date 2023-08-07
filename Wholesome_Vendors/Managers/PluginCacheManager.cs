@@ -70,10 +70,10 @@ namespace WholesomeVendors.Managers
 
                 RecordRangedWeaponType();
                 RecordKnownMounts();
+                RecordSkills();
                 RecordBags();
                 RecordMoney();
                 RecordContinentAndInstancee();
-                RecordSkills();
                 SanitizeDNSAndDNMLists();
                 EventsLuaWithArgs.OnEventsLuaStringWithArgs += OnEventsLuaWithArgs;
                 //Radar3D.OnDrawEvent += Radar3DOnDrawEvent;
@@ -572,10 +572,16 @@ namespace WholesomeVendors.Managers
 
         private bool ItemMightBeEquippableLater(WVItem item)
         {
-            return item.IsEquippable
+            string sublclass = item.SubClass;
+            if (sublclass == "One-Handed Swords") sublclass = "Swords";
+            if (sublclass == "One-Handed Axes") sublclass = "Axes";
+            if (sublclass == "One-Handed Maces") sublclass = "Maces";
+            bool result = item.IsEquippable
+                && KnownSkills.Contains(sublclass)
                 && item.EquipSlot != "INVTYPE_AMMO"
                 && item.Quality > 1
                 && item.ReqLevel > ObjectManager.Me.Level;
+            return result;
         }
 
         private bool ShouldSellByQuality(WVItem item)

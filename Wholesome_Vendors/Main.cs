@@ -1,6 +1,7 @@
 ﻿using robotManager.Events;
 using robotManager.FiniteStateMachine;
 using robotManager.Helpful;
+using robotManager.Products;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -122,7 +123,7 @@ public class Main : IPlugin
             return;
         }
 
-        if (engine.States.Count <= 5)
+        if (engine.States.Count <= 5 && Products.ProductName != "WRotation")
         {
             if (stateAddTimer == null)
             {
