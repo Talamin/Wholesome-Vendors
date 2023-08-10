@@ -45,6 +45,7 @@ namespace WholesomeVendors.WVState
             {
                 if (!Main.IsLaunched
                     || _pluginCacheManager.InLoadingScreen
+                    || !_pluginCacheManager.BagsRecorded
                     || !PluginSettings.CurrentSetting.BuyBags
                     || Fight.InFight
                     || _me.IsOnTaxi

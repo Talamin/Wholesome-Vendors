@@ -51,6 +51,7 @@ namespace WholesomeVendors.WVState
                 if (!Main.IsLaunched
                     || LevelToTrain <= 0
                     || _pluginCacheManager.InLoadingScreen
+                    || !_pluginCacheManager.BagsRecorded
                     || Fight.InFight
                     || !PluginSettings.CurrentSetting.AllowTrain
                     || ObjectManager.Me.IsOnTaxi

@@ -45,6 +45,7 @@ namespace WholesomeVendors.WVState
                 if (!Main.IsLaunched
                     || !PluginSettings.CurrentSetting.AllowRepair
                     || _pluginCacheManager.InLoadingScreen
+                    || !_pluginCacheManager.BagsRecorded
                     || Fight.InFight
                     || _pluginCacheManager.IsInInstance
                     || ObjectManager.Me.IsOnTaxi

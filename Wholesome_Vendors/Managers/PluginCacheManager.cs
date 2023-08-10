@@ -19,6 +19,7 @@ namespace WholesomeVendors.Managers
     {
         private readonly IMemoryDBManager _memoryDBManager;
 
+        public bool BagsRecorded { get; private set; }
         public List<WVItem> BagItems { get; private set; } = new List<WVItem>();
         public List<WVItem> ItemsToSell { get; private set; } = new List<WVItem>();
         public List<WVItem> ItemsToMail { get; private set; } = new List<WVItem>();
@@ -418,10 +419,11 @@ namespace WholesomeVendors.Managers
 
                 if (itemsFromLua.Length <= 0 || string.IsNullOrEmpty(itemsFromLua[0]))
                 {
+                    BagsRecorded = false;
                     Logger.LogError($"[RecordBagItems] LUA info was empty");
                     return;
                 }
-
+                BagsRecorded = true;
                 BagItems.Clear();
                 foreach (string item in itemsFromLua)
                 {

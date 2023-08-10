@@ -51,6 +51,7 @@ namespace WholesomeVendors.WVState
             {
                 if (!PluginSettings.CurrentSetting.AllowMail
                     || !_stateTimer.IsReady
+                    || !_pluginCacheManager.BagsRecorded
                     || string.IsNullOrEmpty(_recipient)
                     || _pluginCacheManager.ItemsToMail.Count <= 0
                     || !Main.IsLaunched

@@ -48,6 +48,7 @@ namespace WholesomeVendors.WVState
                 if (!Main.IsLaunched
                     || !_enabledInSetting
                     || !_stateTimer.IsReady
+                    || !_pluginCacheManager.BagsRecorded
                     || _pluginCacheManager.WeaponsSpellsToLearn.Count <= 0
                     || _pluginCacheManager.InLoadingScreen
                     || ObjectManager.Me.Level < 20

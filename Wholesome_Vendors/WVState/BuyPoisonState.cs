@@ -49,6 +49,7 @@ namespace WholesomeVendors.WVState
             {
                 if (!Main.IsLaunched
                     || _pluginCacheManager.InLoadingScreen
+                    || !_pluginCacheManager.BagsRecorded
                     || Fight.InFight
                     || !PluginSettings.CurrentSetting.BuyPoison
                     || ObjectManager.Me.WowClass != WoWClass.Rogue

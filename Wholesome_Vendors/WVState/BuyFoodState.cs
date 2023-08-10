@@ -52,6 +52,7 @@ namespace WholesomeVendors.WVState
             {
                 if (!Main.IsLaunched
                     || _pluginCacheManager.InLoadingScreen
+                    || !_pluginCacheManager.BagsRecorded
                     || Fight.InFight
                     || _me.Level <= 3
                     || FoodAmountSetting <= 0

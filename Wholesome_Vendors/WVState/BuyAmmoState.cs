@@ -50,6 +50,7 @@ namespace WholesomeVendors.WVState
             {
                 if (!Main.IsLaunched
                     || _pluginCacheManager.InLoadingScreen
+                    || !_pluginCacheManager.BagsRecorded
                     || Fight.InFight
                     || _pluginCacheManager.RangedWeaponType == null
                     || PluginSettings.CurrentSetting.AmmoAmount <= 0

@@ -7,6 +7,7 @@ namespace WholesomeVendors.Managers
 {
     public interface IPluginCacheManager : ICycleable
     {
+        bool BagsRecorded { get; }
         string RangedWeaponType { get; }
         List<int> KnownMountSpells { get; }
         bool IsInInstance { get; }

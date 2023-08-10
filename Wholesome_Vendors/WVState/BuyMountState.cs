@@ -49,6 +49,7 @@ namespace WholesomeVendors.WVState
             {
                 if (!Main.IsLaunched
                     || _pluginCacheManager.InLoadingScreen
+                    || !_pluginCacheManager.BagsRecorded
                     || Me.Level < 20
                     || Fight.InFight
                     || Me.IsOnTaxi

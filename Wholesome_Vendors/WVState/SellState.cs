@@ -50,6 +50,7 @@ namespace WholesomeVendors.WVState
                     || _pluginCacheManager.ItemsToSell.Count <= 0
                     || !Main.IsLaunched
                     || _pluginCacheManager.InLoadingScreen
+                    || !_pluginCacheManager.BagsRecorded
                     || Fight.InFight
                     || _pluginCacheManager.IsInInstance
                     || ObjectManager.Me.IsOnTaxi
