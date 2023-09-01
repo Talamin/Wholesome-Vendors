@@ -115,6 +115,7 @@ namespace WholesomeVendors.WVState
 
             for (int i = 0; i <= 5; i++)
             {
+                int nbBeforeTry = _pluginCacheManager.NbDrinksInBags;
                 Logger.Log($"Attempt {i + 1}");
                 GoToTask.ToPositionAndIntecractWithNpc(vendorPosition, _drinkVendor.entry, i);
                 Thread.Sleep(1000);
@@ -126,7 +127,7 @@ namespace WholesomeVendors.WVState
                     WTGossip.BuyItem(_drinkToBuy.Name, AmountToBuy, _drinkToBuy.BuyCount);
                     Thread.Sleep(1000);
 
-                    if (_pluginCacheManager.NbDrinksInBags >= DrinkAmountSetting)
+                    if (_pluginCacheManager.NbDrinksInBags > nbBeforeTry)
                     {
                         Helpers.CloseWindow();
                         return;

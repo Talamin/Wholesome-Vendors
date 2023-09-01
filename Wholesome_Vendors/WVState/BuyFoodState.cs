@@ -8,7 +8,6 @@ using WholesomeVendors.Database.Models;
 using WholesomeVendors.Managers;
 using WholesomeVendors.Utils;
 using WholesomeVendors.WVSettings;
-using wManager;
 using wManager.Wow.Bot.Tasks;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
@@ -126,6 +125,7 @@ namespace WholesomeVendors.WVState
 
             for (int i = 0; i <= 5; i++)
             {
+                int nbBeforeTry = _pluginCacheManager.NbFoodsInBags;
                 Logger.Log($"Attempt {i + 1}");
                 GoToTask.ToPositionAndIntecractWithNpc(vendorPosition, _foodVendor.entry, i);
                 Thread.Sleep(1000);
@@ -137,7 +137,7 @@ namespace WholesomeVendors.WVState
                     WTGossip.BuyItem(_foodToBuy.Name, AmountToBuy, _foodToBuy.BuyCount);
                     Thread.Sleep(1000);
 
-                    if (_pluginCacheManager.NbFoodsInBags >= FoodAmountSetting)
+                    if (_pluginCacheManager.NbFoodsInBags > nbBeforeTry)
                     {
                         Helpers.CloseWindow();
                         return;

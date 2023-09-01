@@ -148,6 +148,9 @@ namespace WholesomeVendors.WVState
 
             for (int i = 0; i <= 5; i++)
             {
+                int nbBeforeTry = _poisonToBuy.displayid == 13710 ? 
+                    _pluginCacheManager.NbInstantPoisonsInBags 
+                    : _pluginCacheManager.NbDeadlyPoisonsInBags;
                 Logger.Log($"Attempt {i + 1}");
                 GoToTask.ToPositionAndIntecractWithNpc(vendorPosition, _poisonVendor.entry, i);
                 Thread.Sleep(1000);
@@ -159,12 +162,12 @@ namespace WholesomeVendors.WVState
                     WTGossip.BuyItem(_poisonToBuy.Name, _amountToBuy, _poisonToBuy.BuyCount);
                     Thread.Sleep(1000);
 
-                    if (_poisonToBuy.displayid == 13710 && _pluginCacheManager.NbInstantPoisonsInBags >= 20) // Instant
+                    if (_poisonToBuy.displayid == 13710 && _pluginCacheManager.NbInstantPoisonsInBags > nbBeforeTry) // Instant
                     {
                         Helpers.CloseWindow();
                         return;
                     }
-                    if (_poisonToBuy.displayid == 13707 && _pluginCacheManager.NbDeadlyPoisonsInBags >= 20) // Deadly
+                    if (_poisonToBuy.displayid == 13707 && _pluginCacheManager.NbDeadlyPoisonsInBags > nbBeforeTry) // Deadly
                     {
                         Helpers.CloseWindow();
                         return;

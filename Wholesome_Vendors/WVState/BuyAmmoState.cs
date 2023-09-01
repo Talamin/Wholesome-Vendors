@@ -117,6 +117,7 @@ namespace WholesomeVendors.WVState
 
             for (int i = 0; i <= 5; i++)
             {
+                int nbBeforeTry = _pluginCacheManager.NbAmmosInBags;
                 Logger.Log($"Attempt {i + 1}");
                 GoToTask.ToPositionAndIntecractWithNpc(vendorPosition, _ammoVendor.entry, i);
                 Thread.Sleep(1000);
@@ -128,7 +129,7 @@ namespace WholesomeVendors.WVState
                     WTGossip.BuyItem(_ammoToBuy.Name, AmountToBuy, _ammoToBuy.BuyCount);
                     Thread.Sleep(1000);
 
-                    if (_pluginCacheManager.NbAmmosInBags >= AmmoAmountSetting)
+                    if (_pluginCacheManager.NbAmmosInBags > nbBeforeTry)
                     {
                         Helpers.CloseWindow();
                         return;
